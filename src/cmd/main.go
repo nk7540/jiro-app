@@ -2,15 +2,17 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
-	"time"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/api/option"
 
-	"ranker/src/config"
-	"ranker/src/lib/grpc"
-	"ranker/src/lib/redis"
-	"ranker/src/registry"
+	"artics-api/src/config"
+	"artics-api/src/lib/firebase"
+	"artics-api/src/lib/grpc"
+	"artics-api/src/lib/mysql"
+	"artics-api/src/registry"
 )
 
 func main() {
@@ -26,15 +28,26 @@ func main() {
 		log.Panic(err)
 	}
 
-	rdb, err := redis.NewClient(ctx, e.RedisHost, e.RedisPort, e.RedisDB)
+	opt := option.WithCredentialsJSON([]byte(e.GCPServiceKeyJSON))
+	fb, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
+	}
+
+	fa, err := firebase.NewAuth(ctx, fb.App)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	db, err := mysql.NewClient(ctx, e.MysqlUser, e.MysqlHost, e.MysqlPort, e.MysqlDB)
+	if err != nil {
+		log.Panic(err)
 	}
 
 	gc := grpc.NewClient(e.GrpcHost, e.GrpcPort)
 
 	// Registration
-	reg := registry.NewRegistry(rdb, gc, ws)
+	reg := registry.NewRegistry(fa, db, gc)
 
 	// Running application
 	r := config.Router(reg)

@@ -7,7 +7,7 @@ services:
       dockerfile: ./docker/go/Dockerfile
     command: /bin/sh -c "while sleep 1000; do :; done"
     ports:
-      - ${APP_PORT}:8080
+      - 8080:8080
     volumes:
       - .:/go/artics-api:cached
     tty: true
@@ -17,11 +17,15 @@ services:
     container_name: artics-db
     build:
       context: .
-      dockerfile: ./docker/redis/Dockerfile
+      dockerfile: ./docker/mysql/Dockerfile
     expose:
-      - 6379
+      - 3306
     volumes:
-      - db_data:/data
+      - db_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    extends:
+      file: ./docker/mysql/password.yml
+      service: password
 
 volumes:
   db_data:
