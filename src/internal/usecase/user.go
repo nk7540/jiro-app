@@ -13,8 +13,9 @@ import (
 
 // UserUsecase - user usecase
 type UserUsecase interface {
-	Create(ctx context.Context, r request.UsersRequest) (*user.User, error)
+	Create(ctx context.Context, r request.CreateUser) (*user.User, error)
 	Show(ctx context.Context, id int) (*user.User, error)
+	Update(ctx context.Context, r request.UpdateUser) (*user.User, error)
 }
 
 type userUsecase struct {
@@ -59,6 +60,27 @@ func (uu *userUsecase) Show(ctx context.Context, id int) (*user.User, error) {
 
 	u, err := uu.userRepository.Show(ctx, id)
 	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
+func (uu *userUsecase) Update(ctx context.Context, req request.UpdateUser) (*user.User, error) {
+	u, err := uu.userService.Auth(ctx)
+	if err != nil {
+		return nil, domain.Unauthorized.New(err)
+	}
+
+	if ves := uu.userRequestValidator.UpdateUser(req); len(ves) > 0 {
+		err := xerrors.New("Failed to RequestValidation")
+		return nil, domain.InvalidRequestValidation.New(err, ves...)
+	}
+
+	u.Nickname = req.Nickname
+	u.Email = req.Email
+
+	if err := uu.userRepository.Update(ctx, u); err != nil {
 		return nil, err
 	}
 

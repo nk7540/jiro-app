@@ -37,3 +37,7 @@ func (r *userRepository) Show(ctx context.Context, id int) (*user.User, error) {
 
 	return &user.User{u}, err
 }
+
+func (r *userRepository) Update(ctx context.Context, u *user.User) error {
+	return u.Update(ctx, r.db.DB, boil.Infer())
+}

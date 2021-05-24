@@ -7,3 +7,9 @@ type CreateUser struct {
 	Password             string `json:"password" validate:"password,required,min=6,max=32"`
 	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 }
+
+// UpdateUser - request from UpdateUser
+type UpdateUser struct {
+	Nickname string `json:"nickname" validate:"max=256"`
+	Email    string `json:"email" validate:"email,max=256"`
+}

@@ -17,6 +17,7 @@ import (
 type V1UserHandler interface {
 	Create(ctx *gin.Context)
 	Show(ctx *gin.Context)
+	Update(ctx *gin.Context)
 }
 
 type v1UserHandler struct {
@@ -63,6 +64,31 @@ func (h *v1UserHandler) Show(c *gin.Context) {
 	}
 
 	res := &response.ShowUser{
+		ID:       u.ID,
+		Nickname: u.Nickname,
+		Email:    u.Email,
+	}
+
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (h *v1UserHandler) Update(c *gin.Context) {
+	// Request
+	ctx := middleware.GinContextToContext(c)
+	req := &request.UpdateUser{}
+	if err := ctx.bindJSON(req); err != nil {
+		handler.ErrorHandling(ctx, domain.UnableParseJSON.New(err))
+		return
+	}
+
+	// Response
+	u, err := h.u.Update(ctx, req)
+	if err != nil {
+		handler.ErrorHandling(ctx, err)
+		return
+	}
+
+	res := &response.UpdateUser{
 		ID:       u.ID,
 		Nickname: u.Nickname,
 		Email:    u.Email,

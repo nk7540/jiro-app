@@ -15,7 +15,7 @@ func Router(reg *registry.Registry) *gin.Engine {
 		api.POST("/users", reg.V1User.Create)
 		// api.POST("/users/login", reg.UserHandler.Login)
 		api.GET("/users/:id", reg.V1User.Show)
-		// api.PATCH("/users/:id", reg.UserHandler.UpdateUser)
+		api.PATCH("/users", reg.V1User.Update)
 		// api.DELETE("/users/leave", reg.UserHandler.Leave)
 
 		// // フォロー

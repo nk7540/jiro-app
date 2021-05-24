@@ -15,3 +15,9 @@ type ShowUser struct {
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
 }
+
+type UpdateUser struct {
+	ID       string `json:"id"`
+	Nickname string `json:"nickname"`
+	Email    string `json:"email"`
+}

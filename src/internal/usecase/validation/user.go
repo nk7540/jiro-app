@@ -8,6 +8,7 @@ import (
 // UserRequestValidator - user validator interface
 type UserRequestValidator interface {
 	CreateUser(req *request.CreateUser) []*domain.ValidationError
+	UpdateUser(req *request.CreateUser) []*domain.ValidationError
 }
 
 type userRequestValidator struct {
@@ -24,5 +25,9 @@ func NewUserRequestValidator() UserRequestValidator {
 }
 
 func (urv *userRequestValidator) CreateUser(req *request.CreateUser) []*domain.ValidationError {
+	return urv.validator.Run(req)
+}
+
+func (urv *userRequestValidator) UpdateUser(req *request.UpdateUser) []*domain.ValidationError {
 	return urv.validator.Run(req)
 }
