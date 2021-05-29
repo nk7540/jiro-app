@@ -8,7 +8,7 @@ import (
 // UserRequestValidator - user validator interface
 type UserRequestValidator interface {
 	CreateUser(req *request.CreateUser) []*domain.ValidationError
-	UpdateUser(req *request.CreateUser) []*domain.ValidationError
+	UpdateUser(req *request.UpdateUser) []*domain.ValidationError
 }
 
 type userRequestValidator struct {

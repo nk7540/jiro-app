@@ -3,6 +3,7 @@ use dev_database;
 
 create table user(
   id                 int          not null auto_increment,
+  uid                varchar(255) null,
   nickname           varchar(255) null,
   email              varchar(255) not null,
   encrypted_password varchar(255) not null,

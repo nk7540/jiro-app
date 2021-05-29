@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"artics-api/api/user/internal/domain"
+	"artics-api/src/internal/domain"
 
 	"github.com/go-playground/validator/v10"
 )

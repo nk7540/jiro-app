@@ -7,8 +7,7 @@ import (
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/lib/mysql"
 
-	"github.com/volatiletech/sqlboiler/boil"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type userRepository struct {
@@ -23,9 +22,6 @@ func NewUserRepository(db *mysql.Client) user.UserRepository {
 }
 
 func (r *userRepository) Create(ctx context.Context, u *user.User) error {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(u.Password), 10)
-	u.EncryptedPassword = string(hash)
-
 	return u.Insert(ctx, r.db.DB, boil.Infer())
 }
 
@@ -35,9 +31,10 @@ func (r *userRepository) Show(ctx context.Context, id int) (*user.User, error) {
 		return nil, err
 	}
 
-	return &user.User{u}, err
+	return &user.User{*u, ""}, err
 }
 
 func (r *userRepository) Update(ctx context.Context, u *user.User) error {
-	return u.Update(ctx, r.db.DB, boil.Infer())
+	_, err := u.Update(ctx, r.db.DB, boil.Infer())
+	return err;
 }

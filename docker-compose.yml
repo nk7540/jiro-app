@@ -10,6 +10,9 @@ services:
       - 8080:8080
     volumes:
       - .:/go/artics-api:cached
+      - ~/.vimrc:/root/.vimrc
+      - ~/.vim:/root/.vim
+      - ~/dein:/root/dein
     tty: true
     depends_on:
       - db

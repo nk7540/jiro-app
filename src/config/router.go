@@ -11,15 +11,15 @@ func Router(reg *registry.Registry) *gin.Engine {
 
 	api := r.Group("/api/v1")
 	{
-		// ユーザー
+		// User
 		api.POST("/users", reg.V1User.Create)
 		// api.POST("/users/login", reg.UserHandler.Login)
 		api.GET("/users/:id", reg.V1User.Show)
 		api.PATCH("/users", reg.V1User.Update)
-		// api.DELETE("/users/leave", reg.UserHandler.Leave)
+		api.DELETE("/users/leave", reg.V1User.Leave)
 
-		// // フォロー
-		// api.POST("/follows", reg.FollowHandler.CreateFollow)
+		// フォロー
+		api.POST("/follows", reg.V1Follow.Create)
 		// api.GET("/follows", reg.FollowHandler.GetFollows)
 		// api.DELETE("/follows", reg.FollowHandler.DestroyFollow)
 

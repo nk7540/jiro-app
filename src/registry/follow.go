@@ -10,13 +10,11 @@ import (
 	"artics-api/src/lib/mysql"
 )
 
-func v1UserInjection(fa *firebase.Auth, db *mysql.Client) v1.V1UserHandler {
-	fr := repository.NewFollowRepository(db)
-	ur := repository.NewUserRepository(db)
+func v1FollowInjection(fa *firebase.Auth, db *mysql.Client) v1.V1FollowHandler {
 	us := service.NewUserService(fa)
-	urv := validation.NewUserRequestValidator()
-	uu := usecase.NewUserUsecase(urv, ur, us, fr)
-	uh := v1.NewV1UserHandler(uu)
+	fr := repository.NewFollowRepository(db)
+	fu := usecase.NewFollowUsecase(us, fr)
+	fh := v1.NewV1FollowHandler(fu)
 
-	return uh
+	return fh
 }

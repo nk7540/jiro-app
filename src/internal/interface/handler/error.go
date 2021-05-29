@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/calmato/presto-pay/api/user/internal/application/response"
-	"github.com/calmato/presto-pay/api/user/internal/domain"
+	"artics-api/src/internal/usecase/response"
+	"artics-api/src/internal/domain"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )

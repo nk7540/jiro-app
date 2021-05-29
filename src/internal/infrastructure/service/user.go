@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strings"
+	"strconv"
 
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/lib/firebase"
@@ -16,7 +17,7 @@ type userService struct {
 }
 
 func (us *userService) CreateAuth(ctx context.Context, u *user.User) (string, error) {
-	uid, err := us.auth.CreateUser(ctx, u.ID, u.Email, u.Password)
+	uid, err := us.auth.CreateUser(ctx, strconv.Itoa(u.ID), u.Email, u.Password)
 	if err != nil {
 		return "", err
 	}
@@ -36,6 +37,10 @@ func (us *userService) Auth(ctx context.Context) (string, error) {
 	}
 
 	return uid, nil
+}
+
+func (us *userService) DeleteAuth(ctx context.Context, u *user.User) error {
+	return us.auth.DeleteUser(ctx, u.Uid)
 }
 
 func getToken(ctx context.Context) (string, error) {

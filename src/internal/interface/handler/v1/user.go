@@ -18,6 +18,7 @@ type V1UserHandler interface {
 	Create(ctx *gin.Context)
 	Show(ctx *gin.Context)
 	Update(ctx *gin.Context)
+	Leave(ctx *gin.Context)
 }
 
 type v1UserHandler struct {
@@ -95,4 +96,17 @@ func (h *v1UserHandler) Update(c *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (h *v1UserHandler) Leave(c *gin.Context) {
+	// Request
+	ctx := middleware.GinContextToContext(c)
+
+	// Response
+	if err := h.u.Leave(ctx); err != nil {
+		handler.ErrorHandling(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK)
 }
