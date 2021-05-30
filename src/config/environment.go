@@ -9,6 +9,7 @@ import (
 type Environment struct {
 	Port				 string `envconfig:"PORT" default:"8080"`
 	MysqlUser 			 string `envconfig:"MYSQL_USER" default:"root"`
+	MysqlPassword        string `envconfig:"MYSQL_PASSWORD" required:"true"`
 	MysqlHost 			 string `envconfig:"MYSQL_HOST" default:"artics-db"`
 	MysqlPort 			 string `envconfig:"MYSQL_PORT" default:"3306"`
 	MysqlDB   			 string `envconfig:"MYSQL_DB" default:"dev_database"`

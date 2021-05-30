@@ -41,7 +41,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	db, err := mysql.NewClient(ctx, e.MysqlUser, e.MysqlHost, e.MysqlPort, e.MysqlDB)
+	db, err := mysql.NewClient(ctx, e.MysqlUser, e.MysqlPassword, e.MysqlHost, e.MysqlPort, e.MysqlDB)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -61,7 +61,7 @@ func main() {
 	}()
 
 	select {
-	case <-ctx.Done()
+	case <-ctx.Done():
 		stop()
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -70,7 +70,8 @@ func main() {
 			os.Exit(1)
 		}
 		os.Exit(0)
-	case <-errCh
+	case err := <-errCh:
+		log.Fatal(err)
 		os.Exit(1)
 	}
 }

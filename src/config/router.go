@@ -16,12 +16,13 @@ func Router(reg *registry.Registry) *gin.Engine {
 		// api.POST("/users/login", reg.UserHandler.Login)
 		api.GET("/users/:id", reg.V1User.Show)
 		api.PATCH("/users", reg.V1User.Update)
-		api.DELETE("/users/leave", reg.V1User.Leave)
+		api.DELETE("/users/suspend", reg.V1User.Suspend)
+		// api.GET("/users/:id/followings", reg.V1User.Followings)
 
 		// フォロー
 		api.POST("/follows", reg.V1Follow.Create)
 		// api.GET("/follows", reg.FollowHandler.GetFollows)
-		// api.DELETE("/follows", reg.FollowHandler.DestroyFollow)
+		api.DELETE("/follows", reg.V1Follow.Delete)
 
 		// // コンテンツ
 		// api.POST("/contents", reg.ContentHandler.CreateContent)

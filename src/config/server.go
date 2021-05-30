@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,12 +12,12 @@ type Server struct {
 	server *http.Server
 }
 
-func NewServer(port int, r *gin.Engine) *Server {
+func NewServer(port string, r *gin.Engine) *Server {
 	return &Server{
 		server: &http.Server{
-			Addr:    fmt.Sprintf(":%d", port),
+			Addr:    ":"+port,
 			Handler: r,
-		}
+		},
 	}
 }
 

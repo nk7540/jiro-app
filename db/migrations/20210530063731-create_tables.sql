@@ -2,7 +2,7 @@ create database if not exists dev_database;
 use dev_database;
 
 -- +migrate Up
-create table user(
+create table if not exists user(
   id                 varchar(255) not null,
   uid                varchar(255) not null,
   status             varchar(255) not null,
@@ -11,7 +11,7 @@ create table user(
   primary key(id)
 );
 
-create table follow(
+create table if not exists follow(
   id           varchar(255) not null,
   following_id varchar(255) not null,
   follower_id  varchar(255) not null,
@@ -28,13 +28,13 @@ create table follow(
     on update no action
 );
 
-create table category(
+create table if not exists category(
   id   varchar(255) not null,
   name varchar(32)  not null,
   primary key(id)
 );
 
-create table content(
+create table if not exists content(
   id          varchar(255) not null,
   user_id     varchar(255) null,
   category_id varchar(255) not null,
@@ -52,7 +52,7 @@ create table content(
     on update no action
 );
 
-create table favorite(
+create table if not exists favorite(
   id         varchar(255) not null,
   user_id    varchar(255) not null,
   content_id varchar(255) not null,
@@ -70,8 +70,10 @@ create table favorite(
 );
 
 -- +migrate Down
+set FOREIGN_KEY_CHECKS=0;
 drop table user;
 drop table follow;
 drop table category;
 drop table content;
 drop table favorite;
+set FOREIGN_KEY_CHECKS=1;

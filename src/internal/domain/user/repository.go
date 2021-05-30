@@ -6,6 +6,8 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, u *User) error
-	Show(ctx context.Context, id int) (*User, error)
+	Get(ctx context.Context, id string) (*User, error)
+	GetByToken(ctx context.Context, tkn string) (*User, error)
 	Update(ctx context.Context, u *User) error
+	Suspend(ctx context.Context, u *User) error
 }

@@ -3,44 +3,58 @@ package service
 import (
 	"context"
 	"strings"
-	"strconv"
 
 	"artics-api/src/internal/domain/user"
-	"artics-api/src/lib/firebase"
+	"artics-api/src/internal/domain/follow"
 	"artics-api/src/middleware"
 
 	"golang.org/x/xerrors"
 )
 
 type userService struct {
-	auth *firebase.Auth
+	ur user.UserRepository
+	fr follow.FollowRepository
 }
 
-func (us *userService) CreateAuth(ctx context.Context, u *user.User) (string, error) {
-	uid, err := us.auth.CreateUser(ctx, strconv.Itoa(u.ID), u.Email, u.Password)
-	if err != nil {
-		return "", err
-	}
-
-	return uid, nil
+func NewUserService(ur user.UserRepository, fr follow.FollowRepository) user.UserService {
+	return &userService{ur, fr}
 }
 
-func (us *userService) Auth(ctx context.Context) (string, error) {
+func (s *userService) Create(ctx context.Context, u *user.User) error {
+	return s.ur.Create(ctx, u)
+}
+
+func (s *userService) Auth(ctx context.Context) (*user.User, error) {
 	t, err := getToken(ctx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	uid, err := us.auth.VerifyIDToken(ctx, t)
-	if err != nil {
-		return "", err
-	}
-
-	return uid, nil
+	return s.ur.GetByToken(ctx, t)
 }
 
-func (us *userService) DeleteAuth(ctx context.Context, u *user.User) error {
-	return us.auth.DeleteUser(ctx, u.Uid)
+func (s *userService) Show(ctx context.Context, id string) (*user.User, error) {
+	u, err := s.ur.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	followingCount, err := s.fr.FollowingCount(ctx, u.ID)
+	if err != nil {
+		return nil, err
+	}
+	followerCount, err := s.fr.FollowerCount(ctx, u.ID)
+	if err != nil {
+		return nil, err
+	}
+	u.FollowingCount = followingCount
+	u.FollowerCount = followerCount
+
+	return u, nil
+}
+
+func (s *userService) Suspend(ctx context.Context, u *user.User) error {
+	return s.ur.Suspend(ctx, u)
 }
 
 func getToken(ctx context.Context) (string, error) {

@@ -5,7 +5,8 @@ import (
 )
 
 type UserService interface {
-	CreateAuth(ctx context.Context, u *User) (string, error)
-	Auth(ctx context.Context) (string, error)
-	DeleteAuth(ctx context.Context, u *User) error
+	Create(ctx context.Context, u *User) error
+	Auth(ctx context.Context) (*User, error)
+	Show(ctx context.Context, id string) (*User, error)
+	Suspend(ctx context.Context, u *User) error
 }

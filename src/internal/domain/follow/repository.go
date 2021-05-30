@@ -5,8 +5,8 @@ import (
 )
 
 type FollowRepository interface {
-	FollowingCount(ctx context.Context, id int) (int, error)
-	FollowerCount(ctx context.Context, id int) (int, error)
+	FollowingCount(ctx context.Context, id string) (int, error)
+	FollowerCount(ctx context.Context, id string) (int, error)
 	Create(ctx context.Context, follow *Follow) error
 	Delete(ctx context.Context, follow *Follow) error
 }

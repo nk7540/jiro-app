@@ -14,8 +14,8 @@ type Client struct {
 }
 
 // NewClient - connects to mysql server
-func NewClient(ctx context.Context, user string, host string, port string, database string) (*Client, error) {
-	addr := user + "@" + host + ":" + port + "/" + database
+func NewClient(ctx context.Context, user string, password string, host string, port string, database string) (*Client, error) {
+	addr := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + database
 
 	db, err := sql.Open("mysql", addr)
 	if err != nil {

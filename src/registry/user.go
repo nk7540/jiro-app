@@ -12,8 +12,8 @@ import (
 
 func v1UserInjection(fa *firebase.Auth, db *mysql.Client) v1.V1UserHandler {
 	fr := repository.NewFollowRepository(db)
-	ur := repository.NewUserRepository(db)
-	us := service.NewUserService(fa)
+	ur := repository.NewUserRepository(db, fa)
+	us := service.NewUserService(ur, fr)
 	urv := validation.NewUserRequestValidator()
 	uu := usecase.NewUserUsecase(urv, ur, us, fr)
 	uh := v1.NewV1UserHandler(uu)

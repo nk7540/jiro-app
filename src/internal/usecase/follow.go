@@ -5,50 +5,45 @@ import (
 
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/follow"
+	"artics-api/src/internal/domain/user"
 )
 
 type FollowUsecase interface {
-	Create(ctx context.Context, id int) error
-	Destroy(ctx context.Context, id int) error
+	Create(ctx context.Context, id string) error
+	Delete(ctx context.Context, id string) error
 }
 
 type followUsecase struct {
 	followRepository follow.FollowRepository
+	userService user.UserService
 }
 
 // NewFollowUsecase - generates follow usecase
-func NewFollowUsecase(fr follow.FollowRepository) *FollowUsecase {
-	return &followUsecase{fr}
+func NewFollowUsecase(fr follow.FollowRepository, us user.UserService) FollowUsecase {
+	return &followUsecase{fr, us}
 }
 
-func (fu *followUsecase) Create(ctx context.Context, id int) error {
-	u, err := uu.userService.Auth(ctx)
+func (fu *followUsecase) Create(ctx context.Context, id string) error {
+	u, err := fu.userService.Auth(ctx)
 	if err != nil {
-		return nil, domain.Unauthorized.New(err)
+		return domain.Unauthorized.New(err)
 	}
 
 	f := &follow.Follow{}
 	f.FollowingID = u.ID
 	f.FollowerID = id
-	if err := uu.followRepository.Create(ctx, f); err != nil {
-		return nil, err
-	}
 
-	return nil
+	return fu.followRepository.Create(ctx, f)
 }
 
-func (fu *followUsecase) Destroy(ctx context.Context, id int) error {
-	u, err := uu.userService.Auth(ctx)
+func (fu *followUsecase) Delete(ctx context.Context, id string) error {
+	u, err := fu.userService.Auth(ctx)
 	if err != nil {
-		return nil, domain.Unauthorized.New(err)
+		return domain.Unauthorized.New(err)
 	}
 
 	f := &follow.Follow{}
 	f.FollowingID = u.ID
 	f.FollowerID = id
-	if err := uu.followRepository.Destroy(ctx, f); err != nil {
-		return nil, err
-	}
-
-	return nil
+	return fu.followRepository.Delete(ctx, f)
 }

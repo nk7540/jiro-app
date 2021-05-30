@@ -18,7 +18,7 @@ type V1UserHandler interface {
 	Create(ctx *gin.Context)
 	Show(ctx *gin.Context)
 	Update(ctx *gin.Context)
-	Leave(ctx *gin.Context)
+	Suspend(ctx *gin.Context)
 }
 
 type v1UserHandler struct {
@@ -32,35 +32,31 @@ func NewV1UserHandler(u usecase.UserUsecase) V1UserHandler {
 
 func (h *v1UserHandler) Create(c *gin.Context) {
 	// Request
-	ctx := middleware.GinContextToContext(c)
 	req := &request.CreateUser{}
-	if err := ctx.bindJSON(req); err != nil {
-		handler.ErrorHandling(ctx, domain.UnableParseJSON.New(err))
+	if err := c.BindJSON(req); err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
 		return
 	}
 
 	// Response
-	_, err := h.u.Create(ctx, req)
-	if err != nil {
-		handler.ErrorHandling(ctx, err)
+	ctx := middleware.GinContextToContext(c)
+	if err := h.u.Create(ctx, req); err != nil {
+		handler.ErrorHandling(c, err)
 		return
 	}
 
-	res := &response.CreateUser{
-		resultCode: "success",
-	}
-	ctx.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func (h *v1UserHandler) Show(c *gin.Context) {
 	// Request
 	id := c.Params.ByName("id")
-	ctx := middleware.GinContextToContext(c)
 
 	// Response
+	ctx := middleware.GinContextToContext(c)
 	u, err := h.u.Show(ctx, id)
 	if err != nil {
-		handler.ErrorHandling(ctx, err)
+		handler.ErrorHandling(c, err)
 		return
 	}
 
@@ -70,22 +66,22 @@ func (h *v1UserHandler) Show(c *gin.Context) {
 		Email:    u.Email,
 	}
 
-	ctx.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *v1UserHandler) Update(c *gin.Context) {
 	// Request
-	ctx := middleware.GinContextToContext(c)
 	req := &request.UpdateUser{}
-	if err := ctx.bindJSON(req); err != nil {
-		handler.ErrorHandling(ctx, domain.UnableParseJSON.New(err))
+	if err := c.BindJSON(req); err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
 		return
 	}
 
 	// Response
+	ctx := middleware.GinContextToContext(c)
 	u, err := h.u.Update(ctx, req)
 	if err != nil {
-		handler.ErrorHandling(ctx, err)
+		handler.ErrorHandling(c, err)
 		return
 	}
 
@@ -95,18 +91,18 @@ func (h *v1UserHandler) Update(c *gin.Context) {
 		Email:    u.Email,
 	}
 
-	ctx.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, res)
 }
 
-func (h *v1UserHandler) Leave(c *gin.Context) {
+func (h *v1UserHandler) Suspend(c *gin.Context) {
 	// Request
 	ctx := middleware.GinContextToContext(c)
 
 	// Response
-	if err := h.u.Leave(ctx); err != nil {
-		handler.ErrorHandling(ctx, err)
+	if err := h.u.Suspend(ctx); err != nil {
+		handler.ErrorHandling(c, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK)
+	c.JSON(http.StatusOK, gin.H{})
 }
