@@ -34,10 +34,14 @@ func (r *browseRepository) Save(ctx context.Context, b *browse.Browse) error {
 			UserID:    b.UserID,
 			ContentID: b.ContentID,
 		}
-		mb.Insert(ctx, r.db.DB, boil.Infer())
+		if err := mb.Insert(ctx, r.db.DB, boil.Infer()); err != nil {
+			return err
+		}
 	} else if err == nil {
 		mb.UpdatedAt = time.Now()
-		mb.Update(ctx, r.db.DB, boil.Whitelist("updated_at"))
+		if _, err := mb.Update(ctx, r.db.DB, boil.Whitelist("updated_at")); err != nil {
+			return err
+		}
 	} else {
 		return err
 	}
