@@ -30,8 +30,8 @@ func Router(reg *registry.Registry) *gin.Engine {
 		// api.PATCH("/contents/:id", reg.ContentHandler.UpdateContent)
 		// api.DELETE("/contents/:id", reg.ContentHandler.DestroyContent)
 
-		// // お気に入り
-		// api.POST("/favorites", reg.FavoriteHandler.CreateFavorite)
+		// Favorite
+		api.POST("/favorites", reg.V1Favorite.Create)
 		// api.GET("/favorites", reg.FavoriteHandler.GetFavorites)
 		// api.DELETE("/favorites", reg.FavoriteHandler.DestroyFavorite)
 
