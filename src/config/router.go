@@ -26,7 +26,7 @@ func Router(reg *registry.Registry) *gin.Engine {
 
 		// Content
 		// api.POST("/contents", reg.ContentHandler.CreateContent)
-		// api.GET("/contents", reg.ContentHandler.GetContents)
+		api.GET("/contents/favorites", reg.V1Content.Favorites)
 		// api.GET("/contents/:id", reg.ContentHandler.GetContent)
 		// api.PATCH("/contents/:id", reg.ContentHandler.UpdateContent)
 		// api.DELETE("/contents/:id", reg.ContentHandler.DestroyContent)

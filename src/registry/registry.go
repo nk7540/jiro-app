@@ -14,9 +14,9 @@ import (
 
 // Registry - DI container
 type Registry struct {
-	V1User   v1.V1UserHandler
-	V1Follow v1.V1FollowHandler
-	// ContentHandler handler.ContentHandler
+	V1User    v1.V1UserHandler
+	V1Follow  v1.V1FollowHandler
+	V1Content v1.V1ContentHandler
 	// FavoriteHandler handler.FavoriteHandler
 	// CategoryHandler handler.CategoryHandler
 }
@@ -43,9 +43,11 @@ func NewRegistry(
 	// Usecase
 	uu := usecase.NewUserUsecase(rv, ur, us, cs)
 	fu := usecase.NewFollowUsecase(fr, us)
+	cu := usecase.NewContentUsecase(cs)
 
 	return &Registry{
-		V1User:   v1.NewV1UserHandler(uu),
-		V1Follow: v1.NewV1FollowHandler(fu),
+		V1User:    v1.NewV1UserHandler(uu),
+		V1Follow:  v1.NewV1FollowHandler(fu),
+		V1Content: v1.NewV1ContentHandler(cu),
 	}
 }

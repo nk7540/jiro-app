@@ -18,8 +18,3 @@ type UpdateUser struct {
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
 }
-
-type Content struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-}
