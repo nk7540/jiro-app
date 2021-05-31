@@ -18,6 +18,7 @@ type V1UserHandler interface {
 	Create(ctx *gin.Context)
 	Show(ctx *gin.Context)
 	Followings(ctx *gin.Context)
+	Followers(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	Suspend(ctx *gin.Context)
 }
@@ -86,6 +87,28 @@ func (h *v1UserHandler) Followings(c *gin.Context) {
 	ctx := middleware.GinContextToContext(c)
 
 	us, err := h.u.Followings(ctx, id)
+	if err != nil {
+		handler.ErrorHandling(c, err)
+		return
+	}
+
+	resUsers := make([]*response.User, len(us))
+	for i, u := range us {
+		resUsers[i] = &response.User{
+			ID:       u.ID,
+			Nickname: u.Nickname,
+		}
+	}
+	res := &response.Users{resUsers}
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *v1UserHandler) Followers(c *gin.Context) {
+	id := c.Params.ByName("id")
+	ctx := middleware.GinContextToContext(c)
+
+	us, err := h.u.Followers(ctx, id)
 	if err != nil {
 		handler.ErrorHandling(c, err)
 		return

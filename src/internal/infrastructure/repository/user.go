@@ -104,6 +104,19 @@ func (r *userRepository) Followings(ctx context.Context, id string) ([]*user.Use
 	return r.getByIDs(ctx, followingIDs)
 }
 
+func (r *userRepository) Followers(ctx context.Context, id string) ([]*user.User, error) {
+	fs, err := models.Follows(qm.Select("following_id"), qm.Where("follower_id = ?", id)).All(ctx, r.db.DB)
+	if err != nil {
+		return nil, err
+	}
+	followerIDs := make([]string, len(fs))
+	for i, f := range fs {
+		followerIDs[i] = f.FollowingID
+	}
+
+	return r.getByIDs(ctx, followerIDs)
+}
+
 func (r *userRepository) Update(ctx context.Context, u *user.User) error {
 	mu := models.User{}
 	mu.ID = u.ID

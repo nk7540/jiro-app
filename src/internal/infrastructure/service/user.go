@@ -91,6 +91,16 @@ func (s *userService) Followings(ctx context.Context, id string) ([]*user.User, 
 	return us, nil
 }
 
+func (s *userService) Followers(ctx context.Context, id string) ([]*user.User, error) {
+	us, err := s.ur.Followers(ctx, id)
+	if err != nil {
+		err = xerrors.Errorf("Failed to Repository: %w", err)
+		return nil, domain.ErrorInDatastore.New(err)
+	}
+
+	return us, nil
+}
+
 func (s *userService) Suspend(ctx context.Context, u *user.User) error {
 	return s.ur.Suspend(ctx, u)
 }

@@ -17,6 +17,7 @@ func Router(reg *registry.Registry) *gin.Engine {
 		api.PATCH("/users", reg.V1User.Update)
 		api.DELETE("/users/suspend", reg.V1User.Suspend)
 		api.GET("/users/:id/followings", reg.V1User.Followings)
+		api.GET("/users/:id/followers", reg.V1User.Followers)
 
 		// Follow
 		api.POST("/follows", reg.V1Follow.Create)
