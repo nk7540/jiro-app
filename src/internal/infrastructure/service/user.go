@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"artics-api/src/internal/domain"
+	"artics-api/src/internal/domain/content"
 	"artics-api/src/internal/domain/follow"
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/middleware"
@@ -17,10 +18,16 @@ type userService struct {
 	udv user.UserDomainValidator
 	ur  user.UserRepository
 	fr  follow.FollowRepository
+	cr  content.ContentRepository
 }
 
-func NewUserService(udv user.UserDomainValidator, ur user.UserRepository, fr follow.FollowRepository) user.UserService {
-	return &userService{udv, ur, fr}
+func NewUserService(
+	udv user.UserDomainValidator,
+	ur user.UserRepository,
+	fr follow.FollowRepository,
+	cr content.ContentRepository,
+) user.UserService {
+	return &userService{udv, ur, fr, cr}
 }
 
 func (s *userService) Create(ctx context.Context, u *user.User) error {
@@ -56,7 +63,8 @@ func (s *userService) Auth(ctx context.Context) (*user.User, error) {
 func (s *userService) Show(ctx context.Context, id string) (*user.User, error) {
 	u, err := s.ur.Get(ctx, id)
 	if err != nil {
-		return nil, err
+		err = xerrors.Errorf("Failed to Repository: %w", err)
+		return nil, domain.NotFound.New(err)
 	}
 
 	followingCount, err := s.fr.FollowingCount(ctx, u.ID)

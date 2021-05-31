@@ -35,7 +35,7 @@ func (udv *userDomainValidator) Validate(ctx context.Context, u *user.User) ([]*
 	p := i18n.NewI18nPrinter(c.GetHeader("Accept-Language"))
 	ves := make([]*domain.ValidationError, 0)
 
-	emailUser, err := udv.ur.GetByEmail(ctx, u.Email)
+	emailUser, err := udv.ur.GetByEmailOrNone(ctx, u.Email)
 	if err != nil {
 		return nil, domain.ErrorInDatastore.New(err)
 	}

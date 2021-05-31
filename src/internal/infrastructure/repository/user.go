@@ -75,7 +75,7 @@ func (r *userRepository) Get(ctx context.Context, id string) (*user.User, error)
 	return u, err
 }
 
-func (r *userRepository) GetByEmail(ctx context.Context, email string) (*user.User, error) {
+func (r *userRepository) GetByEmailOrNone(ctx context.Context, email string) (*user.User, error) {
 	mu, err := models.Users(qm.Where("email = ?", email)).One(ctx, r.db.DB)
 	if err == sql.ErrNoRows {
 		return nil, nil
