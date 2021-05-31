@@ -14,25 +14,15 @@ type entry struct {
 }
 
 var entries = [...]entry{
-	{"en", domain.RequiredMessage, domain.RequiredMessage},
 	{"ja", domain.RequiredMessage, "を入力してください。"},
-	{"en", domain.EqFieldMessage, domain.EqFieldMessage},
 	{"ja", domain.EqFieldMessage, "が%sと一致しません。"},
-	{"en", domain.MinMessage, domain.MinMessage},
 	{"ja", domain.MinMessage, "は%s字以上で入力してください。"},
-	{"en", domain.MaxMessage, domain.MaxMessage},
 	{"ja", domain.MaxMessage, "は%s字以下で入力してください。"},
-	{"en", domain.EmailMessage, domain.EmailMessage},
 	{"ja", domain.EmailMessage, "の形式が正しくありません。"},
-	{"en", domain.UniqueMessage, domain.UniqueMessage},
 	{"ja", domain.UniqueMessage, "は既に存在します。"},
-	{"en", domain.CustomUniqueMessage, domain.CustomUniqueMessage},
 	{"ja", domain.CustomUniqueMessage, "は既に存在します。"},
-	{"en", domain.PasswordMessage, domain.PasswordMessage},
 	{"ja", domain.PasswordMessage, "の形式が正しくありません。"},
-	{"en", domain.PasswordConfirmationMessage, domain.PasswordConfirmationMessage},
 	{"ja", domain.PasswordConfirmationMessage, "がパスワードと一致しません。"},
-	{"en", domain.RequiredMessage, domain.RequiredMessage},
 	{"ja", domain.RequiredMessage, "を入力してください。"},
 }
 
