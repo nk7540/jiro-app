@@ -4,6 +4,7 @@
 package models
 
 var TableNames = struct {
+	Browse         string
 	Category       string
 	Content        string
 	Favorite       string
@@ -11,6 +12,7 @@ var TableNames = struct {
 	GorpMigrations string
 	User           string
 }{
+	Browse:         "browse",
 	Category:       "category",
 	Content:        "content",
 	Favorite:       "favorite",

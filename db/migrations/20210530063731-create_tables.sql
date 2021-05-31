@@ -79,6 +79,25 @@ create table if not exists favorite(
     on update no action
 );
 
+create table if not exists browse(
+  id         varchar(255) not null,
+  user_id    varchar(255) not null,
+  content_id varchar(255) not null,
+  created_at datetime     not null,
+  updated_at datetime     not null,
+  primary key(id),
+  constraint fk_user_browse
+    foreign key(user_id)
+    references user (id)
+    on delete no action
+    on update no action,
+  constraint fk_content_browse
+    foreign key(content_id)
+    references content (id)
+    on delete no action
+    on update no action
+);
+
 -- +migrate Down
 set FOREIGN_KEY_CHECKS=0;
 drop table user;

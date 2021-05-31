@@ -75,11 +75,13 @@ var UserWhere = struct {
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
+	Browses          string
 	Contents         string
 	Favorites        string
 	FollowerFollows  string
 	FollowingFollows string
 }{
+	Browses:          "Browses",
 	Contents:         "Contents",
 	Favorites:        "Favorites",
 	FollowerFollows:  "FollowerFollows",
@@ -88,6 +90,7 @@ var UserRels = struct {
 
 // userR is where relationships are stored.
 type userR struct {
+	Browses          BrowseSlice   `boil:"Browses" json:"Browses" toml:"Browses" yaml:"Browses"`
 	Contents         ContentSlice  `boil:"Contents" json:"Contents" toml:"Contents" yaml:"Contents"`
 	Favorites        FavoriteSlice `boil:"Favorites" json:"Favorites" toml:"Favorites" yaml:"Favorites"`
 	FollowerFollows  FollowSlice   `boil:"FollowerFollows" json:"FollowerFollows" toml:"FollowerFollows" yaml:"FollowerFollows"`
@@ -384,6 +387,27 @@ func (q userQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
+// Browses retrieves all the browse's Browses with an executor.
+func (o *User) Browses(mods ...qm.QueryMod) browseQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`browse`.`user_id`=?", o.ID),
+	)
+
+	query := Browses(queryMods...)
+	queries.SetFrom(query.Query, "`browse`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`browse`.*"})
+	}
+
+	return query
+}
+
 // Contents retrieves all the content's Contents with an executor.
 func (o *User) Contents(mods ...qm.QueryMod) contentQuery {
 	var queryMods []qm.QueryMod
@@ -466,6 +490,104 @@ func (o *User) FollowingFollows(mods ...qm.QueryMod) followQuery {
 	}
 
 	return query
+}
+
+// LoadBrowses allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadBrowses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		object = maybeUser.(*User)
+	} else {
+		slice = *maybeUser.(*[]*User)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`browse`),
+		qm.WhereIn(`browse.user_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load browse")
+	}
+
+	var resultSlice []*Browse
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice browse")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on browse")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for browse")
+	}
+
+	if len(browseAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.Browses = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &browseR{}
+			}
+			foreign.R.User = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UserID {
+				local.R.Browses = append(local.R.Browses, foreign)
+				if foreign.R == nil {
+					foreign.R = &browseR{}
+				}
+				foreign.R.User = local
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadContents allows an eager lookup of values, cached into the
@@ -857,6 +979,59 @@ func (userL) LoadFollowingFollows(ctx context.Context, e boil.ContextExecutor, s
 		}
 	}
 
+	return nil
+}
+
+// AddBrowses adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.Browses.
+// Sets related.R.User appropriately.
+func (o *User) AddBrowses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Browse) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UserID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `browse` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"user_id"}),
+				strmangle.WhereClause("`", "`", 0, browsePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UserID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			Browses: related,
+		}
+	} else {
+		o.R.Browses = append(o.R.Browses, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &browseR{
+				User: o,
+			}
+		} else {
+			rel.R.User = o
+		}
+	}
 	return nil
 }
 

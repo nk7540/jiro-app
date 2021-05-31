@@ -96,10 +96,12 @@ var ContentWhere = struct {
 var ContentRels = struct {
 	Category  string
 	User      string
+	Browses   string
 	Favorites string
 }{
 	Category:  "Category",
 	User:      "User",
+	Browses:   "Browses",
 	Favorites: "Favorites",
 }
 
@@ -107,6 +109,7 @@ var ContentRels = struct {
 type contentR struct {
 	Category  *Category     `boil:"Category" json:"Category" toml:"Category" yaml:"Category"`
 	User      *User         `boil:"User" json:"User" toml:"User" yaml:"User"`
+	Browses   BrowseSlice   `boil:"Browses" json:"Browses" toml:"Browses" yaml:"Browses"`
 	Favorites FavoriteSlice `boil:"Favorites" json:"Favorites" toml:"Favorites" yaml:"Favorites"`
 }
 
@@ -428,6 +431,27 @@ func (o *Content) User(mods ...qm.QueryMod) userQuery {
 	return query
 }
 
+// Browses retrieves all the browse's Browses with an executor.
+func (o *Content) Browses(mods ...qm.QueryMod) browseQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`browse`.`content_id`=?", o.ID),
+	)
+
+	query := Browses(queryMods...)
+	queries.SetFrom(query.Query, "`browse`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`browse`.*"})
+	}
+
+	return query
+}
+
 // Favorites retrieves all the favorite's Favorites with an executor.
 func (o *Content) Favorites(mods ...qm.QueryMod) favoriteQuery {
 	var queryMods []qm.QueryMod
@@ -661,6 +685,104 @@ func (contentL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular b
 	return nil
 }
 
+// LoadBrowses allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (contentL) LoadBrowses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeContent interface{}, mods queries.Applicator) error {
+	var slice []*Content
+	var object *Content
+
+	if singular {
+		object = maybeContent.(*Content)
+	} else {
+		slice = *maybeContent.(*[]*Content)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &contentR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &contentR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`browse`),
+		qm.WhereIn(`browse.content_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load browse")
+	}
+
+	var resultSlice []*Browse
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice browse")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on browse")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for browse")
+	}
+
+	if len(browseAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.Browses = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &browseR{}
+			}
+			foreign.R.Content = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ContentID {
+				local.R.Browses = append(local.R.Browses, foreign)
+				if foreign.R == nil {
+					foreign.R = &browseR{}
+				}
+				foreign.R.Content = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadFavorites allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (contentL) LoadFavorites(ctx context.Context, e boil.ContextExecutor, singular bool, maybeContent interface{}, mods queries.Applicator) error {
@@ -882,6 +1004,59 @@ func (o *Content) RemoveUser(ctx context.Context, exec boil.ContextExecutor, rel
 		}
 		related.R.Contents = related.R.Contents[:ln-1]
 		break
+	}
+	return nil
+}
+
+// AddBrowses adds the given related objects to the existing relationships
+// of the content, optionally inserting them as new records.
+// Appends related to o.R.Browses.
+// Sets related.R.Content appropriately.
+func (o *Content) AddBrowses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Browse) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ContentID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `browse` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"content_id"}),
+				strmangle.WhereClause("`", "`", 0, browsePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ContentID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &contentR{
+			Browses: related,
+		}
+	} else {
+		o.R.Browses = append(o.R.Browses, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &browseR{
+				Content: o,
+			}
+		} else {
+			rel.R.Content = o
+		}
 	}
 	return nil
 }

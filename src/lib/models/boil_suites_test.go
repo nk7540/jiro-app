@@ -12,6 +12,7 @@ import "testing"
 // It does NOT run each operation group in parallel.
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
 func TestParent(t *testing.T) {
+	t.Run("Browses", testBrowses)
 	t.Run("Categories", testCategories)
 	t.Run("Contents", testContents)
 	t.Run("Favorites", testFavorites)
@@ -21,6 +22,7 @@ func TestParent(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	t.Run("Browses", testBrowsesDelete)
 	t.Run("Categories", testCategoriesDelete)
 	t.Run("Contents", testContentsDelete)
 	t.Run("Favorites", testFavoritesDelete)
@@ -30,6 +32,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestQueryDeleteAll(t *testing.T) {
+	t.Run("Browses", testBrowsesQueryDeleteAll)
 	t.Run("Categories", testCategoriesQueryDeleteAll)
 	t.Run("Contents", testContentsQueryDeleteAll)
 	t.Run("Favorites", testFavoritesQueryDeleteAll)
@@ -39,6 +42,7 @@ func TestQueryDeleteAll(t *testing.T) {
 }
 
 func TestSliceDeleteAll(t *testing.T) {
+	t.Run("Browses", testBrowsesSliceDeleteAll)
 	t.Run("Categories", testCategoriesSliceDeleteAll)
 	t.Run("Contents", testContentsSliceDeleteAll)
 	t.Run("Favorites", testFavoritesSliceDeleteAll)
@@ -48,6 +52,7 @@ func TestSliceDeleteAll(t *testing.T) {
 }
 
 func TestExists(t *testing.T) {
+	t.Run("Browses", testBrowsesExists)
 	t.Run("Categories", testCategoriesExists)
 	t.Run("Contents", testContentsExists)
 	t.Run("Favorites", testFavoritesExists)
@@ -57,6 +62,7 @@ func TestExists(t *testing.T) {
 }
 
 func TestFind(t *testing.T) {
+	t.Run("Browses", testBrowsesFind)
 	t.Run("Categories", testCategoriesFind)
 	t.Run("Contents", testContentsFind)
 	t.Run("Favorites", testFavoritesFind)
@@ -66,6 +72,7 @@ func TestFind(t *testing.T) {
 }
 
 func TestBind(t *testing.T) {
+	t.Run("Browses", testBrowsesBind)
 	t.Run("Categories", testCategoriesBind)
 	t.Run("Contents", testContentsBind)
 	t.Run("Favorites", testFavoritesBind)
@@ -75,6 +82,7 @@ func TestBind(t *testing.T) {
 }
 
 func TestOne(t *testing.T) {
+	t.Run("Browses", testBrowsesOne)
 	t.Run("Categories", testCategoriesOne)
 	t.Run("Contents", testContentsOne)
 	t.Run("Favorites", testFavoritesOne)
@@ -84,6 +92,7 @@ func TestOne(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
+	t.Run("Browses", testBrowsesAll)
 	t.Run("Categories", testCategoriesAll)
 	t.Run("Contents", testContentsAll)
 	t.Run("Favorites", testFavoritesAll)
@@ -93,6 +102,7 @@ func TestAll(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
+	t.Run("Browses", testBrowsesCount)
 	t.Run("Categories", testCategoriesCount)
 	t.Run("Contents", testContentsCount)
 	t.Run("Favorites", testFavoritesCount)
@@ -102,6 +112,7 @@ func TestCount(t *testing.T) {
 }
 
 func TestHooks(t *testing.T) {
+	t.Run("Browses", testBrowsesHooks)
 	t.Run("Categories", testCategoriesHooks)
 	t.Run("Contents", testContentsHooks)
 	t.Run("Favorites", testFavoritesHooks)
@@ -111,6 +122,8 @@ func TestHooks(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
+	t.Run("Browses", testBrowsesInsert)
+	t.Run("Browses", testBrowsesInsertWhitelist)
 	t.Run("Categories", testCategoriesInsert)
 	t.Run("Categories", testCategoriesInsertWhitelist)
 	t.Run("Contents", testContentsInsert)
@@ -128,6 +141,8 @@ func TestInsert(t *testing.T) {
 // TestToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
+	t.Run("BrowseToContentUsingContent", testBrowseToOneContentUsingContent)
+	t.Run("BrowseToUserUsingUser", testBrowseToOneUserUsingUser)
 	t.Run("ContentToCategoryUsingCategory", testContentToOneCategoryUsingCategory)
 	t.Run("ContentToUserUsingUser", testContentToOneUserUsingUser)
 	t.Run("FavoriteToContentUsingContent", testFavoriteToOneContentUsingContent)
@@ -144,7 +159,9 @@ func TestOneToOne(t *testing.T) {}
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
 	t.Run("CategoryToContents", testCategoryToManyContents)
+	t.Run("ContentToBrowses", testContentToManyBrowses)
 	t.Run("ContentToFavorites", testContentToManyFavorites)
+	t.Run("UserToBrowses", testUserToManyBrowses)
 	t.Run("UserToContents", testUserToManyContents)
 	t.Run("UserToFavorites", testUserToManyFavorites)
 	t.Run("UserToFollowerFollows", testUserToManyFollowerFollows)
@@ -154,6 +171,8 @@ func TestToMany(t *testing.T) {
 // TestToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
+	t.Run("BrowseToContentUsingBrowses", testBrowseToOneSetOpContentUsingContent)
+	t.Run("BrowseToUserUsingBrowses", testBrowseToOneSetOpUserUsingUser)
 	t.Run("ContentToCategoryUsingContents", testContentToOneSetOpCategoryUsingCategory)
 	t.Run("ContentToUserUsingContents", testContentToOneSetOpUserUsingUser)
 	t.Run("FavoriteToContentUsingFavorites", testFavoriteToOneSetOpContentUsingContent)
@@ -180,7 +199,9 @@ func TestOneToOneRemove(t *testing.T) {}
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
 	t.Run("CategoryToContents", testCategoryToManyAddOpContents)
+	t.Run("ContentToBrowses", testContentToManyAddOpBrowses)
 	t.Run("ContentToFavorites", testContentToManyAddOpFavorites)
+	t.Run("UserToBrowses", testUserToManyAddOpBrowses)
 	t.Run("UserToContents", testUserToManyAddOpContents)
 	t.Run("UserToFavorites", testUserToManyAddOpFavorites)
 	t.Run("UserToFollowerFollows", testUserToManyAddOpFollowerFollows)
@@ -200,6 +221,7 @@ func TestToManyRemove(t *testing.T) {
 }
 
 func TestReload(t *testing.T) {
+	t.Run("Browses", testBrowsesReload)
 	t.Run("Categories", testCategoriesReload)
 	t.Run("Contents", testContentsReload)
 	t.Run("Favorites", testFavoritesReload)
@@ -209,6 +231,7 @@ func TestReload(t *testing.T) {
 }
 
 func TestReloadAll(t *testing.T) {
+	t.Run("Browses", testBrowsesReloadAll)
 	t.Run("Categories", testCategoriesReloadAll)
 	t.Run("Contents", testContentsReloadAll)
 	t.Run("Favorites", testFavoritesReloadAll)
@@ -218,6 +241,7 @@ func TestReloadAll(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
+	t.Run("Browses", testBrowsesSelect)
 	t.Run("Categories", testCategoriesSelect)
 	t.Run("Contents", testContentsSelect)
 	t.Run("Favorites", testFavoritesSelect)
@@ -227,6 +251,7 @@ func TestSelect(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
+	t.Run("Browses", testBrowsesUpdate)
 	t.Run("Categories", testCategoriesUpdate)
 	t.Run("Contents", testContentsUpdate)
 	t.Run("Favorites", testFavoritesUpdate)
@@ -236,6 +261,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestSliceUpdateAll(t *testing.T) {
+	t.Run("Browses", testBrowsesSliceUpdateAll)
 	t.Run("Categories", testCategoriesSliceUpdateAll)
 	t.Run("Contents", testContentsSliceUpdateAll)
 	t.Run("Favorites", testFavoritesSliceUpdateAll)
