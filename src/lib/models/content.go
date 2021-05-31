@@ -28,6 +28,8 @@ type Content struct {
 	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	CategoryID string      `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
 	Title      string      `boil:"title" json:"title" toml:"title" yaml:"title"`
+	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt  time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *contentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L contentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,11 +40,15 @@ var ContentColumns = struct {
 	UserID     string
 	CategoryID string
 	Title      string
+	CreatedAt  string
+	UpdatedAt  string
 }{
 	ID:         "id",
 	UserID:     "user_id",
 	CategoryID: "category_id",
 	Title:      "title",
+	CreatedAt:  "created_at",
+	UpdatedAt:  "updated_at",
 }
 
 // Generated where
@@ -75,11 +81,15 @@ var ContentWhere = struct {
 	UserID     whereHelpernull_String
 	CategoryID whereHelperstring
 	Title      whereHelperstring
+	CreatedAt  whereHelpertime_Time
+	UpdatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`content`.`id`"},
 	UserID:     whereHelpernull_String{field: "`content`.`user_id`"},
 	CategoryID: whereHelperstring{field: "`content`.`category_id`"},
 	Title:      whereHelperstring{field: "`content`.`title`"},
+	CreatedAt:  whereHelpertime_Time{field: "`content`.`created_at`"},
+	UpdatedAt:  whereHelpertime_Time{field: "`content`.`updated_at`"},
 }
 
 // ContentRels is where relationship names are stored.
@@ -109,8 +119,8 @@ func (*contentR) NewStruct() *contentR {
 type contentL struct{}
 
 var (
-	contentAllColumns            = []string{"id", "user_id", "category_id", "title"}
-	contentColumnsWithoutDefault = []string{"id", "user_id", "category_id", "title"}
+	contentAllColumns            = []string{"id", "user_id", "category_id", "title", "created_at", "updated_at"}
+	contentColumnsWithoutDefault = []string{"id", "user_id", "category_id", "title", "created_at", "updated_at"}
 	contentColumnsWithDefault    = []string{}
 	contentPrimaryKeyColumns     = []string{"id"}
 )
@@ -969,6 +979,16 @@ func (o *Content) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1060,6 +1080,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Content) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -1193,6 +1219,14 @@ var mySQLContentUniqueColumns = []string{
 func (o *Content) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no content provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

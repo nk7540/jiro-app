@@ -19,12 +19,12 @@ func Router(reg *registry.Registry) *gin.Engine {
 		api.DELETE("/users/suspend", reg.V1User.Suspend)
 		// api.GET("/users/:id/followings", reg.V1User.Followings)
 
-		// フォロー
+		// Follow
 		api.POST("/follows", reg.V1Follow.Create)
 		// api.GET("/follows", reg.FollowHandler.GetFollows)
 		api.DELETE("/follows", reg.V1Follow.Delete)
 
-		// // コンテンツ
+		// Content
 		// api.POST("/contents", reg.ContentHandler.CreateContent)
 		// api.GET("/contents", reg.ContentHandler.GetContents)
 		// api.GET("/contents/:id", reg.ContentHandler.GetContent)

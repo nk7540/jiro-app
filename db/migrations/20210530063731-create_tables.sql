@@ -8,6 +8,8 @@ create table if not exists user(
   status             varchar(255) not null,
   email              varchar(255) not null,
   nickname           varchar(255) not null,
+  created_at         datetime     not null,
+  updated_at         datetime     not null,
   primary key(id)
 );
 
@@ -15,6 +17,8 @@ create table if not exists follow(
   id           varchar(255) not null,
   following_id varchar(255) not null,
   follower_id  varchar(255) not null,
+  created_at   datetime     not null,
+  updated_at   datetime     not null,
   primary key(id),
   constraint fk_user_following
     foreign key(following_id)
@@ -29,8 +33,10 @@ create table if not exists follow(
 );
 
 create table if not exists category(
-  id   varchar(255) not null,
-  name varchar(32)  not null,
+  id         varchar(255) not null,
+  name       varchar(32)  not null,
+  created_at datetime     not null,
+  updated_at datetime     not null,
   primary key(id)
 );
 
@@ -39,6 +45,8 @@ create table if not exists content(
   user_id     varchar(255) null,
   category_id varchar(255) not null,
   title       varchar(255) not null,
+  created_at  datetime     not null,
+  updated_at  datetime     not null,
   primary key(id),
   constraint fk_user_content
     foreign key(user_id)
@@ -56,6 +64,8 @@ create table if not exists favorite(
   id         varchar(255) not null,
   user_id    varchar(255) not null,
   content_id varchar(255) not null,
+  created_at datetime     not null,
+  updated_at datetime     not null,
   primary key(id),
   constraint fk_user_favorite
     foreign key(user_id)

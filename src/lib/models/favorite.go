@@ -23,9 +23,11 @@ import (
 
 // Favorite is an object representing the database table.
 type Favorite struct {
-	ID        string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID    string `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	ContentID string `boil:"content_id" json:"content_id" toml:"content_id" yaml:"content_id"`
+	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	ContentID string    `boil:"content_id" json:"content_id" toml:"content_id" yaml:"content_id"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *favoriteR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L favoriteL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,10 +37,14 @@ var FavoriteColumns = struct {
 	ID        string
 	UserID    string
 	ContentID string
+	CreatedAt string
+	UpdatedAt string
 }{
 	ID:        "id",
 	UserID:    "user_id",
 	ContentID: "content_id",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 // Generated where
@@ -47,10 +53,14 @@ var FavoriteWhere = struct {
 	ID        whereHelperstring
 	UserID    whereHelperstring
 	ContentID whereHelperstring
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperstring{field: "`favorite`.`id`"},
 	UserID:    whereHelperstring{field: "`favorite`.`user_id`"},
 	ContentID: whereHelperstring{field: "`favorite`.`content_id`"},
+	CreatedAt: whereHelpertime_Time{field: "`favorite`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`favorite`.`updated_at`"},
 }
 
 // FavoriteRels is where relationship names are stored.
@@ -77,8 +87,8 @@ func (*favoriteR) NewStruct() *favoriteR {
 type favoriteL struct{}
 
 var (
-	favoriteAllColumns            = []string{"id", "user_id", "content_id"}
-	favoriteColumnsWithoutDefault = []string{"id", "user_id", "content_id"}
+	favoriteAllColumns            = []string{"id", "user_id", "content_id", "created_at", "updated_at"}
+	favoriteColumnsWithoutDefault = []string{"id", "user_id", "content_id", "created_at", "updated_at"}
 	favoriteColumnsWithDefault    = []string{}
 	favoritePrimaryKeyColumns     = []string{"id"}
 )
@@ -728,6 +738,16 @@ func (o *Favorite) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -819,6 +839,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Favorite) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -952,6 +978,14 @@ var mySQLFavoriteUniqueColumns = []string{
 func (o *Favorite) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no favorite provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

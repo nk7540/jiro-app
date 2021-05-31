@@ -23,44 +23,54 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID       string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UID      string `boil:"uid" json:"uid" toml:"uid" yaml:"uid"`
-	Status   string `boil:"status" json:"status" toml:"status" yaml:"status"`
-	Email    string `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Nickname string `boil:"nickname" json:"nickname" toml:"nickname" yaml:"nickname"`
+	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UID       string    `boil:"uid" json:"uid" toml:"uid" yaml:"uid"`
+	Status    string    `boil:"status" json:"status" toml:"status" yaml:"status"`
+	Email     string    `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Nickname  string    `boil:"nickname" json:"nickname" toml:"nickname" yaml:"nickname"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var UserColumns = struct {
-	ID       string
-	UID      string
-	Status   string
-	Email    string
-	Nickname string
+	ID        string
+	UID       string
+	Status    string
+	Email     string
+	Nickname  string
+	CreatedAt string
+	UpdatedAt string
 }{
-	ID:       "id",
-	UID:      "uid",
-	Status:   "status",
-	Email:    "email",
-	Nickname: "nickname",
+	ID:        "id",
+	UID:       "uid",
+	Status:    "status",
+	Email:     "email",
+	Nickname:  "nickname",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 // Generated where
 
 var UserWhere = struct {
-	ID       whereHelperstring
-	UID      whereHelperstring
-	Status   whereHelperstring
-	Email    whereHelperstring
-	Nickname whereHelperstring
+	ID        whereHelperstring
+	UID       whereHelperstring
+	Status    whereHelperstring
+	Email     whereHelperstring
+	Nickname  whereHelperstring
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
 }{
-	ID:       whereHelperstring{field: "`user`.`id`"},
-	UID:      whereHelperstring{field: "`user`.`uid`"},
-	Status:   whereHelperstring{field: "`user`.`status`"},
-	Email:    whereHelperstring{field: "`user`.`email`"},
-	Nickname: whereHelperstring{field: "`user`.`nickname`"},
+	ID:        whereHelperstring{field: "`user`.`id`"},
+	UID:       whereHelperstring{field: "`user`.`uid`"},
+	Status:    whereHelperstring{field: "`user`.`status`"},
+	Email:     whereHelperstring{field: "`user`.`email`"},
+	Nickname:  whereHelperstring{field: "`user`.`nickname`"},
+	CreatedAt: whereHelpertime_Time{field: "`user`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`user`.`updated_at`"},
 }
 
 // UserRels is where relationship names are stored.
@@ -93,8 +103,8 @@ func (*userR) NewStruct() *userR {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "uid", "status", "email", "nickname"}
-	userColumnsWithoutDefault = []string{"id", "uid", "status", "email", "nickname"}
+	userAllColumns            = []string{"id", "uid", "status", "email", "nickname", "created_at", "updated_at"}
+	userColumnsWithoutDefault = []string{"id", "uid", "status", "email", "nickname", "created_at", "updated_at"}
 	userColumnsWithDefault    = []string{}
 	userPrimaryKeyColumns     = []string{"id"}
 )
@@ -1172,6 +1182,16 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1263,6 +1283,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *User) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -1396,6 +1422,14 @@ var mySQLUserUniqueColumns = []string{
 func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no user provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -23,19 +23,25 @@ import (
 
 // Category is an object representing the database table.
 type Category struct {
-	ID   string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *categoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L categoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var CategoryColumns = struct {
-	ID   string
-	Name string
+	ID        string
+	Name      string
+	CreatedAt string
+	UpdatedAt string
 }{
-	ID:   "id",
-	Name: "name",
+	ID:        "id",
+	Name:      "name",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 // Generated where
@@ -63,12 +69,37 @@ func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
+type whereHelpertime_Time struct{ field string }
+
+func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
 var CategoryWhere = struct {
-	ID   whereHelperstring
-	Name whereHelperstring
+	ID        whereHelperstring
+	Name      whereHelperstring
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
 }{
-	ID:   whereHelperstring{field: "`category`.`id`"},
-	Name: whereHelperstring{field: "`category`.`name`"},
+	ID:        whereHelperstring{field: "`category`.`id`"},
+	Name:      whereHelperstring{field: "`category`.`name`"},
+	CreatedAt: whereHelpertime_Time{field: "`category`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`category`.`updated_at`"},
 }
 
 // CategoryRels is where relationship names are stored.
@@ -92,8 +123,8 @@ func (*categoryR) NewStruct() *categoryR {
 type categoryL struct{}
 
 var (
-	categoryAllColumns            = []string{"id", "name"}
-	categoryColumnsWithoutDefault = []string{"id", "name"}
+	categoryAllColumns            = []string{"id", "name", "created_at", "updated_at"}
+	categoryColumnsWithoutDefault = []string{"id", "name", "created_at", "updated_at"}
 	categoryColumnsWithDefault    = []string{}
 	categoryPrimaryKeyColumns     = []string{"id"}
 )
@@ -585,6 +616,16 @@ func (o *Category) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -676,6 +717,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Category) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -809,6 +856,14 @@ var mySQLCategoryUniqueColumns = []string{
 func (o *Category) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no category provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

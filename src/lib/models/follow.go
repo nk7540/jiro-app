@@ -23,9 +23,11 @@ import (
 
 // Follow is an object representing the database table.
 type Follow struct {
-	ID          string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	FollowingID string `boil:"following_id" json:"following_id" toml:"following_id" yaml:"following_id"`
-	FollowerID  string `boil:"follower_id" json:"follower_id" toml:"follower_id" yaml:"follower_id"`
+	ID          string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	FollowingID string    `boil:"following_id" json:"following_id" toml:"following_id" yaml:"following_id"`
+	FollowerID  string    `boil:"follower_id" json:"follower_id" toml:"follower_id" yaml:"follower_id"`
+	CreatedAt   time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt   time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *followR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L followL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,10 +37,14 @@ var FollowColumns = struct {
 	ID          string
 	FollowingID string
 	FollowerID  string
+	CreatedAt   string
+	UpdatedAt   string
 }{
 	ID:          "id",
 	FollowingID: "following_id",
 	FollowerID:  "follower_id",
+	CreatedAt:   "created_at",
+	UpdatedAt:   "updated_at",
 }
 
 // Generated where
@@ -47,10 +53,14 @@ var FollowWhere = struct {
 	ID          whereHelperstring
 	FollowingID whereHelperstring
 	FollowerID  whereHelperstring
+	CreatedAt   whereHelpertime_Time
+	UpdatedAt   whereHelpertime_Time
 }{
 	ID:          whereHelperstring{field: "`follow`.`id`"},
 	FollowingID: whereHelperstring{field: "`follow`.`following_id`"},
 	FollowerID:  whereHelperstring{field: "`follow`.`follower_id`"},
+	CreatedAt:   whereHelpertime_Time{field: "`follow`.`created_at`"},
+	UpdatedAt:   whereHelpertime_Time{field: "`follow`.`updated_at`"},
 }
 
 // FollowRels is where relationship names are stored.
@@ -77,8 +87,8 @@ func (*followR) NewStruct() *followR {
 type followL struct{}
 
 var (
-	followAllColumns            = []string{"id", "following_id", "follower_id"}
-	followColumnsWithoutDefault = []string{"id", "following_id", "follower_id"}
+	followAllColumns            = []string{"id", "following_id", "follower_id", "created_at", "updated_at"}
+	followColumnsWithoutDefault = []string{"id", "following_id", "follower_id", "created_at", "updated_at"}
 	followColumnsWithDefault    = []string{}
 	followPrimaryKeyColumns     = []string{"id"}
 )
@@ -728,6 +738,16 @@ func (o *Follow) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -819,6 +839,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Follow) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -952,6 +978,14 @@ var mySQLFollowUniqueColumns = []string{
 func (o *Follow) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no follow provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
