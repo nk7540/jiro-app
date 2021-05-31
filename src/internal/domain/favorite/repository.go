@@ -5,5 +5,5 @@ import (
 )
 
 type FavoriteRepository interface {
-	FavoriteContentIds(ctx context.Context, userId int) (int[], error)
+	Create(ctx context.Context, f *Favorite) error
 }
