@@ -25,3 +25,13 @@ func (s *favoriteService) Create(ctx context.Context, f *favorite.Favorite) erro
 
 	return nil
 }
+
+func (s *favoriteService) Delete(ctx context.Context, f *favorite.Favorite) error {
+	err := s.fr.Delete(ctx, f)
+	if err != nil {
+		err = xerrors.Errorf("Failed to Repository: %w", err)
+		return domain.ErrorInDatastore.New(err)
+	}
+
+	return nil
+}

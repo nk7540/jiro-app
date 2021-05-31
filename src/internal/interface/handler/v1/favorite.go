@@ -11,6 +11,7 @@ import (
 
 type V1FavoriteHandler interface {
 	Create(c *gin.Context)
+	Delete(c *gin.Context)
 }
 
 type v1FavoriteHandler struct {
@@ -26,6 +27,18 @@ func (h *v1FavoriteHandler) Create(c *gin.Context) {
 	ctx := middleware.GinContextToContext(c)
 
 	if err := h.u.Create(ctx, contentID); err != nil {
+		handler.ErrorHandling(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (h *v1FavoriteHandler) Delete(c *gin.Context) {
+	contentID := c.Params.ByName("content_id")
+	ctx := middleware.GinContextToContext(c)
+
+	if err := h.u.Delete(ctx, contentID); err != nil {
 		handler.ErrorHandling(c, err)
 		return
 	}

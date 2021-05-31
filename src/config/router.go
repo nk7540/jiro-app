@@ -32,7 +32,6 @@ func Router(reg *registry.Registry) *gin.Engine {
 
 		// Favorite
 		api.POST("/favorites", reg.V1Favorite.Create)
-		// api.GET("/favorites", reg.FavoriteHandler.GetFavorites)
 		// api.DELETE("/favorites", reg.FavoriteHandler.DestroyFavorite)
 
 		// Browse

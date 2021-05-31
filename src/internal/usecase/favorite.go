@@ -11,6 +11,7 @@ import (
 
 type FavoriteUsecase interface {
 	Create(ctx context.Context, contentID string) error
+	Delete(ctx context.Context, contentID string) error
 }
 
 type favoriteUsecase struct {
@@ -35,4 +36,18 @@ func (fu *favoriteUsecase) Create(ctx context.Context, contentID string) error {
 	}
 
 	return fu.favoriteService.Create(ctx, f)
+}
+
+func (fu *favoriteUsecase) Delete(ctx context.Context, contentID string) error {
+	u, err := fu.userService.Auth(ctx)
+	if err != nil {
+		return domain.Unauthorized.New(err)
+	}
+
+	f := &favorite.Favorite{
+		UserID:    u.ID,
+		ContentID: contentID,
+	}
+
+	return fu.favoriteService.Delete(ctx, f)
 }
