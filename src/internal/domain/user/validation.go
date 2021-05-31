@@ -7,6 +7,6 @@ import (
 )
 
 type UserDomainValidator interface {
-	Validate(ctx context.Context, u *User) []*domain.ValidationError
+	Validate(ctx context.Context, u *User) ([]*domain.ValidationError, error)
 	ValidatePassword(ctx context.Context, p string, pc string) []*domain.ValidationError
 }

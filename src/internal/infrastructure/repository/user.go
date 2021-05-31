@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/lib/firebase"
@@ -76,7 +77,9 @@ func (r *userRepository) Get(ctx context.Context, id string) (*user.User, error)
 
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*user.User, error) {
 	mu, err := models.Users(qm.Where("email = ?", email)).One(ctx, r.db.DB)
-	if err != nil {
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
 		return nil, err
 	}
 

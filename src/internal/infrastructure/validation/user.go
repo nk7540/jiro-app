@@ -7,6 +7,8 @@ import (
 	"artics-api/src/middleware"
 	"context"
 	"regexp"
+
+	"golang.org/x/xerrors"
 )
 
 type userDomainValidator struct {
@@ -25,12 +27,18 @@ var (
 	passwordRegexp = regexp.MustCompile(passwordString)
 )
 
-func (udv *userDomainValidator) Validate(ctx context.Context, u *user.User) []*domain.ValidationError {
-	c, _ := middleware.GinContextFromContext(ctx)
+func (udv *userDomainValidator) Validate(ctx context.Context, u *user.User) ([]*domain.ValidationError, error) {
+	c, err := middleware.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, xerrors.New("Cannot convert to gin.Context")
+	}
 	p := i18n.NewI18nPrinter(c.GetHeader("Accept-Language"))
 	ves := make([]*domain.ValidationError, 0)
 
-	emailUser, _ := udv.ur.GetByEmail(ctx, u.Email)
+	emailUser, err := udv.ur.GetByEmail(ctx, u.Email)
+	if err != nil {
+		return nil, domain.ErrorInDatastore.New(err)
+	}
 	if emailUser != nil && emailUser.ID != u.ID {
 		ve := &domain.ValidationError{
 			Field:   "email",
@@ -40,13 +48,39 @@ func (udv *userDomainValidator) Validate(ctx context.Context, u *user.User) []*d
 		ves = append(ves, ve)
 	}
 
-	return ves
+	return ves, nil
 }
 
 func (udv *userDomainValidator) ValidatePassword(ctx context.Context, password string, passwordConfirmation string) []*domain.ValidationError {
 	c, _ := middleware.GinContextFromContext(ctx)
 	p := i18n.NewI18nPrinter(c.GetHeader("Accept-Language"))
 	ves := make([]*domain.ValidationError, 0)
+
+	if password == "" {
+		ve := &domain.ValidationError{
+			Field:   "password",
+			Message: p.Sprintf(domain.RequiredMessage),
+		}
+
+		ves = append(ves, ve)
+	}
+
+	passwordLength := len(password)
+	if passwordLength < 6 {
+		ve := &domain.ValidationError{
+			Field:   "password",
+			Message: p.Sprintf(domain.MinMessage, "6"),
+		}
+
+		ves = append(ves, ve)
+	} else if 32 <= passwordLength {
+		ve := &domain.ValidationError{
+			Field:   "password",
+			Message: p.Sprintf(domain.MaxMessage, "32"),
+		}
+
+		ves = append(ves, ve)
+	}
 
 	formatValid := passwordRegexp.MatchString(password)
 	if !formatValid {

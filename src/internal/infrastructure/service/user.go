@@ -9,6 +9,7 @@ import (
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/middleware"
 
+	"github.com/google/uuid"
 	"golang.org/x/xerrors"
 )
 
@@ -23,7 +24,10 @@ func NewUserService(udv user.UserDomainValidator, ur user.UserRepository, fr fol
 }
 
 func (s *userService) Create(ctx context.Context, u *user.User) error {
-	ves := s.udv.Validate(ctx, u)
+	ves, err := s.udv.Validate(ctx, u)
+	if err != nil {
+		return err
+	}
 	vesPassword := s.udv.ValidatePassword(ctx, u.Password, u.PasswordConfirmation)
 	ves = append(ves, vesPassword...)
 	if len(ves) > 0 {
@@ -31,7 +35,13 @@ func (s *userService) Create(ctx context.Context, u *user.User) error {
 		return domain.InvalidDomainValidation.New(err, ves...)
 	}
 
-	return s.ur.Create(ctx, u)
+	u.ID = uuid.New().String()
+	if err := s.ur.Create(ctx, u); err != nil {
+		err = xerrors.Errorf("Failed to Repository: %w", err)
+		return domain.ErrorInDatastore.New(err)
+	}
+
+	return nil
 }
 
 func (s *userService) Auth(ctx context.Context) (*user.User, error) {
