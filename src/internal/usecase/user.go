@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/domain/follow"
+	"artics-api/src/internal/domain/content"
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/internal/usecase/request"
 	"artics-api/src/internal/usecase/validation"
@@ -24,12 +24,17 @@ type userUsecase struct {
 	RequestValidator validation.RequestValidator
 	userRepository   user.UserRepository
 	userService      user.UserService
-	followRepository follow.FollowRepository
+	contentService   content.ContentService
 }
 
 // NewUserUsecase - generates user usecase
-func NewUserUsecase(rv validation.RequestValidator, ur user.UserRepository, us user.UserService, fr follow.FollowRepository) UserUsecase {
-	return &userUsecase{rv, ur, us, fr}
+func NewUserUsecase(
+	rv validation.RequestValidator,
+	ur user.UserRepository,
+	us user.UserService,
+	cs content.ContentService,
+) UserUsecase {
+	return &userUsecase{rv, ur, us, cs}
 }
 
 func (uu *userUsecase) Create(ctx context.Context, req *request.CreateUser) error {
@@ -53,7 +58,14 @@ func (uu *userUsecase) Show(ctx context.Context, id string) (*user.User, error) 
 		return nil, domain.Unauthorized.New(err)
 	}
 
-	return uu.userService.Show(ctx, id)
+	u, err := uu.userService.Show(ctx, id)
+	favoriteContents, err := uu.contentService.GetFavoriteContents(ctx, id, 3)
+	if err != nil {
+		return nil, err
+	}
+	u.FavoriteContents = favoriteContents
+
+	return u, nil
 }
 
 func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*user.User, error) {

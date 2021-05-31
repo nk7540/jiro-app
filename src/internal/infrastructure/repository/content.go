@@ -21,7 +21,7 @@ func (r *contentRepository) GetFavoriteContents(ctx context.Context, userId stri
 	favoriteContents, err := models.Favorites(
 		qm.Select("content_id"),
 		qm.Where("user_id = ?", userId),
-		qm.OrderBy("created_at"),
+		qm.OrderBy("created_at desc"),
 		qm.Limit(limit),
 	).All(ctx, r.db.DB)
 	if err != nil {

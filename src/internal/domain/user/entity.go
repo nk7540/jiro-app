@@ -1,5 +1,7 @@
 package user
 
+import "artics-api/src/internal/domain/content"
+
 // User entity
 type User struct {
 	ID                   string
@@ -10,4 +12,6 @@ type User struct {
 	PasswordConfirmation string
 	FollowingCount       int
 	FollowerCount        int
+	FavoriteContents     []*content.Content
+	BrowsedContents      []*content.Content
 }

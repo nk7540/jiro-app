@@ -1,9 +1,7 @@
 package content
 
-import (
-	"context"
-)
+import "context"
 
-type ContentRepository interface {
+type ContentService interface {
 	GetFavoriteContents(ctx context.Context, userId string, limit int) ([]*Content, error)
 }
