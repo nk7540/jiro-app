@@ -91,6 +91,19 @@ func (r *userRepository) GetByEmailOrNone(ctx context.Context, email string) (*u
 	}, nil
 }
 
+func (r *userRepository) Followings(ctx context.Context, id string) ([]*user.User, error) {
+	fs, err := models.Follows(qm.Select("follower_id"), qm.Where("following_id = ?", id)).All(ctx, r.db.DB)
+	if err != nil {
+		return nil, err
+	}
+	followingIDs := make([]string, len(fs))
+	for i, f := range fs {
+		followingIDs[i] = f.FollowerID
+	}
+
+	return r.getByIDs(ctx, followingIDs)
+}
+
 func (r *userRepository) Update(ctx context.Context, u *user.User) error {
 	mu := models.User{}
 	mu.ID = u.ID
@@ -116,4 +129,31 @@ func (r *userRepository) Suspend(ctx context.Context, u *user.User) error {
 
 	_, err = mu.Update(ctx, r.db.DB, boil.Whitelist("status", "uid"))
 	return err
+}
+
+func (r *userRepository) getByIDs(ctx context.Context, ids []string) ([]*user.User, error) {
+	// Ref: https://github.com/volatiletech/sqlboiler/issues/227
+	convertedIDs := make([]interface{}, len(ids))
+	for i, id := range ids {
+		convertedIDs[i] = id
+	}
+
+	mus, err := models.Users(qm.WhereIn("id in ?", convertedIDs...)).All(ctx, r.db.DB)
+	if err != nil {
+		return nil, err
+	}
+
+	us := make([]*user.User, len(mus))
+	for i, mu := range mus {
+		u := &user.User{
+			ID:       mu.ID,
+			Status:   mu.Status,
+			Email:    mu.Email,
+			Nickname: mu.Nickname,
+		}
+
+		us[i] = u
+	}
+
+	return us, nil
 }

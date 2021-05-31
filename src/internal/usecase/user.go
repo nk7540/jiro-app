@@ -16,6 +16,7 @@ import (
 type UserUsecase interface {
 	Create(ctx context.Context, r *request.CreateUser) error
 	Show(ctx context.Context, id string) (*user.User, error)
+	Followings(ctx context.Context, id string) ([]*user.User, error)
 	Update(ctx context.Context, r *request.UpdateUser) (*user.User, error)
 	Suspend(ctx context.Context) error
 }
@@ -66,6 +67,10 @@ func (uu *userUsecase) Show(ctx context.Context, id string) (*user.User, error) 
 	u.FavoriteContents = favoriteContents
 
 	return u, nil
+}
+
+func (uu *userUsecase) Followings(ctx context.Context, id string) ([]*user.User, error) {
+	return uu.userService.Followings(ctx, id)
 }
 
 func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*user.User, error) {
