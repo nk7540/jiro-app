@@ -4,23 +4,33 @@ import (
 	"context"
 	"strings"
 
-	"artics-api/src/internal/domain/user"
+	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/follow"
+	"artics-api/src/internal/domain/user"
 	"artics-api/src/middleware"
 
 	"golang.org/x/xerrors"
 )
 
 type userService struct {
-	ur user.UserRepository
-	fr follow.FollowRepository
+	udv user.UserDomainValidator
+	ur  user.UserRepository
+	fr  follow.FollowRepository
 }
 
-func NewUserService(ur user.UserRepository, fr follow.FollowRepository) user.UserService {
-	return &userService{ur, fr}
+func NewUserService(udv user.UserDomainValidator, ur user.UserRepository, fr follow.FollowRepository) user.UserService {
+	return &userService{udv, ur, fr}
 }
 
 func (s *userService) Create(ctx context.Context, u *user.User) error {
+	ves := s.udv.Validate(ctx, u)
+	vesPassword := s.udv.ValidatePassword(ctx, u.Password, u.PasswordConfirmation)
+	ves = append(ves, vesPassword...)
+	if len(ves) > 0 {
+		err := xerrors.New("Failed to DomainValidation")
+		return domain.InvalidDomainValidation.New(err, ves...)
+	}
+
 	return s.ur.Create(ctx, u)
 }
 

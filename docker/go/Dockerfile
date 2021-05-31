@@ -8,7 +8,8 @@ WORKDIR /go/artics-api
 
 ADD . /go/artics-api
 
-ENV GCP_SERVICE_KEY_JSON "$(< ./credentials/firebase/settings.json)"
+ENV MYSQL_PASSWORD password
+RUN export GCP_SERVICE_KEY_JSON="$(< ./credentials/firebase/settings.json)" 
 
 RUN go mod download
 RUN go install golang.org/x/tools/gopls@latest

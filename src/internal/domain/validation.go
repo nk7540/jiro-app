@@ -18,12 +18,13 @@ const (
 	MinMessage      = "must be at least %s characters"
 	MaxMessage      = "must be at %s or less characters"
 	EmailMessage    = "should be in email format"
-	PasswordMessage = "should be in password format"
 	UniqueMessage   = "must be unique"
 )
 
 // カスタムバリデーションメッセージ
 const (
-	CustomUniqueMessage        = "already exists"
-	UnableConvertBase64Massage = "cannot be converted to base64"
+	CustomUniqueMessage         = "already exists"
+	UnableConvertBase64Massage  = "cannot be converted to base64"
+	PasswordMessage             = "should be in password format"
+	PasswordConfirmationMessage = "does not match password"
 )

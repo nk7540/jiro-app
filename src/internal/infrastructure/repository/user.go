@@ -13,14 +13,14 @@ import (
 )
 
 type userRepository struct {
-	db *mysql.Client
+	db   *mysql.Client
 	auth *firebase.Auth
 }
 
 // NewUserRepository - setups user repository
 func NewUserRepository(db *mysql.Client, auth *firebase.Auth) user.UserRepository {
 	return &userRepository{
-		db: db,
+		db:   db,
 		auth: auth,
 	}
 }
@@ -74,13 +74,27 @@ func (r *userRepository) Get(ctx context.Context, id string) (*user.User, error)
 	return u, err
 }
 
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*user.User, error) {
+	mu, err := models.Users(qm.Where("email = ?", email)).One(ctx, r.db.DB)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user.User{
+		ID:       mu.ID,
+		Status:   mu.Status,
+		Email:    mu.Email,
+		Nickname: mu.Nickname,
+	}, nil
+}
+
 func (r *userRepository) Update(ctx context.Context, u *user.User) error {
 	mu := models.User{}
 	mu.ID = u.ID
 	mu.Email = u.Email
 	mu.Nickname = u.Nickname
 	_, err := mu.Update(ctx, r.db.DB, boil.Blacklist("uid", "status"))
-	return err;
+	return err
 }
 
 func (r *userRepository) Suspend(ctx context.Context, u *user.User) error {
@@ -96,7 +110,7 @@ func (r *userRepository) Suspend(ctx context.Context, u *user.User) error {
 	mu.ID = u.ID
 	mu.Status = "suspended"
 	mu.UID = ""
-	
+
 	_, err = mu.Update(ctx, r.db.DB, boil.Whitelist("status", "uid"))
 	return err
 }

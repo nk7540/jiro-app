@@ -13,6 +13,7 @@ import (
 	"artics-api/src/config"
 	"artics-api/src/lib/firebase"
 	"artics-api/src/lib/grpc"
+	"artics-api/src/lib/i18n"
 	"artics-api/src/lib/mysql"
 	"artics-api/src/registry"
 )
@@ -47,6 +48,8 @@ func main() {
 	}
 
 	gc := grpc.NewClient(e.GrpcHost, e.GrpcPort)
+
+	i18n.Init()
 
 	// Registration
 	reg := registry.NewRegistry(fa, db, gc)

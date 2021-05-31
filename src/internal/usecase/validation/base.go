@@ -1,18 +1,19 @@
 package validation
 
 import (
-	"fmt"
+	"context"
 	"reflect"
-	"regexp"
 
 	"artics-api/src/internal/domain"
+	"artics-api/src/lib/i18n"
+	"artics-api/src/middleware"
 
 	"github.com/go-playground/validator/v10"
 )
 
 // RequestValidator - base validator interface
 type RequestValidator interface {
-	Run(i interface{}) []*domain.ValidationError
+	Run(ctx context.Context, i interface{}) []*domain.ValidationError
 }
 
 type requestValidator struct {
@@ -23,25 +24,13 @@ type requestValidator struct {
 func NewRequestValidator() RequestValidator {
 	validate := validator.New()
 
-	if err := validate.RegisterValidation("password", passwordCheck); err != nil {
-		return nil
-	}
-
 	return &requestValidator{
 		validate: *validate,
 	}
 }
 
-const (
-	passwordString = "^[a-zA-Z0-9_!@#$_%^&*.?()-=+]*$"
-)
-
-var (
-	passwordRegex = regexp.MustCompile(passwordString)
-)
-
 // Run - runs a validation
-func (rv *requestValidator) Run(i interface{}) []*domain.ValidationError {
+func (rv *requestValidator) Run(ctx context.Context, i interface{}) []*domain.ValidationError {
 	err := rv.validate.Struct(i)
 	if err == nil {
 		return make([]*domain.ValidationError, 0)
@@ -57,12 +46,14 @@ func (rv *requestValidator) Run(i interface{}) []*domain.ValidationError {
 		errorFieldName := errorField.Tag.Get("json")
 		errorMessage := ""
 
+		c, _ := middleware.GinContextFromContext(ctx)
+		p := i18n.NewI18nPrinter(c.GetHeader("Accept-Language"))
 		switch v.Tag() {
 		case domain.EqFieldTag:
 			eqField, _ := rt.FieldByName(v.Param())
-			errorMessage = validationMessage(v.Tag(), eqField.Tag.Get("label"))
+			errorMessage = validationMessage(p, v.Tag(), eqField.Tag.Get("label"))
 		default:
-			errorMessage = validationMessage(v.Tag(), v.Param())
+			errorMessage = validationMessage(p, v.Tag(), v.Param())
 		}
 
 		validationErrors[i] = &domain.ValidationError{
@@ -74,26 +65,22 @@ func (rv *requestValidator) Run(i interface{}) []*domain.ValidationError {
 	return validationErrors
 }
 
-func passwordCheck(fl validator.FieldLevel) bool {
-	return passwordRegex.MatchString(fl.Field().String())
-}
-
-func validationMessage(tag string, options ...string) string {
+func validationMessage(p *i18n.I18nPrinter, tag string, options ...string) string {
 	switch tag {
 	case domain.RequiredTag:
-		return domain.RequiredMessage
+		return p.Sprintf(domain.RequiredMessage)
 	case domain.EqFieldTag:
-		return fmt.Sprintf(domain.EqFieldMessage, options[0])
+		return p.Sprintf(domain.EqFieldMessage, options[0])
 	case domain.MinTag:
-		return fmt.Sprintf(domain.MinMessage, options[0])
+		return p.Sprintf(domain.MinMessage, options[0])
 	case domain.MaxTag:
-		return fmt.Sprintf(domain.MaxMessage, options[0])
+		return p.Sprintf(domain.MaxMessage, options[0])
 	case domain.EmailTag:
-		return domain.EmailMessage
+		return p.Sprintf(domain.EmailMessage)
 	case domain.PasswordTag:
-		return domain.PasswordMessage
+		return p.Sprintf(domain.PasswordMessage)
 	case domain.UniqueTag:
-		return domain.UniqueMessage
+		return p.Sprintf(domain.UniqueMessage)
 	default:
 		return ""
 	}
