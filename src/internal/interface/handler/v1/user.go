@@ -60,10 +60,21 @@ func (h *v1UserHandler) Show(c *gin.Context) {
 		return
 	}
 
+	resFavoriteContents := make([]*response.Content, len(u.FavoriteContents))
+	for i, c := range u.FavoriteContents {
+		resFavoriteContents[i] = &response.Content{
+			ID:    c.ID,
+			Title: c.Title,
+		}
+	}
+
 	res := &response.ShowUser{
-		ID:       u.ID,
-		Nickname: u.Nickname,
-		Email:    u.Email,
+		ID:               u.ID,
+		Nickname:         u.Nickname,
+		Email:            u.Email,
+		Followingcount:   u.FollowingCount,
+		Followercount:    u.FollowerCount,
+		FavoriteContents: resFavoriteContents,
 	}
 
 	c.JSON(http.StatusOK, res)

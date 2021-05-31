@@ -28,18 +28,20 @@ func NewRegistry(
 	// Domain Repository
 	ur := repository.NewUserRepository(db, fa)
 	fr := repository.NewFollowRepository(db)
+	cr := repository.NewContentRepository(db)
 
 	// Domain Validator
 	udv := dv.NewUserDomainValidator(ur)
 
 	// Domain Service
-	us := service.NewUserService(udv, ur, fr)
+	us := service.NewUserService(udv, ur, fr, cr)
+	cs := service.NewContentService(cr)
 
 	// Request Validator
 	rv := v.NewRequestValidator()
 
 	// Usecase
-	uu := usecase.NewUserUsecase(rv, ur, us, fr)
+	uu := usecase.NewUserUsecase(rv, ur, us, cs)
 	fu := usecase.NewFollowUsecase(fr, us)
 
 	return &Registry{

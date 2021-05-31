@@ -5,15 +5,21 @@ type CreateUser struct {
 }
 
 type ShowUser struct {
-	ID             string `json:"id"`
-	Nickname       string `json:"nickname"`
-	Email          string `json:"email"`
-	Followingcount int    `json:"followingCount"`
-	Followercount  int    `json:"followerCount"`
+	ID               string     `json:"id"`
+	Nickname         string     `json:"nickname"`
+	Email            string     `json:"email"`
+	Followingcount   int        `json:"followingCount"`
+	Followercount    int        `json:"followerCount"`
+	FavoriteContents []*Content `json:"favoriteContents"`
 }
 
 type UpdateUser struct {
 	ID       string `json:"id"`
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
+}
+
+type Content struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
 }
