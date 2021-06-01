@@ -23,12 +23,10 @@ func NewUploader(sess *session.Session, bucket string, key string) *Uploader {
 	}
 }
 
-func (u *Uploader) Upload(file io.Reader) error {
-	_, err := u.Uploader.Upload(&s3manager.UploadInput{
+func (u *Uploader) Upload(file io.Reader) (*s3manager.UploadOutput, error) {
+	return u.Uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(u.Bucket),
 		Key:    aws.String(u.Key),
 		Body:   file,
 	})
-
-	return err
 }
