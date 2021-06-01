@@ -72,6 +72,18 @@ func (r *userRepository) Get(ctx context.Context, id string) (*user.User, error)
 	u := &user.User{}
 	u.Nickname = mu.Nickname
 	u.Email = mu.Email
+
+	followingCount, err := models.Follows(qm.Where("following_id=?", id)).Count(ctx, r.db.DB)
+	if err != nil {
+		return nil, err
+	}
+	followerCount, err := models.Follows(qm.Where("follower_id=?", id)).Count(ctx, r.db.DB)
+	if err != nil {
+		return nil, err
+	}
+	u.FollowingCount = int(followingCount)
+	u.FollowerCount = int(followerCount)
+
 	return u, err
 }
 

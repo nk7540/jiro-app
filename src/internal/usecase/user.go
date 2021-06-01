@@ -62,6 +62,9 @@ func (uu *userUsecase) Show(ctx context.Context, id string) (*response.ShowUser,
 	}
 
 	u, err := uu.userService.Show(ctx, id)
+	if err != nil {
+		return nil, err
+	}
 	favoriteContents, err := uu.contentService.GetFavoriteContents(ctx, id, 3)
 	if err != nil {
 		return nil, err
