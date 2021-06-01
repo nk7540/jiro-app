@@ -7,7 +7,7 @@ import (
 	v1 "artics-api/src/internal/interface/handler/v1"
 	"artics-api/src/internal/usecase"
 	v "artics-api/src/internal/usecase/validation"
-	"artics-api/src/lib/aws"
+	"artics-api/src/lib/awssdk"
 	"artics-api/src/lib/firebase"
 	"artics-api/src/lib/grpc"
 	"artics-api/src/lib/mysql"
@@ -25,7 +25,7 @@ type Registry struct {
 
 // NewRegistry - imports files in /internal directory
 func NewRegistry(
-	au *aws.Uploader, fa *firebase.Auth, db *mysql.Client, gc *grpc.Client,
+	au *awssdk.Uploader, fa *firebase.Auth, db *mysql.Client, gc *grpc.Client,
 ) *Registry {
 	// Domain Repository
 	ur := repository.NewUserRepository(db, fa)
