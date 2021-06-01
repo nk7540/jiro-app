@@ -17,29 +17,18 @@ type ValidationError struct {
 type ErrorCode uint
 
 const (
-	// Unknown - 不明なエラー
 	Unknown ErrorCode = iota
-	// Unauthorized - 認証エラー
 	Unauthorized
-	// Forbidden - 権限エラー
 	Forbidden
-	// NotFound - 取得エラー
 	NotFound
-	// InvalidDomainValidation - ドメインのバリデーションエラー
 	InvalidDomainValidation
-	// InvalidRequestValidation - リクエストのバリデーションエラー
 	InvalidRequestValidation
-	// UnableParseJSON - JSON型から構造体への変換エラー
 	UnableParseJSON
-	// UnableConvertBase64 - Byte64型への変換エラー
-	UnableConvertBase64
-	// ErrorInDatastore - データストアでのエラー
+	UnableParseFormData
+	UnableParseFile
 	ErrorInDatastore
-	// AlreadyExistsInDatastore - ユニークチェックでのエラー
 	AlreadyExistsInDatastore
-	// NotEqualRequestWithDatastore - リクエスト値がデータストアの値と一致しない
 	NotEqualRequestWithDatastore
-	// ErrorInStorage - ストレージでのエラー
 	ErrorInStorage
 )
 

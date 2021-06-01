@@ -129,8 +129,8 @@ func (h *v1UserHandler) Followers(c *gin.Context) {
 func (h *v1UserHandler) Update(c *gin.Context) {
 	// Request
 	req := &request.UpdateUser{}
-	if err := c.BindJSON(req); err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+	if err := c.Bind(req); err != nil {
+		handler.ErrorHandling(c, domain.UnableParseFormData.New(err))
 		return
 	}
 
