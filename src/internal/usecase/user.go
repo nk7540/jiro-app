@@ -7,6 +7,7 @@ import (
 	"artics-api/src/internal/domain/content"
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/internal/usecase/request"
+	"artics-api/src/internal/usecase/response"
 	"artics-api/src/internal/usecase/validation"
 
 	"golang.org/x/xerrors"
@@ -15,10 +16,10 @@ import (
 // UserUsecase - user usecase
 type UserUsecase interface {
 	Create(ctx context.Context, r *request.CreateUser) error
-	Show(ctx context.Context, id string) (*user.User, error)
-	Followings(ctx context.Context, id string) ([]*user.User, error)
-	Followers(ctx context.Context, id string) ([]*user.User, error)
-	Update(ctx context.Context, r *request.UpdateUser) (*user.User, error)
+	Show(ctx context.Context, id string) (*response.ShowUser, error)
+	Followings(ctx context.Context, id string) (*response.Users, error)
+	Followers(ctx context.Context, id string) (*response.Users, error)
+	Update(ctx context.Context, r *request.UpdateUser) (*response.UpdateUser, error)
 	Suspend(ctx context.Context) error
 }
 
@@ -55,7 +56,7 @@ func (uu *userUsecase) Create(ctx context.Context, req *request.CreateUser) erro
 	return uu.userService.Create(ctx, u)
 }
 
-func (uu *userUsecase) Show(ctx context.Context, id string) (*user.User, error) {
+func (uu *userUsecase) Show(ctx context.Context, id string) (*response.ShowUser, error) {
 	if _, err := uu.userService.Auth(ctx); err != nil {
 		return nil, domain.Unauthorized.New(err)
 	}
@@ -65,20 +66,64 @@ func (uu *userUsecase) Show(ctx context.Context, id string) (*user.User, error) 
 	if err != nil {
 		return nil, err
 	}
-	u.FavoriteContents = favoriteContents
 
-	return u, nil
+	resFavoriteContents := make([]*response.Content, len(favoriteContents))
+	for i, c := range favoriteContents {
+		resFavoriteContents[i] = &response.Content{
+			ID:    c.ID,
+			Title: c.Title,
+		}
+	}
+
+	res := &response.ShowUser{
+		ID:               u.ID,
+		Nickname:         u.Nickname,
+		Email:            u.Email,
+		Followingcount:   u.FollowingCount,
+		Followercount:    u.FollowerCount,
+		FavoriteContents: resFavoriteContents,
+	}
+
+	return res, nil
 }
 
-func (uu *userUsecase) Followings(ctx context.Context, id string) ([]*user.User, error) {
-	return uu.userService.Followings(ctx, id)
+func (uu *userUsecase) Followings(ctx context.Context, id string) (*response.Users, error) {
+	us, err := uu.userService.Followings(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	resUsers := make([]*response.User, len(us))
+	for i, u := range us {
+		resUsers[i] = &response.User{
+			ID:       u.ID,
+			Nickname: u.Nickname,
+		}
+	}
+	res := &response.Users{resUsers}
+
+	return res, nil
 }
 
-func (uu *userUsecase) Followers(ctx context.Context, id string) ([]*user.User, error) {
-	return uu.userService.Followers(ctx, id)
+func (uu *userUsecase) Followers(ctx context.Context, id string) (*response.Users, error) {
+	us, err := uu.userService.Followers(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	resUsers := make([]*response.User, len(us))
+	for i, u := range us {
+		resUsers[i] = &response.User{
+			ID:       u.ID,
+			Nickname: u.Nickname,
+		}
+	}
+	res := &response.Users{resUsers}
+
+	return res, nil
 }
 
-func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*user.User, error) {
+func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*response.UpdateUser, error) {
 	u, err := uu.userService.Auth(ctx)
 	if err != nil {
 		return nil, domain.Unauthorized.New(err)
@@ -107,7 +152,13 @@ func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*us
 		return nil, err
 	}
 
-	return u, nil
+	res := &response.UpdateUser{
+		ID:       u.ID,
+		Nickname: u.Nickname,
+		Email:    u.Email,
+	}
+
+	return res, nil
 }
 
 func (uu *userUsecase) Suspend(ctx context.Context) error {
