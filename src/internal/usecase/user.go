@@ -92,6 +92,17 @@ func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*us
 		return nil, domain.InvalidRequestValidation.New(err, ves...)
 	}
 
+	thumbnail, err := req.Thumbnail.Open()
+	if err != nil {
+		return nil, domain.UnableParseFile.New(err)
+	}
+	thumbnailURL, err := uu.userService.UpdateThumbnail(ctx, thumbnail)
+	if err != nil {
+		return nil, err
+	}
+
+	u.ThumbnailURL = thumbnailURL
+
 	if err := uu.userRepository.Update(ctx, u); err != nil {
 		return nil, err
 	}

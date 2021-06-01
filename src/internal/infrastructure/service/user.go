@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"io"
 	"strings"
 
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/content"
+	"artics-api/src/internal/domain/file"
 	"artics-api/src/internal/domain/follow"
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/middleware"
@@ -15,27 +17,29 @@ import (
 )
 
 type userService struct {
-	udv user.UserDomainValidator
-	ur  user.UserRepository
-	fr  follow.FollowRepository
-	cr  content.ContentRepository
+	userDomainValidator user.UserDomainValidator
+	userRepository      user.UserRepository
+	followRepository    follow.FollowRepository
+	contentRepository   content.ContentRepository
+	fileRepository      file.FileRepository
 }
 
 func NewUserService(
 	udv user.UserDomainValidator,
 	ur user.UserRepository,
-	fr follow.FollowRepository,
+	flwr follow.FollowRepository,
 	cr content.ContentRepository,
+	flr file.FileRepository,
 ) user.UserService {
-	return &userService{udv, ur, fr, cr}
+	return &userService{udv, ur, flwr, cr, flr}
 }
 
 func (s *userService) Create(ctx context.Context, u *user.User) error {
-	ves, err := s.udv.Validate(ctx, u)
+	ves, err := s.userDomainValidator.Validate(ctx, u)
 	if err != nil {
 		return err
 	}
-	vesPassword := s.udv.ValidatePassword(ctx, u.Password, u.PasswordConfirmation)
+	vesPassword := s.userDomainValidator.ValidatePassword(ctx, u.Password, u.PasswordConfirmation)
 	ves = append(ves, vesPassword...)
 	if len(ves) > 0 {
 		err := xerrors.New("Failed to DomainValidation")
@@ -43,7 +47,7 @@ func (s *userService) Create(ctx context.Context, u *user.User) error {
 	}
 
 	u.ID = uuid.New().String()
-	if err := s.ur.Create(ctx, u); err != nil {
+	if err := s.userRepository.Create(ctx, u); err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)
 		return domain.ErrorInDatastore.New(err)
 	}
@@ -57,32 +61,21 @@ func (s *userService) Auth(ctx context.Context) (*user.User, error) {
 		return nil, err
 	}
 
-	return s.ur.GetByToken(ctx, t)
+	return s.userRepository.GetByToken(ctx, t)
 }
 
 func (s *userService) Show(ctx context.Context, id string) (*user.User, error) {
-	u, err := s.ur.Get(ctx, id)
+	u, err := s.userRepository.Get(ctx, id)
 	if err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)
 		return nil, domain.NotFound.New(err)
 	}
 
-	followingCount, err := s.fr.FollowingCount(ctx, u.ID)
-	if err != nil {
-		return nil, err
-	}
-	followerCount, err := s.fr.FollowerCount(ctx, u.ID)
-	if err != nil {
-		return nil, err
-	}
-	u.FollowingCount = followingCount
-	u.FollowerCount = followerCount
-
 	return u, nil
 }
 
 func (s *userService) Followings(ctx context.Context, id string) ([]*user.User, error) {
-	us, err := s.ur.Followings(ctx, id)
+	us, err := s.userRepository.Followings(ctx, id)
 	if err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)
 		return nil, domain.ErrorInDatastore.New(err)
@@ -92,7 +85,7 @@ func (s *userService) Followings(ctx context.Context, id string) ([]*user.User, 
 }
 
 func (s *userService) Followers(ctx context.Context, id string) ([]*user.User, error) {
-	us, err := s.ur.Followers(ctx, id)
+	us, err := s.userRepository.Followers(ctx, id)
 	if err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)
 		return nil, domain.ErrorInDatastore.New(err)
@@ -101,8 +94,21 @@ func (s *userService) Followers(ctx context.Context, id string) ([]*user.User, e
 	return us, nil
 }
 
+func (s *userService) UpdateThumbnail(ctx context.Context, body io.Reader) (string, error) {
+	f := &file.File{
+		Body: body,
+	}
+	f, err := s.fileRepository.Save(ctx, f)
+	if err != nil {
+		err = xerrors.Errorf("Failed to Repository: %w", err)
+		return "", domain.ErrorInStorage.New(err)
+	}
+
+	return f.Path, nil
+}
+
 func (s *userService) Suspend(ctx context.Context, u *user.User) error {
-	return s.ur.Suspend(ctx, u)
+	return s.userRepository.Suspend(ctx, u)
 }
 
 func getToken(ctx context.Context) (string, error) {

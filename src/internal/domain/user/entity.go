@@ -10,6 +10,7 @@ type User struct {
 	Status               string `validate:"required,oneof=provisional available suspended"`
 	Nickname             string `validate:"max=256"`
 	Email                string `validate:"required,email,max=256"`
+	ThumbnailURL         string
 	Password             string
 	PasswordConfirmation string
 	FollowingCount       int
