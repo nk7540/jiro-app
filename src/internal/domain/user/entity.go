@@ -1,6 +1,8 @@
 package user
 
-import "artics-api/src/internal/domain/content"
+import (
+	"artics-api/src/internal/domain/content"
+)
 
 // User entity
 type User struct {

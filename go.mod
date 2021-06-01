@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/firestore v1.5.0 // indirect
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
+	github.com/aws/aws-sdk-go v1.38.51 // indirect
 	github.com/friendsofgo/errors v0.9.2
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gin-gonic/gin v1.7.2

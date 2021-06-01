@@ -11,6 +11,7 @@ import (
 	"google.golang.org/api/option"
 
 	"artics-api/src/config"
+	"artics-api/src/lib/aws"
 	"artics-api/src/lib/firebase"
 	"artics-api/src/lib/grpc"
 	"artics-api/src/lib/i18n"
@@ -42,6 +43,9 @@ func main() {
 		log.Panic(err)
 	}
 
+	sess := aws.NewSession(e.AWSProfile)
+	au := aws.NewUploader(sess.Session, e.AWSS3Bucket, e.AWSS3Key)
+
 	db, err := mysql.NewClient(ctx, e.MysqlUser, e.MysqlPassword, e.MysqlHost, e.MysqlPort, e.MysqlDB)
 	if err != nil {
 		log.Panic(err)
@@ -52,7 +56,7 @@ func main() {
 	i18n.Init()
 
 	// Registration
-	reg := registry.NewRegistry(fa, db, gc)
+	reg := registry.NewRegistry(au, fa, db, gc)
 
 	// Running application
 	r := config.Router(reg)
