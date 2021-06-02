@@ -5,13 +5,11 @@ import (
 	"artics-api/src/internal/domain/favorite"
 	"artics-api/src/internal/domain/user"
 	"context"
-
-	"github.com/google/uuid"
 )
 
 type FavoriteUsecase interface {
-	Create(ctx context.Context, contentID string) error
-	Delete(ctx context.Context, contentID string) error
+	Create(ctx context.Context, contentID int) error
+	Delete(ctx context.Context, contentID int) error
 }
 
 type favoriteUsecase struct {
@@ -23,14 +21,13 @@ func NewFavoriteUsecase(us user.UserService, fs favorite.FavoriteService) Favori
 	return &favoriteUsecase{us, fs}
 }
 
-func (fu *favoriteUsecase) Create(ctx context.Context, contentID string) error {
+func (fu *favoriteUsecase) Create(ctx context.Context, contentID int) error {
 	u, err := fu.userService.Auth(ctx)
 	if err != nil {
 		return domain.Unauthorized.New(err)
 	}
 
 	f := &favorite.Favorite{
-		ID:        uuid.New().String(),
 		UserID:    u.ID,
 		ContentID: contentID,
 	}
@@ -38,7 +35,7 @@ func (fu *favoriteUsecase) Create(ctx context.Context, contentID string) error {
 	return fu.favoriteService.Create(ctx, f)
 }
 
-func (fu *favoriteUsecase) Delete(ctx context.Context, contentID string) error {
+func (fu *favoriteUsecase) Delete(ctx context.Context, contentID int) error {
 	u, err := fu.userService.Auth(ctx)
 	if err != nil {
 		return domain.Unauthorized.New(err)
