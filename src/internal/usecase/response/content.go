@@ -5,6 +5,6 @@ type Contents struct {
 }
 
 type Content struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Title string `json:"title"`
 }

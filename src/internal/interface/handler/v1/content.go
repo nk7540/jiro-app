@@ -13,6 +13,7 @@ import (
 )
 
 type V1ContentHandler interface {
+	Show(c *gin.Context)
 	Favorites(c *gin.Context)
 }
 
@@ -22,6 +23,28 @@ type v1ContentHandler struct {
 
 func NewV1ContentHandler(u usecase.ContentUsecase) V1ContentHandler {
 	return &v1ContentHandler{u}
+}
+
+func (h *v1ContentHandler) Show(c *gin.Context) {
+	id, err := strconv.Atoi(c.Params.ByName("id"))
+	if err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+		return
+	}
+	ctx := middleware.GinContextToContext(c)
+
+	content, err := h.u.Show(ctx, id)
+	if err != nil {
+		handler.ErrorHandling(c, err)
+		return
+	}
+
+	res := &response.Content{
+		ID:    content.ID,
+		Title: content.Title,
+	}
+
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *v1ContentHandler) Favorites(c *gin.Context) {

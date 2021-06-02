@@ -2,8 +2,8 @@ package content
 
 // Content entity
 type Content struct {
-	ID         string
-	UserID     string
-	CategoryID string
+	ID         int
+	UserID     int
+	CategoryID int
 	Title      string `validate:"required,max=256"`
 }

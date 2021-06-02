@@ -24,11 +24,8 @@ func Router(reg *registry.Registry) *gin.Engine {
 		api.DELETE("/follows", reg.V1Follow.Delete)
 
 		// Content
-		// api.POST("/contents", reg.ContentHandler.CreateContent)
 		api.GET("/contents/favorites", reg.V1Content.Favorites)
-		// api.GET("/contents/:id", reg.ContentHandler.GetContent)
-		// api.PATCH("/contents/:id", reg.ContentHandler.UpdateContent)
-		// api.DELETE("/contents/:id", reg.ContentHandler.DestroyContent)
+		api.GET("/contents/:id", reg.V1Content.Show)
 
 		// Favorite
 		api.POST("/favorites", reg.V1Favorite.Create)
@@ -36,9 +33,6 @@ func Router(reg *registry.Registry) *gin.Engine {
 
 		// Browse
 		api.POST("/browses", reg.V1Browse.Save)
-
-		// // カテゴリ
-		// api.GET("/categories", reg.CategoryHandler.GetCategories)
 	}
 
 	return r

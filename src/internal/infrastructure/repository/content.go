@@ -17,6 +17,21 @@ func NewContentRepository(db *mysql.Client) content.ContentRepository {
 	return &contentRepository{db}
 }
 
+func (r *contentRepository) Get(ctx context.Context, id int) (*content.Content, error) {
+	mc, err := models.FindContent(ctx, r.db.DB, id)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &content.Content{
+		UserID:     mc.UserID.Int,
+		CategoryID: mc.CategoryID,
+		Title:      mc.Title,
+	}
+
+	return c, nil
+}
+
 func (r *contentRepository) GetFavoriteContents(ctx context.Context, userId int, limit int) ([]*content.Content, error) {
 	favoriteContents, err := models.Favorites(
 		qm.Select("content_id"),
@@ -28,15 +43,15 @@ func (r *contentRepository) GetFavoriteContents(ctx context.Context, userId int,
 		return nil, err
 	}
 
-	favoriteContentIDs := make([]string, len(favoriteContents))
+	favoriteContentIDs := make([]int, len(favoriteContents))
 	for i, favoriteContent := range favoriteContents {
 		favoriteContentIDs[i] = favoriteContent.ContentID
 	}
 
-	return r.GetByIDs(ctx, favoriteContentIDs)
+	return r.getByIDs(ctx, favoriteContentIDs)
 }
 
-func (r *contentRepository) GetByIDs(ctx context.Context, ids []string) ([]*content.Content, error) {
+func (r *contentRepository) getByIDs(ctx context.Context, ids []int) ([]*content.Content, error) {
 	// Ref: https://github.com/volatiletech/sqlboiler/issues/227
 	convertedIDs := make([]interface{}, len(ids))
 	for i, id := range ids {
@@ -51,7 +66,7 @@ func (r *contentRepository) GetByIDs(ctx context.Context, ids []string) ([]*cont
 	cs := make([]*content.Content, len(mcs))
 	for i, mc := range mcs {
 		c := &content.Content{
-			UserID:     mc.UserID.String,
+			UserID:     mc.UserID.Int,
 			CategoryID: mc.CategoryID,
 			Title:      mc.Title,
 		}
