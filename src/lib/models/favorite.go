@@ -23,9 +23,9 @@ import (
 
 // Favorite is an object representing the database table.
 type Favorite struct {
-	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	ContentID string    `boil:"content_id" json:"content_id" toml:"content_id" yaml:"content_id"`
+	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	ContentID int       `boil:"content_id" json:"content_id" toml:"content_id" yaml:"content_id"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
@@ -50,15 +50,15 @@ var FavoriteColumns = struct {
 // Generated where
 
 var FavoriteWhere = struct {
-	ID        whereHelperstring
-	UserID    whereHelperstring
-	ContentID whereHelperstring
+	ID        whereHelperint
+	UserID    whereHelperint
+	ContentID whereHelperint
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
-	ID:        whereHelperstring{field: "`favorite`.`id`"},
-	UserID:    whereHelperstring{field: "`favorite`.`user_id`"},
-	ContentID: whereHelperstring{field: "`favorite`.`content_id`"},
+	ID:        whereHelperint{field: "`favorite`.`id`"},
+	UserID:    whereHelperint{field: "`favorite`.`user_id`"},
+	ContentID: whereHelperint{field: "`favorite`.`content_id`"},
 	CreatedAt: whereHelpertime_Time{field: "`favorite`.`created_at`"},
 	UpdatedAt: whereHelpertime_Time{field: "`favorite`.`updated_at`"},
 }
@@ -88,8 +88,8 @@ type favoriteL struct{}
 
 var (
 	favoriteAllColumns            = []string{"id", "user_id", "content_id", "created_at", "updated_at"}
-	favoriteColumnsWithoutDefault = []string{"id", "user_id", "content_id", "created_at", "updated_at"}
-	favoriteColumnsWithDefault    = []string{}
+	favoriteColumnsWithoutDefault = []string{"user_id", "content_id", "created_at", "updated_at"}
+	favoriteColumnsWithDefault    = []string{"id"}
 	favoritePrimaryKeyColumns     = []string{"id"}
 )
 
@@ -706,7 +706,7 @@ func Favorites(mods ...qm.QueryMod) favoriteQuery {
 
 // FindFavorite retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindFavorite(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Favorite, error) {
+func FindFavorite(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Favorite, error) {
 	favoriteObj := &Favorite{}
 
 	sel := "*"
@@ -799,15 +799,26 @@ func (o *Favorite) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into favorite")
 	}
 
+	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == favoriteMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1075,16 +1086,27 @@ func (o *Favorite) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for favorite")
 	}
 
+	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == favoriteMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1262,7 +1284,7 @@ func (o *FavoriteSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // FavoriteExists checks if the Favorite row exists.
-func FavoriteExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func FavoriteExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `favorite` where `id`=? limit 1)"
 

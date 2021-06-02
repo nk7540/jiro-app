@@ -3,20 +3,21 @@ use dev_database;
 
 -- +migrate Up
 create table if not exists user(
-  id                 varchar(255) not null,
-  uid                varchar(255) not null,
-  status             varchar(255) not null,
-  email              varchar(255) not null,
-  nickname           varchar(255) not null,
-  created_at         datetime     not null,
-  updated_at         datetime     not null,
+  id            int          not null auto_increment,
+  uid           varchar(255) not null,
+  status        varchar(255) not null,
+  email         varchar(255) not null,
+  nickname      varchar(255) not null,
+  thumbnail_url text(1024)   not null,
+  created_at    datetime     not null,
+  updated_at    datetime     not null,
   primary key(id)
 );
 
 create table if not exists follow(
-  id           varchar(255) not null,
-  following_id varchar(255) not null,
-  follower_id  varchar(255) not null,
+  id           int          not null auto_increment,
+  following_id int          not null,
+  follower_id  int          not null,
   created_at   datetime     not null,
   updated_at   datetime     not null,
   primary key(id),
@@ -33,7 +34,7 @@ create table if not exists follow(
 );
 
 create table if not exists category(
-  id         varchar(255) not null,
+  id         int          not null auto_increment,
   name       varchar(32)  not null,
   created_at datetime     not null,
   updated_at datetime     not null,
@@ -41,12 +42,14 @@ create table if not exists category(
 );
 
 create table if not exists content(
-  id          varchar(255) not null,
-  user_id     varchar(255) null,
-  category_id varchar(255) not null,
-  title       varchar(255) not null,
-  created_at  datetime     not null,
-  updated_at  datetime     not null,
+  id            int          not null auto_increment,
+  user_id       int          null,
+  category_id   int          not null,
+  title         varchar(255) not null,
+  description   text(1024)   not null,
+  thumbnail_url text(1024)   not null,
+  created_at    datetime     not null,
+  updated_at    datetime     not null,
   primary key(id),
   constraint fk_user_content
     foreign key(user_id)
@@ -61,9 +64,9 @@ create table if not exists content(
 );
 
 create table if not exists favorite(
-  id         varchar(255) not null,
-  user_id    varchar(255) not null,
-  content_id varchar(255) not null,
+  id         int          not null auto_increment,
+  user_id    int          not null,
+  content_id int          not null,
   created_at datetime     not null,
   updated_at datetime     not null,
   primary key(id),
@@ -80,9 +83,9 @@ create table if not exists favorite(
 );
 
 create table if not exists browse(
-  id         varchar(255) not null,
-  user_id    varchar(255) not null,
-  content_id varchar(255) not null,
+  id         int          not null auto_increment,
+  user_id    int          not null,
+  content_id int          not null,
   created_at datetime     not null,
   updated_at datetime     not null,
   primary key(id),
@@ -105,4 +108,5 @@ drop table follow;
 drop table category;
 drop table content;
 drop table favorite;
+drop table browse;
 set FOREIGN_KEY_CHECKS=1;

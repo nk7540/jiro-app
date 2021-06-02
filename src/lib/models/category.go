@@ -23,7 +23,7 @@ import (
 
 // Category is an object representing the database table.
 type Category struct {
-	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
@@ -46,13 +46,36 @@ var CategoryColumns = struct {
 
 // Generated where
 
+type whereHelperstring struct{ field string }
+
+func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperstring) NEQ(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperstring) LT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperstring) LTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperstring) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 var CategoryWhere = struct {
-	ID        whereHelperstring
+	ID        whereHelperint
 	Name      whereHelperstring
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
-	ID:        whereHelperstring{field: "`category`.`id`"},
+	ID:        whereHelperint{field: "`category`.`id`"},
 	Name:      whereHelperstring{field: "`category`.`name`"},
 	CreatedAt: whereHelpertime_Time{field: "`category`.`created_at`"},
 	UpdatedAt: whereHelpertime_Time{field: "`category`.`updated_at`"},
@@ -80,8 +103,8 @@ type categoryL struct{}
 
 var (
 	categoryAllColumns            = []string{"id", "name", "created_at", "updated_at"}
-	categoryColumnsWithoutDefault = []string{"id", "name", "created_at", "updated_at"}
-	categoryColumnsWithDefault    = []string{}
+	categoryColumnsWithoutDefault = []string{"name", "created_at", "updated_at"}
+	categoryColumnsWithDefault    = []string{"id"}
 	categoryPrimaryKeyColumns     = []string{"id"}
 )
 
@@ -540,7 +563,7 @@ func Categories(mods ...qm.QueryMod) categoryQuery {
 
 // FindCategory retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindCategory(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Category, error) {
+func FindCategory(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Category, error) {
 	categoryObj := &Category{}
 
 	sel := "*"
@@ -633,15 +656,26 @@ func (o *Category) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into category")
 	}
 
+	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == categoryMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -909,16 +943,27 @@ func (o *Category) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for category")
 	}
 
+	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == categoryMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1096,7 +1141,7 @@ func (o *CategorySlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // CategoryExists checks if the Category row exists.
-func CategoryExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func CategoryExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `category` where `id`=? limit 1)"
 

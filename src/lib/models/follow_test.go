@@ -785,7 +785,7 @@ func testFollowsSelect(t *testing.T) {
 }
 
 var (
-	followDBTypes = map[string]string{`ID`: `varchar`, `FollowingID`: `varchar`, `FollowerID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	followDBTypes = map[string]string{`ID`: `int`, `FollowingID`: `int`, `FollowerID`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_             = bytes.MinRead
 )
 

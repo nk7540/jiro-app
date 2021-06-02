@@ -785,7 +785,7 @@ func testFavoritesSelect(t *testing.T) {
 }
 
 var (
-	favoriteDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `ContentID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	favoriteDBTypes = map[string]string{`ID`: `int`, `UserID`: `int`, `ContentID`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_               = bytes.MinRead
 )
 

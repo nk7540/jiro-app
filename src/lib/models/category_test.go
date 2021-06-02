@@ -722,7 +722,7 @@ func testCategoriesSelect(t *testing.T) {
 }
 
 var (
-	categoryDBTypes = map[string]string{`ID`: `varchar`, `Name`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	categoryDBTypes = map[string]string{`ID`: `int`, `Name`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_               = bytes.MinRead
 )
 

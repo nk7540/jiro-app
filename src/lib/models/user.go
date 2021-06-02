@@ -23,54 +23,59 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UID       string    `boil:"uid" json:"uid" toml:"uid" yaml:"uid"`
-	Status    string    `boil:"status" json:"status" toml:"status" yaml:"status"`
-	Email     string    `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Nickname  string    `boil:"nickname" json:"nickname" toml:"nickname" yaml:"nickname"`
-	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID           int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UID          string    `boil:"uid" json:"uid" toml:"uid" yaml:"uid"`
+	Status       string    `boil:"status" json:"status" toml:"status" yaml:"status"`
+	Email        string    `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Nickname     string    `boil:"nickname" json:"nickname" toml:"nickname" yaml:"nickname"`
+	ThumbnailURL string    `boil:"thumbnail_url" json:"thumbnail_url" toml:"thumbnail_url" yaml:"thumbnail_url"`
+	CreatedAt    time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt    time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var UserColumns = struct {
-	ID        string
-	UID       string
-	Status    string
-	Email     string
-	Nickname  string
-	CreatedAt string
-	UpdatedAt string
+	ID           string
+	UID          string
+	Status       string
+	Email        string
+	Nickname     string
+	ThumbnailURL string
+	CreatedAt    string
+	UpdatedAt    string
 }{
-	ID:        "id",
-	UID:       "uid",
-	Status:    "status",
-	Email:     "email",
-	Nickname:  "nickname",
-	CreatedAt: "created_at",
-	UpdatedAt: "updated_at",
+	ID:           "id",
+	UID:          "uid",
+	Status:       "status",
+	Email:        "email",
+	Nickname:     "nickname",
+	ThumbnailURL: "thumbnail_url",
+	CreatedAt:    "created_at",
+	UpdatedAt:    "updated_at",
 }
 
 // Generated where
 
 var UserWhere = struct {
-	ID        whereHelperstring
-	UID       whereHelperstring
-	Status    whereHelperstring
-	Email     whereHelperstring
-	Nickname  whereHelperstring
-	CreatedAt whereHelpertime_Time
-	UpdatedAt whereHelpertime_Time
+	ID           whereHelperint
+	UID          whereHelperstring
+	Status       whereHelperstring
+	Email        whereHelperstring
+	Nickname     whereHelperstring
+	ThumbnailURL whereHelperstring
+	CreatedAt    whereHelpertime_Time
+	UpdatedAt    whereHelpertime_Time
 }{
-	ID:        whereHelperstring{field: "`user`.`id`"},
-	UID:       whereHelperstring{field: "`user`.`uid`"},
-	Status:    whereHelperstring{field: "`user`.`status`"},
-	Email:     whereHelperstring{field: "`user`.`email`"},
-	Nickname:  whereHelperstring{field: "`user`.`nickname`"},
-	CreatedAt: whereHelpertime_Time{field: "`user`.`created_at`"},
-	UpdatedAt: whereHelpertime_Time{field: "`user`.`updated_at`"},
+	ID:           whereHelperint{field: "`user`.`id`"},
+	UID:          whereHelperstring{field: "`user`.`uid`"},
+	Status:       whereHelperstring{field: "`user`.`status`"},
+	Email:        whereHelperstring{field: "`user`.`email`"},
+	Nickname:     whereHelperstring{field: "`user`.`nickname`"},
+	ThumbnailURL: whereHelperstring{field: "`user`.`thumbnail_url`"},
+	CreatedAt:    whereHelpertime_Time{field: "`user`.`created_at`"},
+	UpdatedAt:    whereHelpertime_Time{field: "`user`.`updated_at`"},
 }
 
 // UserRels is where relationship names are stored.
@@ -106,9 +111,9 @@ func (*userR) NewStruct() *userR {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "uid", "status", "email", "nickname", "created_at", "updated_at"}
-	userColumnsWithoutDefault = []string{"id", "uid", "status", "email", "nickname", "created_at", "updated_at"}
-	userColumnsWithDefault    = []string{}
+	userAllColumns            = []string{"id", "uid", "status", "email", "nickname", "thumbnail_url", "created_at", "updated_at"}
+	userColumnsWithoutDefault = []string{"uid", "status", "email", "nickname", "thumbnail_url", "created_at", "updated_at"}
+	userColumnsWithDefault    = []string{"id"}
 	userPrimaryKeyColumns     = []string{"id"}
 )
 
@@ -1325,7 +1330,7 @@ func Users(mods ...qm.QueryMod) userQuery {
 
 // FindUser retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUser(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*User, error) {
+func FindUser(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*User, error) {
 	userObj := &User{}
 
 	sel := "*"
@@ -1418,15 +1423,26 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into user")
 	}
 
+	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == userMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1694,16 +1710,27 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColu
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for user")
 	}
 
+	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == userMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1881,7 +1908,7 @@ func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 }
 
 // UserExists checks if the User row exists.
-func UserExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func UserExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `user` where `id`=? limit 1)"
 

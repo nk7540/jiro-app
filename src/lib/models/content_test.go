@@ -1142,7 +1142,7 @@ func testContentsSelect(t *testing.T) {
 }
 
 var (
-	contentDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `CategoryID`: `varchar`, `Title`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	contentDBTypes = map[string]string{`ID`: `int`, `UserID`: `int`, `CategoryID`: `int`, `Title`: `varchar`, `Description`: `text`, `ThumbnailURL`: `text`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_              = bytes.MinRead
 )
 

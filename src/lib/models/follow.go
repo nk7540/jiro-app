@@ -23,9 +23,9 @@ import (
 
 // Follow is an object representing the database table.
 type Follow struct {
-	ID          string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	FollowingID string    `boil:"following_id" json:"following_id" toml:"following_id" yaml:"following_id"`
-	FollowerID  string    `boil:"follower_id" json:"follower_id" toml:"follower_id" yaml:"follower_id"`
+	ID          int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	FollowingID int       `boil:"following_id" json:"following_id" toml:"following_id" yaml:"following_id"`
+	FollowerID  int       `boil:"follower_id" json:"follower_id" toml:"follower_id" yaml:"follower_id"`
 	CreatedAt   time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt   time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
@@ -50,15 +50,15 @@ var FollowColumns = struct {
 // Generated where
 
 var FollowWhere = struct {
-	ID          whereHelperstring
-	FollowingID whereHelperstring
-	FollowerID  whereHelperstring
+	ID          whereHelperint
+	FollowingID whereHelperint
+	FollowerID  whereHelperint
 	CreatedAt   whereHelpertime_Time
 	UpdatedAt   whereHelpertime_Time
 }{
-	ID:          whereHelperstring{field: "`follow`.`id`"},
-	FollowingID: whereHelperstring{field: "`follow`.`following_id`"},
-	FollowerID:  whereHelperstring{field: "`follow`.`follower_id`"},
+	ID:          whereHelperint{field: "`follow`.`id`"},
+	FollowingID: whereHelperint{field: "`follow`.`following_id`"},
+	FollowerID:  whereHelperint{field: "`follow`.`follower_id`"},
 	CreatedAt:   whereHelpertime_Time{field: "`follow`.`created_at`"},
 	UpdatedAt:   whereHelpertime_Time{field: "`follow`.`updated_at`"},
 }
@@ -88,8 +88,8 @@ type followL struct{}
 
 var (
 	followAllColumns            = []string{"id", "following_id", "follower_id", "created_at", "updated_at"}
-	followColumnsWithoutDefault = []string{"id", "following_id", "follower_id", "created_at", "updated_at"}
-	followColumnsWithDefault    = []string{}
+	followColumnsWithoutDefault = []string{"following_id", "follower_id", "created_at", "updated_at"}
+	followColumnsWithDefault    = []string{"id"}
 	followPrimaryKeyColumns     = []string{"id"}
 )
 
@@ -706,7 +706,7 @@ func Follows(mods ...qm.QueryMod) followQuery {
 
 // FindFollow retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindFollow(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Follow, error) {
+func FindFollow(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Follow, error) {
 	followObj := &Follow{}
 
 	sel := "*"
@@ -799,15 +799,26 @@ func (o *Follow) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into follow")
 	}
 
+	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == followMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1075,16 +1086,27 @@ func (o *Follow) Upsert(ctx context.Context, exec boil.ContextExecutor, updateCo
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for follow")
 	}
 
+	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == followMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1262,7 +1284,7 @@ func (o *FollowSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // FollowExists checks if the Follow row exists.
-func FollowExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func FollowExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `follow` where `id`=? limit 1)"
 

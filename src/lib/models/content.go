@@ -24,72 +24,82 @@ import (
 
 // Content is an object representing the database table.
 type Content struct {
-	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	CategoryID string      `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
-	Title      string      `boil:"title" json:"title" toml:"title" yaml:"title"`
-	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt  time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID           int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID       null.Int  `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	CategoryID   int       `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
+	Title        string    `boil:"title" json:"title" toml:"title" yaml:"title"`
+	Description  string    `boil:"description" json:"description" toml:"description" yaml:"description"`
+	ThumbnailURL string    `boil:"thumbnail_url" json:"thumbnail_url" toml:"thumbnail_url" yaml:"thumbnail_url"`
+	CreatedAt    time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt    time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *contentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L contentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ContentColumns = struct {
-	ID         string
-	UserID     string
-	CategoryID string
-	Title      string
-	CreatedAt  string
-	UpdatedAt  string
+	ID           string
+	UserID       string
+	CategoryID   string
+	Title        string
+	Description  string
+	ThumbnailURL string
+	CreatedAt    string
+	UpdatedAt    string
 }{
-	ID:         "id",
-	UserID:     "user_id",
-	CategoryID: "category_id",
-	Title:      "title",
-	CreatedAt:  "created_at",
-	UpdatedAt:  "updated_at",
+	ID:           "id",
+	UserID:       "user_id",
+	CategoryID:   "category_id",
+	Title:        "title",
+	Description:  "description",
+	ThumbnailURL: "thumbnail_url",
+	CreatedAt:    "created_at",
+	UpdatedAt:    "updated_at",
 }
 
 // Generated where
 
-type whereHelpernull_String struct{ field string }
+type whereHelpernull_Int struct{ field string }
 
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
+func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
+func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
+func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
+func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
+func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
+func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
 var ContentWhere = struct {
-	ID         whereHelperstring
-	UserID     whereHelpernull_String
-	CategoryID whereHelperstring
-	Title      whereHelperstring
-	CreatedAt  whereHelpertime_Time
-	UpdatedAt  whereHelpertime_Time
+	ID           whereHelperint
+	UserID       whereHelpernull_Int
+	CategoryID   whereHelperint
+	Title        whereHelperstring
+	Description  whereHelperstring
+	ThumbnailURL whereHelperstring
+	CreatedAt    whereHelpertime_Time
+	UpdatedAt    whereHelpertime_Time
 }{
-	ID:         whereHelperstring{field: "`content`.`id`"},
-	UserID:     whereHelpernull_String{field: "`content`.`user_id`"},
-	CategoryID: whereHelperstring{field: "`content`.`category_id`"},
-	Title:      whereHelperstring{field: "`content`.`title`"},
-	CreatedAt:  whereHelpertime_Time{field: "`content`.`created_at`"},
-	UpdatedAt:  whereHelpertime_Time{field: "`content`.`updated_at`"},
+	ID:           whereHelperint{field: "`content`.`id`"},
+	UserID:       whereHelpernull_Int{field: "`content`.`user_id`"},
+	CategoryID:   whereHelperint{field: "`content`.`category_id`"},
+	Title:        whereHelperstring{field: "`content`.`title`"},
+	Description:  whereHelperstring{field: "`content`.`description`"},
+	ThumbnailURL: whereHelperstring{field: "`content`.`thumbnail_url`"},
+	CreatedAt:    whereHelpertime_Time{field: "`content`.`created_at`"},
+	UpdatedAt:    whereHelpertime_Time{field: "`content`.`updated_at`"},
 }
 
 // ContentRels is where relationship names are stored.
@@ -122,9 +132,9 @@ func (*contentR) NewStruct() *contentR {
 type contentL struct{}
 
 var (
-	contentAllColumns            = []string{"id", "user_id", "category_id", "title", "created_at", "updated_at"}
-	contentColumnsWithoutDefault = []string{"id", "user_id", "category_id", "title", "created_at", "updated_at"}
-	contentColumnsWithDefault    = []string{}
+	contentAllColumns            = []string{"id", "user_id", "category_id", "title", "description", "thumbnail_url", "created_at", "updated_at"}
+	contentColumnsWithoutDefault = []string{"user_id", "category_id", "title", "description", "thumbnail_url", "created_at", "updated_at"}
+	contentColumnsWithDefault    = []string{"id"}
 	contentPrimaryKeyColumns     = []string{"id"}
 )
 
@@ -1122,7 +1132,7 @@ func Contents(mods ...qm.QueryMod) contentQuery {
 
 // FindContent retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindContent(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Content, error) {
+func FindContent(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Content, error) {
 	contentObj := &Content{}
 
 	sel := "*"
@@ -1215,15 +1225,26 @@ func (o *Content) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into content")
 	}
 
+	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == contentMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1491,16 +1512,27 @@ func (o *Content) Upsert(ctx context.Context, exec boil.ContextExecutor, updateC
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for content")
 	}
 
+	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == contentMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1678,7 +1710,7 @@ func (o *ContentSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // ContentExists checks if the Content row exists.
-func ContentExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ContentExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `content` where `id`=? limit 1)"
 

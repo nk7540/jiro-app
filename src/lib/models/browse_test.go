@@ -785,7 +785,7 @@ func testBrowsesSelect(t *testing.T) {
 }
 
 var (
-	browseDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `ContentID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	browseDBTypes = map[string]string{`ID`: `int`, `UserID`: `int`, `ContentID`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_             = bytes.MinRead
 )
 
