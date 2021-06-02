@@ -17,7 +17,7 @@ func NewContentRepository(db *mysql.Client) content.ContentRepository {
 	return &contentRepository{db}
 }
 
-func (r *contentRepository) GetFavoriteContents(ctx context.Context, userId string, limit int) ([]*content.Content, error) {
+func (r *contentRepository) GetFavoriteContents(ctx context.Context, userId int, limit int) ([]*content.Content, error) {
 	favoriteContents, err := models.Favorites(
 		qm.Select("content_id"),
 		qm.Where("user_id = ?", userId),

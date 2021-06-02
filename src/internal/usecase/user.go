@@ -16,9 +16,9 @@ import (
 // UserUsecase - user usecase
 type UserUsecase interface {
 	Create(ctx context.Context, r *request.CreateUser) error
-	Show(ctx context.Context, id string) (*response.ShowUser, error)
-	Followings(ctx context.Context, id string) (*response.Users, error)
-	Followers(ctx context.Context, id string) (*response.Users, error)
+	Show(ctx context.Context, id int) (*response.ShowUser, error)
+	Followings(ctx context.Context, id int) (*response.Users, error)
+	Followers(ctx context.Context, id int) (*response.Users, error)
 	Update(ctx context.Context, r *request.UpdateUser) (*response.UpdateUser, error)
 	Suspend(ctx context.Context) error
 }
@@ -56,7 +56,7 @@ func (uu *userUsecase) Create(ctx context.Context, req *request.CreateUser) erro
 	return uu.userService.Create(ctx, u)
 }
 
-func (uu *userUsecase) Show(ctx context.Context, id string) (*response.ShowUser, error) {
+func (uu *userUsecase) Show(ctx context.Context, id int) (*response.ShowUser, error) {
 	if _, err := uu.userService.Auth(ctx); err != nil {
 		return nil, domain.Unauthorized.New(err)
 	}
@@ -90,7 +90,7 @@ func (uu *userUsecase) Show(ctx context.Context, id string) (*response.ShowUser,
 	return res, nil
 }
 
-func (uu *userUsecase) Followings(ctx context.Context, id string) (*response.Users, error) {
+func (uu *userUsecase) Followings(ctx context.Context, id int) (*response.Users, error) {
 	us, err := uu.userService.Followings(ctx, id)
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func (uu *userUsecase) Followings(ctx context.Context, id string) (*response.Use
 	return res, nil
 }
 
-func (uu *userUsecase) Followers(ctx context.Context, id string) (*response.Users, error) {
+func (uu *userUsecase) Followers(ctx context.Context, id int) (*response.Users, error) {
 	us, err := uu.userService.Followers(ctx, id)
 	if err != nil {
 		return nil, err

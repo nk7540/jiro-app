@@ -9,6 +9,7 @@ import (
 	"artics-api/src/lib/models"
 	"artics-api/src/lib/mysql"
 
+	"github.com/google/uuid"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -26,7 +27,7 @@ func NewUserRepository(db *mysql.Client, auth *firebase.Auth) user.UserRepositor
 	}
 }
 func (r *userRepository) Create(ctx context.Context, u *user.User) error {
-	uid, err := r.auth.CreateUser(ctx, u.ID, u.Email, u.Password)
+	uid, err := r.auth.CreateUser(ctx, uuid.New().String(), u.Email, u.Password)
 	if err != nil {
 		return err
 	}
@@ -63,7 +64,7 @@ func (r *userRepository) GetByToken(ctx context.Context, tkn string) (*user.User
 	return u, nil
 }
 
-func (r *userRepository) Get(ctx context.Context, id string) (*user.User, error) {
+func (r *userRepository) Get(ctx context.Context, id int) (*user.User, error) {
 	mu, err := models.FindUser(ctx, r.db.DB, id)
 	if err != nil {
 		return nil, err
@@ -103,7 +104,7 @@ func (r *userRepository) GetByEmailOrNone(ctx context.Context, email string) (*u
 	}, nil
 }
 
-func (r *userRepository) Followings(ctx context.Context, id string) ([]*user.User, error) {
+func (r *userRepository) Followings(ctx context.Context, id int) ([]*user.User, error) {
 	fs, err := models.Follows(qm.Select("follower_id"), qm.Where("following_id = ?", id)).All(ctx, r.db.DB)
 	if err != nil {
 		return nil, err
@@ -116,7 +117,7 @@ func (r *userRepository) Followings(ctx context.Context, id string) ([]*user.Use
 	return r.getByIDs(ctx, followingIDs)
 }
 
-func (r *userRepository) Followers(ctx context.Context, id string) ([]*user.User, error) {
+func (r *userRepository) Followers(ctx context.Context, id int) ([]*user.User, error) {
 	fs, err := models.Follows(qm.Select("following_id"), qm.Where("follower_id = ?", id)).All(ctx, r.db.DB)
 	if err != nil {
 		return nil, err

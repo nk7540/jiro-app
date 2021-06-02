@@ -5,7 +5,7 @@ type CreateUser struct {
 }
 
 type ShowUser struct {
-	ID               string     `json:"id"`
+	ID               int        `json:"id"`
 	Nickname         string     `json:"nickname"`
 	Email            string     `json:"email"`
 	Followingcount   int        `json:"followingCount"`
@@ -18,12 +18,12 @@ type Users struct {
 }
 
 type User struct {
-	ID       string
+	ID       int
 	Nickname string
 }
 
 type UpdateUser struct {
-	ID       string `json:"id"`
+	ID       int    `json:"id"`
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
 }

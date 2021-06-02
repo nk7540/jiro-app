@@ -16,7 +16,7 @@ func NewContentService(cr content.ContentRepository) content.ContentService {
 	return &contentService{cr}
 }
 
-func (s *contentService) GetFavoriteContents(ctx context.Context, userId string, limit int) ([]*content.Content, error) {
+func (s *contentService) GetFavoriteContents(ctx context.Context, userId int, limit int) ([]*content.Content, error) {
 	cs, err := s.cr.GetFavoriteContents(ctx, userId, limit)
 	if err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)

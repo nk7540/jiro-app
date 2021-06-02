@@ -2,6 +2,7 @@ package v1
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -48,7 +49,10 @@ func (h *v1UserHandler) Create(c *gin.Context) {
 }
 
 func (h *v1UserHandler) Show(c *gin.Context) {
-	id := c.Params.ByName("id")
+	id, err := strconv.Atoi(c.Params.ByName("id"))
+	if err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+	}
 
 	ctx := middleware.GinContextToContext(c)
 	res, err := h.u.Show(ctx, id)
@@ -61,7 +65,10 @@ func (h *v1UserHandler) Show(c *gin.Context) {
 }
 
 func (h *v1UserHandler) Followings(c *gin.Context) {
-	id := c.Params.ByName("id")
+	id, err := strconv.Atoi(c.Params.ByName("id"))
+	if err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+	}
 	ctx := middleware.GinContextToContext(c)
 
 	res, err := h.u.Followings(ctx, id)
@@ -74,7 +81,10 @@ func (h *v1UserHandler) Followings(c *gin.Context) {
 }
 
 func (h *v1UserHandler) Followers(c *gin.Context) {
-	id := c.Params.ByName("id")
+	id, err := strconv.Atoi(c.Params.ByName("id"))
+	if err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+	}
 	ctx := middleware.GinContextToContext(c)
 
 	res, err := h.u.Followers(ctx, id)

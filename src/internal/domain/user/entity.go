@@ -6,7 +6,7 @@ import (
 
 // User entity
 type User struct {
-	ID                   string
+	ID                   int
 	Status               string `validate:"required,oneof=provisional available suspended"`
 	Nickname             string `validate:"max=256"`
 	Email                string `validate:"required,email,max=256"`

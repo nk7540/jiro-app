@@ -12,7 +12,6 @@ import (
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/middleware"
 
-	"github.com/google/uuid"
 	"golang.org/x/xerrors"
 )
 
@@ -46,7 +45,6 @@ func (s *userService) Create(ctx context.Context, u *user.User) error {
 		return domain.InvalidDomainValidation.New(err, ves...)
 	}
 
-	u.ID = uuid.New().String()
 	if err := s.userRepository.Create(ctx, u); err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)
 		return domain.ErrorInDatastore.New(err)
@@ -64,7 +62,7 @@ func (s *userService) Auth(ctx context.Context) (*user.User, error) {
 	return s.userRepository.GetByToken(ctx, t)
 }
 
-func (s *userService) Show(ctx context.Context, id string) (*user.User, error) {
+func (s *userService) Show(ctx context.Context, id int) (*user.User, error) {
 	u, err := s.userRepository.Get(ctx, id)
 	if err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)
@@ -74,7 +72,7 @@ func (s *userService) Show(ctx context.Context, id string) (*user.User, error) {
 	return u, nil
 }
 
-func (s *userService) Followings(ctx context.Context, id string) ([]*user.User, error) {
+func (s *userService) Followings(ctx context.Context, id int) ([]*user.User, error) {
 	us, err := s.userRepository.Followings(ctx, id)
 	if err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)
@@ -84,7 +82,7 @@ func (s *userService) Followings(ctx context.Context, id string) ([]*user.User, 
 	return us, nil
 }
 
-func (s *userService) Followers(ctx context.Context, id string) ([]*user.User, error) {
+func (s *userService) Followers(ctx context.Context, id int) ([]*user.User, error) {
 	us, err := s.userRepository.Followers(ctx, id)
 	if err != nil {
 		err = xerrors.Errorf("Failed to Repository: %w", err)

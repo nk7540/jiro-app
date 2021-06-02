@@ -5,5 +5,5 @@ import (
 )
 
 type ContentRepository interface {
-	GetFavoriteContents(ctx context.Context, userId string, limit int) ([]*Content, error)
+	GetFavoriteContents(ctx context.Context, userId int, limit int) ([]*Content, error)
 }
