@@ -1,11 +1,13 @@
 package v1
 
 import (
+	"artics-api/src/internal/domain"
 	"artics-api/src/internal/interface/handler"
 	"artics-api/src/internal/usecase"
 	"artics-api/src/internal/usecase/response"
 	"artics-api/src/middleware"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,9 +25,13 @@ func NewV1ContentHandler(u usecase.ContentUsecase) V1ContentHandler {
 }
 
 func (h *v1ContentHandler) Favorites(c *gin.Context) {
-	userId := c.Params.ByName("userId")
+	userID, err := strconv.Atoi(c.Params.ByName("user_id"))
+	if err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+		return
+	}
 	ctx := middleware.GinContextToContext(c)
-	cs, err := h.u.Favorites(ctx, userId)
+	cs, err := h.u.Favorites(ctx, userID)
 	if err != nil {
 		handler.ErrorHandling(c, err)
 	}

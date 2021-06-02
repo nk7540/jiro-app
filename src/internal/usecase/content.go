@@ -6,7 +6,7 @@ import (
 )
 
 type ContentUsecase interface {
-	Favorites(ctx context.Context, userId string) ([]*content.Content, error)
+	Favorites(ctx context.Context, userId int) ([]*content.Content, error)
 }
 
 type contentUsecase struct {
@@ -17,6 +17,6 @@ func NewContentUsecase(cs content.ContentService) ContentUsecase {
 	return &contentUsecase{cs}
 }
 
-func (cu *contentUsecase) Favorites(ctx context.Context, userId string) ([]*content.Content, error) {
+func (cu *contentUsecase) Favorites(ctx context.Context, userId int) ([]*content.Content, error) {
 	return cu.contentService.GetFavoriteContents(ctx, userId, 20)
 }
