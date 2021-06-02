@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"artics-api/src/internal/domain"
 	"artics-api/src/internal/interface/handler"
 	"artics-api/src/internal/usecase"
 	"artics-api/src/middleware"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +24,11 @@ func NewV1BrowseHandler(u usecase.BrowseUsecase) V1BrowseHandler {
 }
 
 func (h *v1BrowseHandler) Save(c *gin.Context) {
-	contentID := c.Params.ByName("content_id")
+	contentID, err := strconv.Atoi(c.Params.ByName("content_id"))
+	if err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+		return
+	}
 	ctx := middleware.GinContextToContext(c)
 
 	if err := h.u.Save(ctx, contentID); err != nil {

@@ -8,7 +8,6 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -30,7 +29,6 @@ func (r *browseRepository) Save(ctx context.Context, b *browse.Browse) error {
 
 	if err == sql.ErrNoRows {
 		mb = &models.Browse{
-			ID:        uuid.New().String(),
 			UserID:    b.UserID,
 			ContentID: b.ContentID,
 		}

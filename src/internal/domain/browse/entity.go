@@ -1,7 +1,7 @@
 package browse
 
 type Browse struct {
-	ID        string
-	UserID    string
-	ContentID string
+	ID        int
+	UserID    int
+	ContentID int
 }

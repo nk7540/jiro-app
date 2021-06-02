@@ -33,7 +33,6 @@ func (r *userRepository) Create(ctx context.Context, u *user.User) error {
 	}
 
 	mu := models.User{}
-	mu.ID = u.ID
 	mu.UID = uid
 	mu.Email = u.Email
 	mu.Nickname = u.Nickname

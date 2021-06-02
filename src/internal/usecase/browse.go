@@ -8,7 +8,7 @@ import (
 )
 
 type BrowseUsecase interface {
-	Save(ctx context.Context, contentID string) error
+	Save(ctx context.Context, contentID int) error
 }
 
 type browseUsecase struct {
@@ -20,7 +20,7 @@ func NewBrowseUsecase(us user.UserService, bs browse.BrowseService) BrowseUsecas
 	return &browseUsecase{us, bs}
 }
 
-func (bu *browseUsecase) Save(ctx context.Context, contentID string) error {
+func (bu *browseUsecase) Save(ctx context.Context, contentID int) error {
 	u, err := bu.userService.Auth(ctx)
 	if err != nil {
 		return domain.Unauthorized.New(err)

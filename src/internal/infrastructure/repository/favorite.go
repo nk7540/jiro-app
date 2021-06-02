@@ -22,7 +22,6 @@ func NewFavoriteRepository(db *mysql.Client) favorite.FavoriteRepository {
 
 func (r *favoriteRepository) Create(ctx context.Context, f *favorite.Favorite) error {
 	mf := models.Favorite{
-		ID:        f.ID,
 		UserID:    f.UserID,
 		ContentID: f.ContentID,
 	}
