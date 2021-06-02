@@ -7,7 +7,6 @@ import (
 	"artics-api/src/lib/models"
 	"artics-api/src/lib/mysql"
 
-	"github.com/google/uuid"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -25,7 +24,6 @@ func NewFollowRepository(db *mysql.Client) follow.FollowRepository {
 
 func (r *followRepository) Create(ctx context.Context, f *follow.Follow) error {
 	mf := models.Follow{}
-	mf.ID = uuid.New().String()
 	mf.FollowingID = f.FollowingID
 	mf.FollowerID = f.FollowerID
 	return mf.Insert(ctx, r.db.DB, boil.Infer())

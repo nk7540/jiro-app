@@ -2,9 +2,11 @@ package v1
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
+	"artics-api/src/internal/domain"
 	"artics-api/src/internal/interface/handler"
 	"artics-api/src/internal/usecase"
 	"artics-api/src/middleware"
@@ -26,11 +28,13 @@ func NewV1FollowHandler(u usecase.FollowUsecase) V1FollowHandler {
 }
 
 func (h *v1FollowHandler) Create(c *gin.Context) {
-	// Request
-	id := c.Params.ByName("user_id")
+	id, err := strconv.Atoi(c.Params.ByName("user_id"))
+	if err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+		return
+	}
 	ctx := middleware.GinContextToContext(c)
 
-	// Response
 	if err := h.u.Create(ctx, id); err != nil {
 		handler.ErrorHandling(c, err)
 		return
@@ -40,11 +44,13 @@ func (h *v1FollowHandler) Create(c *gin.Context) {
 }
 
 func (h *v1FollowHandler) Delete(c *gin.Context) {
-	// Request
-	id := c.Params.ByName("user_id")
+	id, err := strconv.Atoi(c.Params.ByName("user_id"))
+	if err != nil {
+		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+		return
+	}
 	ctx := middleware.GinContextToContext(c)
 
-	// Response
 	if err := h.u.Delete(ctx, id); err != nil {
 		handler.ErrorHandling(c, err)
 		return

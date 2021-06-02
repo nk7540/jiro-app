@@ -52,6 +52,7 @@ func (h *v1UserHandler) Show(c *gin.Context) {
 	id, err := strconv.Atoi(c.Params.ByName("id"))
 	if err != nil {
 		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+		return
 	}
 
 	ctx := middleware.GinContextToContext(c)
@@ -68,6 +69,7 @@ func (h *v1UserHandler) Followings(c *gin.Context) {
 	id, err := strconv.Atoi(c.Params.ByName("id"))
 	if err != nil {
 		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+		return
 	}
 	ctx := middleware.GinContextToContext(c)
 
@@ -84,6 +86,7 @@ func (h *v1UserHandler) Followers(c *gin.Context) {
 	id, err := strconv.Atoi(c.Params.ByName("id"))
 	if err != nil {
 		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
+		return
 	}
 	ctx := middleware.GinContextToContext(c)
 
