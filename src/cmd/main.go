@@ -13,6 +13,7 @@ import (
 	"artics-api/src/config"
 	"artics-api/src/lib/awssdk"
 	"artics-api/src/lib/firebase"
+	"artics-api/src/lib/gmail"
 	"artics-api/src/lib/grpc"
 	"artics-api/src/lib/i18n"
 	"artics-api/src/lib/mysql"
@@ -43,6 +44,8 @@ func main() {
 		log.Panic(err)
 	}
 
+	gm, err := gmail.NewClient(ctx)
+
 	sess := awssdk.NewSession(e.AWSProfile)
 	au := awssdk.NewUploader(sess.Session, e.AWSS3Bucket, e.AWSS3Key)
 
@@ -56,7 +59,7 @@ func main() {
 	i18n.Init()
 
 	// Registration
-	reg := registry.NewRegistry(au, fa, db, gc)
+	reg := registry.NewRegistry(au, fa, gm, db, gc)
 
 	// Running application
 	r := config.Router(reg)

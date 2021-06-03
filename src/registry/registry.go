@@ -9,6 +9,7 @@ import (
 	v "artics-api/src/internal/usecase/validation"
 	"artics-api/src/lib/awssdk"
 	"artics-api/src/lib/firebase"
+	"artics-api/src/lib/gmail"
 	"artics-api/src/lib/grpc"
 	"artics-api/src/lib/mysql"
 )
@@ -25,7 +26,7 @@ type Registry struct {
 
 // NewRegistry - imports files in /internal directory
 func NewRegistry(
-	au *awssdk.Uploader, fa *firebase.Auth, db *mysql.Client, gc *grpc.Client,
+	au *awssdk.Uploader, fa *firebase.Auth, gm *gmail.Client, db *mysql.Client, gc *grpc.Client,
 ) *Registry {
 	// Domain Repository
 	ur := repository.NewUserRepository(db, fa)
@@ -33,12 +34,13 @@ func NewRegistry(
 	cr := repository.NewContentRepository(db)
 	fvr := repository.NewFavoriteRepository(db)
 	br := repository.NewBrowseRepository(db)
+	flr := repository.NewFileRepository(au)
 
 	// Domain Validator
 	udv := dv.NewUserDomainValidator(ur)
 
 	// Domain Service
-	us := service.NewUserService(udv, ur, fr, cr)
+	us := service.NewUserService(gm, udv, ur, fr, cr, flr)
 	cs := service.NewContentService(cr)
 	fvs := service.NewFavoriteService(fvr)
 	bs := service.NewBrowseService(br)

@@ -10,12 +10,14 @@ import (
 	"artics-api/src/internal/domain/file"
 	"artics-api/src/internal/domain/follow"
 	"artics-api/src/internal/domain/user"
+	"artics-api/src/lib/gmail"
 	"artics-api/src/middleware"
 
 	"golang.org/x/xerrors"
 )
 
 type userService struct {
+	gmailClient         *gmail.Client
 	userDomainValidator user.UserDomainValidator
 	userRepository      user.UserRepository
 	followRepository    follow.FollowRepository
@@ -24,13 +26,14 @@ type userService struct {
 }
 
 func NewUserService(
+	gm *gmail.Client,
 	udv user.UserDomainValidator,
 	ur user.UserRepository,
 	flwr follow.FollowRepository,
 	cr content.ContentRepository,
 	flr file.FileRepository,
 ) user.UserService {
-	return &userService{udv, ur, flwr, cr, flr}
+	return &userService{gm, udv, ur, flwr, cr, flr}
 }
 
 func (s *userService) Create(ctx context.Context, u *user.User) error {
