@@ -1,10 +1,12 @@
 package gmail
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,11 +19,21 @@ import (
 	"google.golang.org/api/option"
 )
 
+var from string
+
 type Client struct {
 	Service *gmail.Service
 }
 
-func NewClient(ctx context.Context) (*Client, error) {
+type Params struct {
+	To      string
+	Subject string
+	Data    interface{}
+	Files   []string
+}
+
+func NewClient(ctx context.Context, from string) (*Client, error) {
+	from = from
 	b, err := ioutil.ReadFile("credentials.json")
 	if err != nil {
 		return nil, err
@@ -41,14 +53,26 @@ func NewClient(ctx context.Context) (*Client, error) {
 	return &Client{srv}, nil
 }
 
-func (c *Client) Send(body []byte) error {
+func (c *Client) Send(p *Params) error {
+	t, err := template.ParseFiles(p.Files...)
+	if err != nil {
+		return err
+	}
+	buff := &bytes.Buffer{}
+	t.Execute(buff, p.Data)
+
+	body := []byte("From: " + from + "\r\n" +
+		"To: " + p.To + "\r\n" +
+		"Subject: " + p.Subject + "\r\n" +
+		"\r\n" + buff.String())
+
 	var message gmail.Message
 	message.Raw = base64.StdEncoding.EncodeToString(body)
 	message.Raw = strings.Replace(message.Raw, "/", "_", -1)
 	message.Raw = strings.Replace(message.Raw, "+", "-", -1)
 	message.Raw = strings.Replace(message.Raw, "=", "", -1)
 
-	_, err := c.Service.Users.Messages.Send("me", &message).Do()
+	_, err = c.Service.Users.Messages.Send("me", &message).Do()
 	return err
 }
 
