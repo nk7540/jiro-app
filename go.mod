@@ -13,14 +13,19 @@ require (
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/gofiber/fiber/v2 v2.11.0 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.2.0
+	github.com/ilyakaznacheev/cleanenv v1.2.5 // indirect
+	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/sirupsen/logrus v1.6.0

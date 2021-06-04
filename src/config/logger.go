@@ -6,7 +6,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Logger() {
+type LoggerConfig struct {
+}
+
+func (c *LoggerConfig) Setup() {
 	format := &logrus.JSONFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
 	}

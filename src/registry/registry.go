@@ -1,17 +1,13 @@
 package registry
 
 import (
+	"artics-api/src/config"
 	"artics-api/src/internal/infrastructure/repository"
 	"artics-api/src/internal/infrastructure/service"
 	dv "artics-api/src/internal/infrastructure/validation"
 	v1 "artics-api/src/internal/interface/handler/v1"
 	"artics-api/src/internal/usecase"
 	v "artics-api/src/internal/usecase/validation"
-	"artics-api/src/lib/awssdk"
-	"artics-api/src/lib/firebase"
-	"artics-api/src/lib/gmail"
-	"artics-api/src/lib/grpc"
-	"artics-api/src/lib/mysql"
 )
 
 // Registry - DI container
@@ -26,21 +22,25 @@ type Registry struct {
 
 // NewRegistry - imports files in /internal directory
 func NewRegistry(
-	au *awssdk.Uploader, fa *firebase.Auth, gm *gmail.Client, db *mysql.Client, gc *grpc.Client,
+	uploader *config.UploaderConfig,
+	auth *config.AuthConfig,
+	mail *config.MailConfig,
+	db *config.DatabaseConfig,
+	rpc *config.RPCConfig,
 ) *Registry {
 	// Domain Repository
-	ur := repository.NewUserRepository(db, fa)
+	ur := repository.NewUserRepository(db, auth)
 	fr := repository.NewFollowRepository(db)
 	cr := repository.NewContentRepository(db)
 	fvr := repository.NewFavoriteRepository(db)
 	br := repository.NewBrowseRepository(db)
-	flr := repository.NewFileRepository(au)
+	flr := repository.NewFileRepository(uploader)
 
 	// Domain Validator
 	udv := dv.NewUserDomainValidator(ur)
 
 	// Domain Service
-	us := service.NewUserService(gm, udv, ur, fr, cr, flr)
+	us := service.NewUserService(mail, udv, ur, fr, cr, flr)
 	cs := service.NewContentService(cr)
 	fvs := service.NewFavoriteService(fvr)
 	bs := service.NewBrowseService(br)
