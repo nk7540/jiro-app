@@ -16,6 +16,7 @@ import (
 // UserUsecase - user usecase
 type UserUsecase interface {
 	Create(ctx context.Context, r *request.CreateUser) error
+	Auth(ctx context.Context, tkn string) (*user.User, error)
 	Show(ctx context.Context, id int) (*response.ShowUser, error)
 	Followings(ctx context.Context, id int) (*response.Users, error)
 	Followers(ctx context.Context, id int) (*response.Users, error)
@@ -54,6 +55,10 @@ func (uu *userUsecase) Create(ctx context.Context, req *request.CreateUser) erro
 	}
 
 	return uu.userService.Create(ctx, u)
+}
+
+func (uu *userUsecase) Auth(ctx context.Context, tkn string) (*user.User, error) {
+	return uu.userService.Auth(ctx, tkn)
 }
 
 func (uu *userUsecase) Show(ctx context.Context, id int) (*response.ShowUser, error) {

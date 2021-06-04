@@ -4,19 +4,19 @@ import (
 	"context"
 	"database/sql"
 
+	"artics-api/src/config"
 	"artics-api/src/internal/domain/favorite"
-	"artics-api/src/lib/models"
-	"artics-api/src/lib/mysql"
+	"artics-api/src/internal/infrastructure/models"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type favoriteRepository struct {
-	db *mysql.Client
+	db *config.DatabaseConfig
 }
 
-func NewFavoriteRepository(db *mysql.Client) favorite.FavoriteRepository {
+func NewFavoriteRepository(db *config.DatabaseConfig) favorite.FavoriteRepository {
 	return &favoriteRepository{db}
 }
 
@@ -25,7 +25,7 @@ func (r *favoriteRepository) Create(ctx context.Context, f *favorite.Favorite) e
 		UserID:    f.UserID,
 		ContentID: f.ContentID,
 	}
-	return mf.Insert(ctx, r.db.DB, boil.Infer())
+	return mf.Insert(ctx, r.db, boil.Infer())
 }
 
 func (r *favoriteRepository) Delete(ctx context.Context, f *favorite.Favorite) error {
@@ -33,7 +33,7 @@ func (r *favoriteRepository) Delete(ctx context.Context, f *favorite.Favorite) e
 		"user_id = ? and content_id = ?",
 		f.UserID,
 		f.ContentID,
-	)).One(ctx, r.db.DB)
+	)).One(ctx, r.db)
 
 	if err == sql.ErrNoRows {
 		return nil
@@ -41,6 +41,6 @@ func (r *favoriteRepository) Delete(ctx context.Context, f *favorite.Favorite) e
 		return err
 	}
 
-	_, err = mf.Delete(ctx, r.db.DB)
+	_, err = mf.Delete(ctx, r.db)
 	return err
 }

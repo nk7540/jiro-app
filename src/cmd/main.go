@@ -20,18 +20,18 @@ func main() {
 	defer stop()
 
 	// Initialization
-	cFile := flag.String("config", "config.yml", "User Config file")
+	configFile := flag.String("config", "config.yml", "User Config file")
 	flag.Parse()
-	c := &config.AppConfig{ConfigFile: *cFile}
-	c.Setup()
+	app := &config.AppConfig{ConfigFile: *configFile}
+	app.Setup()
 
 	// Registration
 	reg := registry.NewRegistry(
-		&c.Uploader,
-		&c.Auth,
-		&c.Mail,
-		&c.Database,
-		&c.RPC,
+		&app.Uploader,
+		&app.Auth,
+		&app.Mail,
+		&app.Database,
+		&app.RPC,
 	)
 
 	// Running application

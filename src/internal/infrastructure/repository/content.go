@@ -1,24 +1,24 @@
 package repository
 
 import (
+	"artics-api/src/config"
 	"artics-api/src/internal/domain/content"
-	"artics-api/src/lib/models"
-	"artics-api/src/lib/mysql"
+	"artics-api/src/internal/infrastructure/models"
 	"context"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type contentRepository struct {
-	db *mysql.Client
+	db *config.DatabaseConfig
 }
 
-func NewContentRepository(db *mysql.Client) content.ContentRepository {
+func NewContentRepository(db *config.DatabaseConfig) content.ContentRepository {
 	return &contentRepository{db}
 }
 
 func (r *contentRepository) Get(ctx context.Context, id int) (*content.Content, error) {
-	mc, err := models.FindContent(ctx, r.db.DB, id)
+	mc, err := models.FindContent(ctx, r.db, id)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (r *contentRepository) GetFavoriteContents(ctx context.Context, userId int,
 		qm.Where("user_id = ?", userId),
 		qm.OrderBy("created_at desc"),
 		qm.Limit(limit),
-	).All(ctx, r.db.DB)
+	).All(ctx, r.db)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (r *contentRepository) getByIDs(ctx context.Context, ids []int) ([]*content
 		convertedIDs[i] = id
 	}
 
-	mcs, err := models.Contents(qm.WhereIn("id in ?", convertedIDs...)).All(ctx, r.db.DB)
+	mcs, err := models.Contents(qm.WhereIn("id in ?", convertedIDs...)).All(ctx, r.db)
 	if err != nil {
 		return nil, err
 	}

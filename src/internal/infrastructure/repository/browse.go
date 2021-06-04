@@ -1,9 +1,9 @@
 package repository
 
 import (
+	"artics-api/src/config"
 	"artics-api/src/internal/domain/browse"
-	"artics-api/src/lib/models"
-	"artics-api/src/lib/mysql"
+	"artics-api/src/internal/infrastructure/models"
 	"context"
 	"database/sql"
 	"time"
@@ -13,10 +13,10 @@ import (
 )
 
 type browseRepository struct {
-	db *mysql.Client
+	db *config.DatabaseConfig
 }
 
-func NewBrowseRepository(db *mysql.Client) browse.BrowseRepository {
+func NewBrowseRepository(db *config.DatabaseConfig) browse.BrowseRepository {
 	return &browseRepository{db}
 }
 
@@ -25,19 +25,19 @@ func (r *browseRepository) Save(ctx context.Context, b *browse.Browse) error {
 		"user_id = ? and content_id = ?",
 		b.UserID,
 		b.ContentID,
-	)).One(ctx, r.db.DB)
+	)).One(ctx, r.db)
 
 	if err == sql.ErrNoRows {
 		mb = &models.Browse{
 			UserID:    b.UserID,
 			ContentID: b.ContentID,
 		}
-		if err := mb.Insert(ctx, r.db.DB, boil.Infer()); err != nil {
+		if err := mb.Insert(ctx, r.db, boil.Infer()); err != nil {
 			return err
 		}
 	} else if err == nil {
 		mb.UpdatedAt = time.Now()
-		if _, err := mb.Update(ctx, r.db.DB, boil.Whitelist("updated_at")); err != nil {
+		if _, err := mb.Update(ctx, r.db, boil.Whitelist("updated_at")); err != nil {
 			return err
 		}
 	} else {

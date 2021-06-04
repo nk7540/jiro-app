@@ -2,18 +2,15 @@ package v1
 
 import (
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/interface/handler"
 	"artics-api/src/internal/usecase"
-	"artics-api/src/middleware"
-	"net/http"
-	"strconv"
+	"artics-api/src/pkg"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type V1FavoriteHandler interface {
-	Create(c *gin.Context)
-	Delete(c *gin.Context)
+	Create(c *fiber.Ctx) error
+	Delete(c *fiber.Ctx) error
 }
 
 type v1FavoriteHandler struct {
@@ -24,34 +21,28 @@ func NewV1FavoriteHandler(u usecase.FavoriteUsecase) V1FavoriteHandler {
 	return &v1FavoriteHandler{u}
 }
 
-func (h *v1FavoriteHandler) Create(c *gin.Context) {
-	contentID, err := strconv.Atoi(c.Params.ByName("content_id"))
+func (h *v1FavoriteHandler) Create(c *fiber.Ctx) error {
+	contentID, err := c.ParamsInt("content_id")
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
-	}
-	ctx := middleware.GinContextToContext(c)
-
-	if err := h.u.Create(ctx, contentID); err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return domain.UnableParseJSON.New(err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	if err := h.u.Create(pkg.Context{Ctx: c}, contentID); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
 }
 
-func (h *v1FavoriteHandler) Delete(c *gin.Context) {
-	contentID, err := strconv.Atoi(c.Params.ByName("content_id"))
+func (h *v1FavoriteHandler) Delete(c *fiber.Ctx) error {
+	contentID, err := c.ParamsInt("content_id")
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
-	}
-	ctx := middleware.GinContextToContext(c)
-
-	if err := h.u.Delete(ctx, contentID); err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return domain.UnableParseJSON.New(err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	if err := h.u.Delete(pkg.Context{Ctx: c}, contentID); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
 }

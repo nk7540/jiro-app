@@ -2,19 +2,17 @@ package v1
 
 import (
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/interface/handler"
 	"artics-api/src/internal/usecase"
 	"artics-api/src/internal/usecase/response"
-	"artics-api/src/middleware"
-	"net/http"
+	"artics-api/src/pkg"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type V1ContentHandler interface {
-	Show(c *gin.Context)
-	Favorites(c *gin.Context)
+	Show(c *fiber.Ctx) error
+	Favorites(c *fiber.Ctx) error
 }
 
 type v1ContentHandler struct {
@@ -25,18 +23,15 @@ func NewV1ContentHandler(u usecase.ContentUsecase) V1ContentHandler {
 	return &v1ContentHandler{u}
 }
 
-func (h *v1ContentHandler) Show(c *gin.Context) {
-	id, err := strconv.Atoi(c.Params.ByName("id"))
+func (h *v1ContentHandler) Show(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
+		return domain.UnableParseJSON.New(err)
 	}
-	ctx := middleware.GinContextToContext(c)
 
-	content, err := h.u.Show(ctx, id)
+	content, err := h.u.Show(pkg.Context{Ctx: c}, id)
 	if err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return err
 	}
 
 	res := &response.Content{
@@ -44,19 +39,18 @@ func (h *v1ContentHandler) Show(c *gin.Context) {
 		Title: content.Title,
 	}
 
-	c.JSON(http.StatusOK, res)
+	return c.JSON(res)
 }
 
-func (h *v1ContentHandler) Favorites(c *gin.Context) {
-	userID, err := strconv.Atoi(c.Params.ByName("user_id"))
+func (h *v1ContentHandler) Favorites(c *fiber.Ctx) error {
+	userID, err := strconv.Atoi(c.Query("user_id"))
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
+		return domain.UnableParseJSON.New(err)
 	}
-	ctx := middleware.GinContextToContext(c)
-	cs, err := h.u.Favorites(ctx, userID)
+
+	cs, err := h.u.Favorites(pkg.Context{Ctx: c}, userID)
 	if err != nil {
-		handler.ErrorHandling(c, err)
+		return err
 	}
 
 	resContents := make([]*response.Content, len(cs))
@@ -68,5 +62,5 @@ func (h *v1ContentHandler) Favorites(c *gin.Context) {
 	}
 	res := &response.Contents{resContents}
 
-	c.JSON(http.StatusOK, res)
+	return c.JSON(res)
 }

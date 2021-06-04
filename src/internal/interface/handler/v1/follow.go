@@ -1,21 +1,19 @@
 package v1
 
 import (
-	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/interface/handler"
 	"artics-api/src/internal/usecase"
-	"artics-api/src/middleware"
+	"artics-api/src/pkg"
 )
 
 // V1FollowHandler - v1 follow handler
 type V1FollowHandler interface {
-	Create(ctx *gin.Context)
-	Delete(ctx *gin.Context)
+	Create(c *fiber.Ctx) error
+	Delete(c *fiber.Ctx) error
 }
 
 type v1FollowHandler struct {
@@ -27,34 +25,28 @@ func NewV1FollowHandler(u usecase.FollowUsecase) V1FollowHandler {
 	return &v1FollowHandler{u}
 }
 
-func (h *v1FollowHandler) Create(c *gin.Context) {
-	id, err := strconv.Atoi(c.Params.ByName("user_id"))
+func (h *v1FollowHandler) Create(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Query("user_id"))
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
-	}
-	ctx := middleware.GinContextToContext(c)
-
-	if err := h.u.Create(ctx, id); err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return domain.UnableParseJSON.New(err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	if err := h.u.Create(pkg.Context{Ctx: c}, id); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
 }
 
-func (h *v1FollowHandler) Delete(c *gin.Context) {
-	id, err := strconv.Atoi(c.Params.ByName("user_id"))
+func (h *v1FollowHandler) Delete(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Query("user_id"))
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
-	}
-	ctx := middleware.GinContextToContext(c)
-
-	if err := h.u.Delete(ctx, id); err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return domain.UnableParseJSON.New(err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	if err := h.u.Delete(pkg.Context{Ctx: c}, id); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
 }

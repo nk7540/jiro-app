@@ -7,7 +7,7 @@ import (
 
 type UserService interface {
 	Create(ctx context.Context, u *User) error
-	Auth(ctx context.Context) (*User, error)
+	Auth(ctx context.Context, tkn string) (*User, error)
 	Show(ctx context.Context, id int) (*User, error)
 	Followings(ctx context.Context, id int) ([]*User, error)
 	Followers(ctx context.Context, id int) ([]*User, error)

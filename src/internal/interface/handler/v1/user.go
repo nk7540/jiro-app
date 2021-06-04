@@ -1,26 +1,24 @@
 package v1
 
 import (
-	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/interface/handler"
 	"artics-api/src/internal/usecase"
 	"artics-api/src/internal/usecase/request"
-	"artics-api/src/middleware"
+	"artics-api/src/pkg"
 )
 
 // V1UserHandler - v1 user handler
 type V1UserHandler interface {
-	Create(ctx *gin.Context)
-	Show(ctx *gin.Context)
-	Followings(ctx *gin.Context)
-	Followers(ctx *gin.Context)
-	Update(ctx *gin.Context)
-	Suspend(ctx *gin.Context)
+	Create(c *fiber.Ctx) error
+	Show(c *fiber.Ctx) error
+	Followings(c *fiber.Ctx) error
+	Followers(c *fiber.Ctx) error
+	Update(c *fiber.Ctx) error
+	Suspend(c *fiber.Ctx) error
 }
 
 type v1UserHandler struct {
@@ -32,97 +30,79 @@ func NewV1UserHandler(u usecase.UserUsecase) V1UserHandler {
 	return &v1UserHandler{u}
 }
 
-func (h *v1UserHandler) Create(c *gin.Context) {
+func (h *v1UserHandler) Create(c *fiber.Ctx) error {
 	req := &request.CreateUser{}
-	if err := c.BindJSON(req); err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
+	if err := c.BodyParser(req); err != nil {
+		return domain.UnableParseJSON.New(err)
 	}
 
-	ctx := middleware.GinContextToContext(c)
-	if err := h.u.Create(ctx, req); err != nil {
-		handler.ErrorHandling(c, err)
-		return
+	if err := h.u.Create(pkg.Context{Ctx: c}, req); err != nil {
+		return err
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	return c.JSON(nil)
 }
 
-func (h *v1UserHandler) Show(c *gin.Context) {
-	id, err := strconv.Atoi(c.Params.ByName("id"))
+func (h *v1UserHandler) Show(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
+		return domain.UnableParseJSON.New(err)
 	}
 
-	ctx := middleware.GinContextToContext(c)
-	res, err := h.u.Show(ctx, id)
+	res, err := h.u.Show(pkg.Context{Ctx: c}, id)
 	if err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return err
 	}
 
-	c.JSON(http.StatusOK, res)
+	return c.JSON(res)
 }
 
-func (h *v1UserHandler) Followings(c *gin.Context) {
-	id, err := strconv.Atoi(c.Params.ByName("id"))
+func (h *v1UserHandler) Followings(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
-	}
-	ctx := middleware.GinContextToContext(c)
-
-	res, err := h.u.Followings(ctx, id)
-	if err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return domain.UnableParseJSON.New(err)
 	}
 
-	c.JSON(http.StatusOK, res)
+	res, err := h.u.Followings(pkg.Context{Ctx: c}, id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(res)
 }
 
-func (h *v1UserHandler) Followers(c *gin.Context) {
-	id, err := strconv.Atoi(c.Params.ByName("id"))
+func (h *v1UserHandler) Followers(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		handler.ErrorHandling(c, domain.UnableParseJSON.New(err))
-		return
-	}
-	ctx := middleware.GinContextToContext(c)
-
-	res, err := h.u.Followers(ctx, id)
-	if err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return domain.UnableParseJSON.New(err)
 	}
 
-	c.JSON(http.StatusOK, res)
+	res, err := h.u.Followers(pkg.Context{Ctx: c}, id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(res)
 }
 
-func (h *v1UserHandler) Update(c *gin.Context) {
+func (h *v1UserHandler) Update(c *fiber.Ctx) error {
 	req := &request.UpdateUser{}
-	if err := c.Bind(req); err != nil {
-		handler.ErrorHandling(c, domain.UnableParseFormData.New(err))
-		return
+	if err := c.BodyParser(req); err != nil {
+		return domain.UnableParseFormData.New(err)
 	}
 
-	ctx := middleware.GinContextToContext(c)
-	res, err := h.u.Update(ctx, req)
+	res, err := h.u.Update(pkg.Context{Ctx: c}, req)
 	if err != nil {
-		handler.ErrorHandling(c, err)
-		return
+		return err
 	}
 
-	c.JSON(http.StatusOK, res)
+	return c.JSON(res)
 }
 
-func (h *v1UserHandler) Suspend(c *gin.Context) {
-	ctx := middleware.GinContextToContext(c)
-
-	if err := h.u.Suspend(ctx); err != nil {
-		handler.ErrorHandling(c, err)
-		return
+func (h *v1UserHandler) Suspend(c *fiber.Ctx) error {
+	if err := h.u.Suspend(pkg.Context{Ctx: c}); err != nil {
+		return err
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	return c.JSON(nil)
 }
