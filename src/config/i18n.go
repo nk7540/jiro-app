@@ -58,7 +58,7 @@ func (c *I18nConfig) NewMiddleware() fiber.Handler {
 		accept := c.Get("Accept-Language")
 		tag, _ := language.MatchStrings(matcher, lang, accept)
 
-		p := message.NewPrinter(tag)
+		p := I18nConfig{Printer: message.NewPrinter(tag)}
 		c.Locals("i18n", p)
 		return c.Next()
 	}
