@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 
-	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/follow"
 	"artics-api/src/internal/domain/user"
+	"artics-api/src/pkg"
 )
 
 type FollowUsecase interface {
@@ -24,10 +24,8 @@ func NewFollowUsecase(fr follow.FollowRepository, us user.UserService) FollowUse
 }
 
 func (fu *followUsecase) Create(ctx context.Context, id int) error {
-	u, err := fu.userService.Auth(ctx)
-	if err != nil {
-		return domain.Unauthorized.New(err)
-	}
+	c := ctx.(pkg.Context)
+	u := c.Locals("user").(user.User)
 
 	f := &follow.Follow{}
 	f.FollowingID = u.ID
@@ -37,10 +35,8 @@ func (fu *followUsecase) Create(ctx context.Context, id int) error {
 }
 
 func (fu *followUsecase) Delete(ctx context.Context, id int) error {
-	u, err := fu.userService.Auth(ctx)
-	if err != nil {
-		return domain.Unauthorized.New(err)
-	}
+	c := ctx.(pkg.Context)
+	u := c.Locals("user").(user.User)
 
 	f := &follow.Follow{}
 	f.FollowingID = u.ID

@@ -4,9 +4,9 @@ import (
 	"context"
 	"reflect"
 
+	"artics-api/src/config"
 	"artics-api/src/internal/domain"
-	"artics-api/src/lib/i18n"
-	"artics-api/src/middleware"
+	"artics-api/src/pkg"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -46,14 +46,14 @@ func (rv *requestValidator) Run(ctx context.Context, i interface{}) []*domain.Va
 		errorFieldName := errorField.Tag.Get("json")
 		errorMessage := ""
 
-		c, _ := middleware.GinContextFromContext(ctx)
-		p := i18n.NewI18nPrinter(c.GetHeader("Accept-Language"))
+		c := ctx.(pkg.Context)
+		p := c.Locals("i18n").(config.I18nConfig)
 		switch v.Tag() {
 		case domain.EqFieldTag:
 			eqField, _ := rt.FieldByName(v.Param())
-			errorMessage = validationMessage(p, v.Tag(), eqField.Tag.Get("label"))
+			errorMessage = validationMessage(&p, v.Tag(), eqField.Tag.Get("label"))
 		default:
-			errorMessage = validationMessage(p, v.Tag(), v.Param())
+			errorMessage = validationMessage(&p, v.Tag(), v.Param())
 		}
 
 		validationErrors[i] = &domain.ValidationError{
@@ -65,7 +65,7 @@ func (rv *requestValidator) Run(ctx context.Context, i interface{}) []*domain.Va
 	return validationErrors
 }
 
-func validationMessage(p *i18n.I18nPrinter, tag string, options ...string) string {
+func validationMessage(p *config.I18nConfig, tag string, options ...string) string {
 	switch tag {
 	case domain.RequiredTag:
 		return p.Sprintf(domain.RequiredMessage)

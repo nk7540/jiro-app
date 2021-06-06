@@ -1,9 +1,10 @@
 package handler
 
 import (
-	"artics-api/src/internal/usecase/response"
 	"artics-api/src/internal/domain"
-	"github.com/gin-gonic/gin"
+	"artics-api/src/internal/usecase/response"
+
+	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,15 +19,10 @@ const (
 )
 
 // ErrorHandling - エラーレスポンスを返す
-func ErrorHandling(ctx *gin.Context, err error) {
+func ErrorHandling(c *fiber.Ctx, err error) error {
 	res := getErrorResponse(err)
 
-	// Fluentへのログ転送
-	// -> 今は使ってないからいったんコメントアウト
-	// sendFluent(ctx, res)
-
-	ctx.JSON(res.StatusCode, res)
-	ctx.Abort()
+	return c.Status(res.StatusCode).JSON(res)
 }
 
 // getErrorResponse - エラー用のレスポンスを返す
@@ -48,10 +44,6 @@ func getErrorResponse(err error) *response.ErrorResponse {
 	case domain.UnableParseJSON:
 		res = *response.BadRequest
 		message = "Unable parse json"
-	case domain.UnableConvertBase64:
-		res = *response.BadRequest
-		res.ValidationErrors = getValidationErrorsInErrorReponse(err)
-		message = "Unable convert string into byte64"
 	case domain.NotEqualRequestWithDatastore:
 		res = *response.BadRequest
 		message = "Invalid request validation"
@@ -105,22 +97,14 @@ func logging(level outputLevel, message string, err error, res *response.ErrorRe
 
 	switch level {
 	case debugLevel:
-		log.WithFields(fields).Debug(getError(err))
+		log.WithFields(fields).Debug(err.Error())
 	case infoLevel:
-		log.WithFields(fields).Info(getError(err))
+		log.WithFields(fields).Info(err.Error())
 	case warnLevel:
-		log.WithFields(fields).Info(getError(err))
+		log.WithFields(fields).Info(err.Error())
 	default:
-		log.WithFields(fields).Error(getError(err))
+		log.WithFields(fields).Error(err.Error())
 	}
-}
-
-func getError(err error) string {
-	if e, ok := err.(domain.CustomError); ok {
-		return e.Error()
-	}
-
-	return ""
 }
 
 func getErrorCode(err error) domain.ErrorCode {

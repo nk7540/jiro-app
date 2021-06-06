@@ -1,14 +1,12 @@
 package validation
 
 import (
+	"artics-api/src/config"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/user"
-	"artics-api/src/lib/i18n"
-	"artics-api/src/middleware"
+	"artics-api/src/pkg"
 	"context"
 	"regexp"
-
-	"golang.org/x/xerrors"
 )
 
 type userDomainValidator struct {
@@ -28,11 +26,8 @@ var (
 )
 
 func (udv *userDomainValidator) Validate(ctx context.Context, u *user.User) ([]*domain.ValidationError, error) {
-	c, err := middleware.GinContextFromContext(ctx)
-	if err != nil {
-		return nil, xerrors.New("Cannot convert to gin.Context")
-	}
-	p := i18n.NewI18nPrinter(c.GetHeader("Accept-Language"))
+	c := ctx.(pkg.Context)
+	p := c.Locals("i18n").(config.I18nConfig)
 	ves := make([]*domain.ValidationError, 0)
 
 	emailUser, err := udv.ur.GetByEmailOrNone(ctx, u.Email)
@@ -52,8 +47,8 @@ func (udv *userDomainValidator) Validate(ctx context.Context, u *user.User) ([]*
 }
 
 func (udv *userDomainValidator) ValidatePassword(ctx context.Context, password string, passwordConfirmation string) []*domain.ValidationError {
-	c, _ := middleware.GinContextFromContext(ctx)
-	p := i18n.NewI18nPrinter(c.GetHeader("Accept-Language"))
+	c := ctx.(pkg.Context)
+	p := c.Locals("i18n").(config.I18nConfig)
 	ves := make([]*domain.ValidationError, 0)
 
 	if password == "" {

@@ -1,9 +1,9 @@
 package usecase
 
 import (
-	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/favorite"
 	"artics-api/src/internal/domain/user"
+	"artics-api/src/pkg"
 	"context"
 )
 
@@ -22,10 +22,8 @@ func NewFavoriteUsecase(us user.UserService, fs favorite.FavoriteService) Favori
 }
 
 func (fu *favoriteUsecase) Create(ctx context.Context, contentID int) error {
-	u, err := fu.userService.Auth(ctx)
-	if err != nil {
-		return domain.Unauthorized.New(err)
-	}
+	c := ctx.(pkg.Context)
+	u := c.Locals("user").(user.User)
 
 	f := &favorite.Favorite{
 		UserID:    u.ID,
@@ -36,10 +34,8 @@ func (fu *favoriteUsecase) Create(ctx context.Context, contentID int) error {
 }
 
 func (fu *favoriteUsecase) Delete(ctx context.Context, contentID int) error {
-	u, err := fu.userService.Auth(ctx)
-	if err != nil {
-		return domain.Unauthorized.New(err)
-	}
+	c := ctx.(pkg.Context)
+	u := c.Locals("user").(user.User)
 
 	f := &favorite.Favorite{
 		UserID:    u.ID,

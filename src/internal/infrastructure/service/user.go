@@ -54,7 +54,12 @@ func (s *userService) Create(ctx context.Context, u *user.User) error {
 }
 
 func (s *userService) Auth(ctx context.Context, tkn string) (*user.User, error) {
-	return s.userRepository.GetByToken(ctx, tkn)
+	u, err := s.userRepository.GetByToken(ctx, tkn)
+	if err != nil {
+		return nil, domain.Unauthorized.New(err)
+	}
+
+	return u, nil
 }
 
 func (s *userService) Show(ctx context.Context, id int) (*user.User, error) {

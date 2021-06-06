@@ -1,0 +1,14 @@
+database:
+  host: artics-db
+  username: root
+  password: password
+  db_name: dev_database
+  port: 3306
+
+server:
+  name: "artics"
+  host: localhost
+  port: 8080
+
+mail:
+  from: 'info@blail.co.jp'

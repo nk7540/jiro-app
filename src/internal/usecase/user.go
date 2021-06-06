@@ -9,6 +9,7 @@ import (
 	"artics-api/src/internal/usecase/request"
 	"artics-api/src/internal/usecase/response"
 	"artics-api/src/internal/usecase/validation"
+	"artics-api/src/pkg"
 
 	"golang.org/x/xerrors"
 )
@@ -62,10 +63,6 @@ func (uu *userUsecase) Auth(ctx context.Context, tkn string) (*user.User, error)
 }
 
 func (uu *userUsecase) Show(ctx context.Context, id int) (*response.ShowUser, error) {
-	if _, err := uu.userService.Auth(ctx); err != nil {
-		return nil, domain.Unauthorized.New(err)
-	}
-
 	u, err := uu.userService.Show(ctx, id)
 	if err != nil {
 		return nil, err
@@ -132,10 +129,8 @@ func (uu *userUsecase) Followers(ctx context.Context, id int) (*response.Users, 
 }
 
 func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*response.UpdateUser, error) {
-	u, err := uu.userService.Auth(ctx)
-	if err != nil {
-		return nil, domain.Unauthorized.New(err)
-	}
+	c := ctx.(pkg.Context)
+	u := c.Locals("user").(user.User)
 
 	u.Nickname = req.Nickname
 	u.Email = req.Email
@@ -156,7 +151,7 @@ func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*re
 
 	u.ThumbnailURL = thumbnailURL
 
-	if err := uu.userRepository.Update(ctx, u); err != nil {
+	if err := uu.userRepository.Update(ctx, &u); err != nil {
 		return nil, err
 	}
 
@@ -170,10 +165,8 @@ func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*re
 }
 
 func (uu *userUsecase) Suspend(ctx context.Context) error {
-	u, err := uu.userService.Auth(ctx)
-	if err != nil {
-		return domain.Unauthorized.New(err)
-	}
+	c := ctx.(pkg.Context)
+	u := c.Locals("user").(user.User)
 
 	u.Status = "suspended"
 
@@ -182,5 +175,5 @@ func (uu *userUsecase) Suspend(ctx context.Context) error {
 		return domain.InvalidRequestValidation.New(err, ves...)
 	}
 
-	return uu.userService.Suspend(ctx, u)
+	return uu.userService.Suspend(ctx, &u)
 }

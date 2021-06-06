@@ -105,7 +105,7 @@ func (r *userRepository) Followings(ctx context.Context, id int) ([]*user.User, 
 	if err != nil {
 		return nil, err
 	}
-	followingIDs := make([]string, len(fs))
+	followingIDs := make([]int, len(fs))
 	for i, f := range fs {
 		followingIDs[i] = f.FollowerID
 	}
@@ -118,7 +118,7 @@ func (r *userRepository) Followers(ctx context.Context, id int) ([]*user.User, e
 	if err != nil {
 		return nil, err
 	}
-	followerIDs := make([]string, len(fs))
+	followerIDs := make([]int, len(fs))
 	for i, f := range fs {
 		followerIDs[i] = f.FollowingID
 	}
@@ -153,7 +153,7 @@ func (r *userRepository) Suspend(ctx context.Context, u *user.User) error {
 	return err
 }
 
-func (r *userRepository) getByIDs(ctx context.Context, ids []string) ([]*user.User, error) {
+func (r *userRepository) getByIDs(ctx context.Context, ids []int) ([]*user.User, error) {
 	// Ref: https://github.com/volatiletech/sqlboiler/issues/227
 	convertedIDs := make([]interface{}, len(ids))
 	for i, id := range ids {

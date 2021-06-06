@@ -27,6 +27,8 @@ var entries = [...]entry{
 	{"ja", domain.RequiredMessage, "を入力してください。"},
 }
 
+var matcher language.Matcher
+
 type I18nConfig struct {
 	*message.Printer
 }
@@ -43,12 +45,20 @@ func (c *I18nConfig) Setup() {
 			message.Set(tag, e.key, msg...)
 		}
 	}
+
+	matcher = language.NewMatcher([]language.Tag{
+		language.Japanese,
+		language.English,
+	})
 }
 
 func (c *I18nConfig) NewMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		lang := c.Get("Accept-Language")
-		p := message.NewPrinter(language.MustParse(lang))
+		lang := c.Cookies("lang")
+		accept := c.Get("Accept-Language")
+		tag, _ := language.MatchStrings(matcher, lang, accept)
+
+		p := message.NewPrinter(tag)
 		c.Locals("i18n", p)
 		return c.Next()
 	}

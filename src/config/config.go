@@ -36,5 +36,5 @@ func (cfg *AppConfig) Setup() {
 	cfg.I18n.Setup()
 	cfg.Server.Use(cfg.I18n.NewMiddleware())
 	cfg.Logger.Setup()
-	cfg.Mail.Setup()
+	// cfg.Mail.Setup()
 }

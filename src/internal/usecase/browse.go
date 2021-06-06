@@ -1,9 +1,9 @@
 package usecase
 
 import (
-	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/browse"
 	"artics-api/src/internal/domain/user"
+	"artics-api/src/pkg"
 	"context"
 )
 
@@ -21,10 +21,8 @@ func NewBrowseUsecase(us user.UserService, bs browse.BrowseService) BrowseUsecas
 }
 
 func (bu *browseUsecase) Save(ctx context.Context, contentID int) error {
-	u, err := bu.userService.Auth(ctx)
-	if err != nil {
-		return domain.Unauthorized.New(err)
-	}
+	c := ctx.(pkg.Context)
+	u := c.Locals("user").(user.User)
 
 	b := &browse.Browse{
 		UserID:    u.ID,

@@ -1,6 +1,10 @@
 package config
 
-import "google.golang.org/grpc"
+import (
+	"time"
+
+	"google.golang.org/grpc"
+)
 
 type RPCConfig struct {
 	*grpc.ClientConn
@@ -10,7 +14,7 @@ type RPCConfig struct {
 
 func (c *RPCConfig) Setup() {
 	addr := c.Host + ":" + c.Port
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithTimeout(5*time.Second))
 	if err != nil {
 		panic(err)
 	}

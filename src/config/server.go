@@ -2,10 +2,8 @@ package config
 
 import (
 	"artics-api/src/internal/interface/handler"
-	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -14,9 +12,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/internal/colorable"
+	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
 )
 
@@ -173,7 +170,7 @@ func (s *ServerConfig) startupMessage(addr string, tls bool, processIds string) 
 	}
 	mainLogo := fmt.Sprintf(logo,
 		cBlack,
-		centerValue(s.Name+" "+s.Version, 49),
+		centerValue(s.Name, 49),
 		center(addr, 49),
 		value(strconv.Itoa(routeCount), 14), value(procs, 12),
 		value(isPrefork, 14), value(strconv.Itoa(os.Getpid()), 14),
@@ -269,35 +266,6 @@ func (s *ServerConfig) startupMessage(addr string, tls bool, processIds string) 
 	}
 
 	_, _ = fmt.Fprintln(out, output)
-}
-
-type Server struct {
-	server *http.Server
-}
-
-func NewServer(port string, r *gin.Engine) *Server {
-	return &Server{
-		server: &http.Server{
-			Addr:    ":" + port,
-			Handler: r,
-		},
-	}
-}
-
-func (s *Server) Start() error {
-	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("failed to serve: %w", err)
-	}
-
-	return nil
-}
-
-func (s *Server) Stop(ctx context.Context) error {
-	if err := s.server.Shutdown(ctx); err != nil {
-		return fmt.Errorf("failed to shutdown: %w", err)
-	}
-
-	return nil
 }
 
 func makeDir(path string) string {
