@@ -42,12 +42,12 @@ func (rv *requestValidator) Run(ctx context.Context, i interface{}) []*domain.Va
 	rt := reflect.ValueOf(i).Elem().Type()
 
 	for i, v := range errors {
-		errorField, _ := rt.FieldByName(v.Field())
-		errorFieldName := errorField.Tag.Get("json")
-		errorMessage := ""
-
 		c := ctx.(pkg.Context)
 		p := c.Locals("i18n").(config.I18nConfig)
+
+		errorField := v.Field()
+
+		errorMessage := ""
 		switch v.Tag() {
 		case domain.EqFieldTag:
 			eqField, _ := rt.FieldByName(v.Param())
@@ -57,7 +57,7 @@ func (rv *requestValidator) Run(ctx context.Context, i interface{}) []*domain.Va
 		}
 
 		validationErrors[i] = &domain.ValidationError{
-			Field:   errorFieldName,
+			Field:   errorField,
 			Message: errorMessage,
 		}
 	}

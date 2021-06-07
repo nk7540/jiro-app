@@ -6,21 +6,15 @@ import (
 	"artics-api/src/internal/domain"
 )
 
-// ValidationError - バリデーションエラーのレスポンス
-type ValidationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
-}
+type ValidationErrors map[string]string
 
-// ErrorResponse - エラーのレスポンス
 type ErrorResponse struct {
-	StatusCode       int                `json:"status"`
-	ErrorCode        domain.ErrorCode   `json:"code"`
-	Message          string             `json:"message"`
-	ValidationErrors []*ValidationError `json:"errors,omitempty"`
+	StatusCode       int              `json:"status"`
+	ErrorCode        domain.ErrorCode `json:"code"`
+	Message          string           `json:"message"`
+	ValidationErrors `json:"errors,omitempty"`
 }
 
-// エラーメッセージ
 const (
 	badRequestMessage = `The API request is invalid or improperly formed. Consequently,
 the API server could not understand the request.`
@@ -35,7 +29,6 @@ though duplicate items are typically identified with more specific errors.`
 	internalServerErrorMessage = "The request failed due to an internal error."
 )
 
-// ステータスコードを付与したエラーレスポンス
 var (
 	BadRequest = &ErrorResponse{
 		StatusCode:       http.StatusBadRequest, // 400

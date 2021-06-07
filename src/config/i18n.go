@@ -2,6 +2,7 @@ package config
 
 import (
 	"artics-api/src/internal/domain"
+	"artics-api/src/internal/usecase/response"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/text/language"
@@ -15,6 +16,14 @@ type entry struct {
 }
 
 var entries = [...]entry{
+	// Response
+	{"ja", response.BadRequest.Message, "リクエストが不正です。"},
+	{"ja", response.Unauthorized.Message, "ログインが必要です。"},
+	{"ja", response.Forbidden.Message, "アクセスが拒否されています。"},
+	{"ja", response.NotFound.Message, "指定のデータは存在しません。"},
+	{"ja", response.AlreadyExists.Message, "指定のデータは既に存在します。"},
+	{"ja", response.InternalServerError.Message, "サーバーエラーです。"},
+	// Domain Validation
 	{"ja", domain.RequiredMessage, "を入力してください。"},
 	{"ja", domain.EqFieldMessage, "が%sと一致しません。"},
 	{"ja", domain.MinMessage, "は%s字以上で入力してください。"},
@@ -25,6 +34,10 @@ var entries = [...]entry{
 	{"ja", domain.PasswordMessage, "の形式が正しくありません。"},
 	{"ja", domain.PasswordConfirmationMessage, "がパスワードと一致しません。"},
 	{"ja", domain.RequiredMessage, "を入力してください。"},
+	// User
+	{"ja", "email", "Eメール"},
+	{"ja", "password", "パスワード"},
+	{"ja", "passwordConfirmation", "パスワード(確認)"},
 }
 
 var matcher language.Matcher

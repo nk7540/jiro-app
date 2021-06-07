@@ -1,14 +1,14 @@
-package handler
+package config
 
 import (
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/usecase/response"
+	"unicode"
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 )
 
-// outputLevel - ログの出力レベル
 type outputLevel int
 
 const (
@@ -18,15 +18,13 @@ const (
 	errorLevel
 )
 
-// ErrorHandling - エラーレスポンスを返す
 func ErrorHandling(c *fiber.Ctx, err error) error {
-	res := getErrorResponse(err)
+	res := getErrorResponse(c, err)
 
 	return c.Status(res.StatusCode).JSON(res)
 }
 
-// getErrorResponse - エラー用のレスポンスを返す
-func getErrorResponse(err error) *response.ErrorResponse {
+func getErrorResponse(c *fiber.Ctx, err error) *response.ErrorResponse {
 	res := response.ErrorResponse{}
 	level := infoLevel
 	message := ""
@@ -35,11 +33,11 @@ func getErrorResponse(err error) *response.ErrorResponse {
 	// 400
 	case domain.InvalidDomainValidation:
 		res = *response.BadRequest
-		res.ValidationErrors = getValidationErrorsInErrorReponse(err)
+		res.ValidationErrors = getValidationErrorsInErrorReponse(c, err)
 		message = "Invalid domain validation"
 	case domain.InvalidRequestValidation:
 		res = *response.BadRequest
-		res.ValidationErrors = getValidationErrorsInErrorReponse(err)
+		res.ValidationErrors = getValidationErrorsInErrorReponse(c, err)
 		message = "Invalid request validation"
 	case domain.UnableParseJSON:
 		res = *response.BadRequest
@@ -62,7 +60,7 @@ func getErrorResponse(err error) *response.ErrorResponse {
 	// 409
 	case domain.AlreadyExistsInDatastore:
 		res = *response.AlreadyExists
-		res.ValidationErrors = getValidationErrorsInErrorReponse(err)
+		res.ValidationErrors = getValidationErrorsInErrorReponse(c, err)
 		message = "Already exists request"
 	// 500
 	case domain.ErrorInDatastore:
@@ -78,6 +76,8 @@ func getErrorResponse(err error) *response.ErrorResponse {
 		level = errorLevel
 		message = "Internal server error"
 	}
+	p := c.Locals("i18n").(I18nConfig)
+	res.Message = p.Sprintf(res.Message)
 
 	res.ErrorCode = getErrorCode(err)
 	logging(level, message, err, &res)
@@ -115,37 +115,19 @@ func getErrorCode(err error) domain.ErrorCode {
 	return domain.Unknown
 }
 
-func getValidationErrorsInErrorReponse(err error) []*response.ValidationError {
+func getValidationErrorsInErrorReponse(c *fiber.Ctx, err error) response.ValidationErrors {
+	p := c.Locals("i18n").(I18nConfig)
 	if e, ok := err.(domain.CustomError); ok {
-		ves := make([]*response.ValidationError, len(e.Validations()))
-		for i, ve := range e.Validations() {
-			ves[i] = &response.ValidationError{
-				Field:   ve.Field,
-				Message: ve.Message,
-			}
+		ves := response.ValidationErrors{}
+		for _, ve := range e.Validations() {
+			a := []rune(ve.Field)
+			a[0] = unicode.ToLower(a[0])
+			field := string(a)
+			ves[field] = p.Sprintf(field) + ve.Message
 		}
 
 		return ves
 	}
 
-	return []*response.ValidationError{}
+	return response.ValidationErrors{}
 }
-
-// -> 今は使ってないからいったんコメントアウト
-// func sendFluent(c *gin.Context, res *response.ErrorResponse) {
-// 	logger := make(map[string]interface{})
-//
-// 	errorCode := fmt.Sprint(res.ErrorCode)
-//
-// 	validationErrors := make(map[string]string)
-// 	for _, ve := range res.ValidationErrors {
-// 		validationErrors[ve.Field] = ve.Message
-// 	}
-//
-// 	logger["status"] = res.StatusCode
-// 	logger["code"] = errorCode
-// 	logger["errors"] = validationErrors
-// 	logger["path"] = c.Request.URL.Path
-//
-// 	middleware.SendFluent("response", logger)
-// }

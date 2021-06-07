@@ -9,7 +9,7 @@ fi
 #############################
 # Variables
 #############################
-ignore_lists='test|base|domain/validation.go'
+ignore_lists='test|domain/validation.go'
 
 #############################
 # Function
@@ -54,7 +54,6 @@ build_package() {
 # --- Domain ---
 build_file 'domain' 'repository.go'
 build_file 'domain' 'service.go'
-build_file 'domain' 'uploader.go'
 build_file 'domain' 'validation.go'
 
 # --- Usecase ---

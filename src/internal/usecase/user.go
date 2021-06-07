@@ -27,7 +27,6 @@ type UserUsecase interface {
 
 type userUsecase struct {
 	RequestValidator validation.RequestValidator
-	userRepository   user.UserRepository
 	userService      user.UserService
 	contentService   content.ContentService
 }
@@ -35,11 +34,10 @@ type userUsecase struct {
 // NewUserUsecase - generates user usecase
 func NewUserUsecase(
 	rv validation.RequestValidator,
-	ur user.UserRepository,
 	us user.UserService,
 	cs content.ContentService,
 ) UserUsecase {
-	return &userUsecase{rv, ur, us, cs}
+	return &userUsecase{rv, us, cs}
 }
 
 func (uu *userUsecase) Create(ctx context.Context, req *request.CreateUser) error {
@@ -151,7 +149,7 @@ func (uu *userUsecase) Update(ctx context.Context, req *request.UpdateUser) (*re
 
 	u.ThumbnailURL = thumbnailURL
 
-	if err := uu.userRepository.Update(ctx, &u); err != nil {
+	if err := uu.userService.Update(ctx, &u); err != nil {
 		return nil, err
 	}
 

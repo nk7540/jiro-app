@@ -12,5 +12,6 @@ type UserService interface {
 	Followings(ctx context.Context, id int) ([]*User, error)
 	Followers(ctx context.Context, id int) ([]*User, error)
 	UpdateThumbnail(ctx context.Context, body io.Reader) (string, error)
+	Update(ctx context.Context, u *User) error
 	Suspend(ctx context.Context, u *User) error
 }

@@ -10,7 +10,6 @@ import (
 	"artics-api/src/internal/domain/file"
 	"artics-api/src/internal/domain/follow"
 	"artics-api/src/internal/domain/user"
-	"artics-api/src/middleware"
 
 	"golang.org/x/xerrors"
 )
@@ -105,23 +104,18 @@ func (s *userService) UpdateThumbnail(ctx context.Context, body io.Reader) (stri
 	return f.Path, nil
 }
 
-func (s *userService) Suspend(ctx context.Context, u *user.User) error {
-	return s.userRepository.Suspend(ctx, u)
+func (s *userService) Update(ctx context.Context, u *user.User) error {
+	err := s.userRepository.Update(ctx, u)
+	if err != nil {
+		err = xerrors.Errorf("Failed to Repository: %w", err)
+		return domain.ErrorInDatastore.New(err)
+	}
+
+	return nil
 }
 
-func getToken(ctx context.Context) (string, error) {
-	gc, err := middleware.GinContextFromContext(ctx)
-	if err != nil {
-		return "", xerrors.New("Cannot convert to gin.Context")
-	}
-
-	a := gc.GetHeader("Authorization")
-	if a == "" {
-		return "", xerrors.New("Authorization Header is not contain.")
-	}
-
-	t := strings.Replace(a, "Bearer ", "", 1)
-	return t, nil
+func (s *userService) Suspend(ctx context.Context, u *user.User) error {
+	return s.userRepository.Suspend(ctx, u)
 }
 
 // OAuth認証による初回User登録時、UIDの先頭16文字を取得

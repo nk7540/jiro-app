@@ -24,7 +24,6 @@ func (d *DatabaseConfig) Setup() {
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
 
 	db.SetMaxIdleConns(100)
 	db.SetMaxOpenConns(100)

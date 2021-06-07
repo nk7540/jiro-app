@@ -51,7 +51,7 @@ func NewRegistry(
 	rv := v.NewRequestValidator()
 
 	// Usecase
-	uu := usecase.NewUserUsecase(rv, ur, us, cs)
+	uu := usecase.NewUserUsecase(rv, us, cs)
 	fu := usecase.NewFollowUsecase(fr, us)
 	cu := usecase.NewContentUsecase(cs)
 	fvu := usecase.NewFavoriteUsecase(us, fvs)

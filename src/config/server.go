@@ -1,7 +1,6 @@
 package config
 
 import (
-	"artics-api/src/internal/interface/handler"
 	"fmt"
 	"log"
 	"os"
@@ -46,7 +45,7 @@ func (s *ServerConfig) Setup() {
 		ServerHeader:          s.Name,
 		BodyLimit:             s.UploadSize,
 		ReduceMemoryUsage:     true,
-		ErrorHandler:          handler.ErrorHandling,
+		ErrorHandler:          ErrorHandling,
 		DisableStartupMessage: true,
 		ProxyHeader:           s.ProxyHeader,
 	})
