@@ -9,7 +9,7 @@ WORKDIR /go/artics-api
 ADD . /go/artics-api
 
 ENV MYSQL_PASSWORD password
-RUN export GCP_SERVICE_KEY_JSON="$(< ./credentials/firebase/settings.json)" 
+RUN export GCP_SERVICE_KEY_JSON="$(< ../../credentials/firebase/settings.json)" 
 
 RUN go mod download
 RUN go install golang.org/x/tools/gopls@latest
@@ -19,3 +19,4 @@ RUN go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@late
 RUN go install github.com/rubenv/sql-migrate/sql-migrate@latest
 RUN go install github.com/pilu/fresh@latest
 
+RUN sql-migrate up
