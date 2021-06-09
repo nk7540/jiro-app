@@ -8,7 +8,6 @@ import (
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/internal/infrastructure/models"
 
-	"github.com/google/uuid"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -24,15 +23,18 @@ func NewUserRepository(db *config.DatabaseConfig, auth *config.AuthConfig) user.
 }
 
 func (r *userRepository) Create(ctx context.Context, u *user.User) error {
-	uid, err := r.auth.CreateUser(ctx, uuid.New().String(), u.Email, u.Password)
+}
+
+func (r *userRepository) CreateWithPassword(ctx context.Context, email user.Email, password user.Password) error {
+	uid, err := r.auth.CreateUser(ctx, string(email), string(password))
 	if err != nil {
 		return err
 	}
 
-	mu := models.User{}
-	mu.UID = uid
-	mu.Email = u.Email
-	mu.Nickname = u.Nickname
+	mu := models.User{
+		UID:   uid,
+		Email: string(email),
+	}
 	return mu.Insert(ctx, r.db, boil.Infer())
 }
 
@@ -60,15 +62,18 @@ func (r *userRepository) GetByToken(ctx context.Context, tkn string) (*user.User
 	return u, nil
 }
 
-func (r *userRepository) Get(ctx context.Context, id int) (*user.User, error) {
+func (r *userRepository) Get(ctx context.Context, id int) (*user.QueryDetailUser, error) {
 	mu, err := models.FindUser(ctx, r.db, id)
 	if err != nil {
 		return nil, err
 	}
 
-	u := &user.User{}
-	u.Nickname = mu.Nickname
-	u.Email = mu.Email
+	u := &user.QueryDetailUser{
+		ID:           mu.ID,
+		Nickname:     mu.Nickname,
+		ThumbnailURL: mu.ThumbnailURL,
+		// Profile: mu.Profile,
+	}
 
 	followingCount, err := models.Follows(qm.Where("following_id=?", id)).Count(ctx, r.db)
 	if err != nil {

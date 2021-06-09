@@ -5,9 +5,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+	"artics-api/src/internal/application"
+	"artics-api/src/internal/application/command"
+	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/usecase"
 	"artics-api/src/internal/usecase/request"
+	"artics-api/src/internal/usecase/response"
 	"artics-api/src/pkg"
 )
 
@@ -22,12 +26,13 @@ type V1UserHandler interface {
 }
 
 type v1UserHandler struct {
-	u usecase.UserUsecase
+	u   usecase.UserUsecase
+	app application.Application
 }
 
 // NewV1UserHandler - setups v1 user handler
-func NewV1UserHandler(u usecase.UserUsecase) V1UserHandler {
-	return &v1UserHandler{u}
+func NewV1UserHandler(u usecase.UserUsecase, app application.Application) V1UserHandler {
+	return &v1UserHandler{u, app}
 }
 
 func (h *v1UserHandler) Create(c *fiber.Ctx) error {
@@ -36,7 +41,11 @@ func (h *v1UserHandler) Create(c *fiber.Ctx) error {
 		return domain.UnableParseJSON.New(err)
 	}
 
-	if err := h.u.Create(pkg.Context{Ctx: c}, req); err != nil {
+	if err := h.app.Commands.CreateUser.Handle(pkg.Context{Ctx: c}, command.CreateUser{
+		Email:                req.Email,
+		Password:             req.Password,
+		PasswordConfirmation: req.PasswordConfirmation,
+	}); err != nil {
 		return err
 	}
 
@@ -49,9 +58,31 @@ func (h *v1UserHandler) Show(c *fiber.Ctx) error {
 		return domain.UnableParseJSON.New(err)
 	}
 
-	res, err := h.u.Show(pkg.Context{Ctx: c}, id)
+	ctx := pkg.Context{Ctx: c}
+	u, err := h.app.Queries.GetUser.Handle(ctx, id)
 	if err != nil {
 		return err
+	}
+
+	favoriteContents, err := h.app.Queries.GetFavoriteContents.Handle(ctx, query.GetFavoriteContents{
+		UserID: id,
+		Limit:  3,
+	})
+
+	resFavoriteContents := make([]*response.Content, len(favoriteContents))
+	for i, c := range favoriteContents {
+		resFavoriteContents[i] = &response.Content{
+			ID:    c.ID,
+			Title: c.Title,
+		}
+	}
+
+	res := &response.ShowUser{
+		ID:               u.ID,
+		Nickname:         u.Nickname,
+		Followingcount:   u.FollowingCount,
+		Followercount:    u.FollowerCount,
+		FavoriteContents: resFavoriteContents,
 	}
 
 	return c.JSON(res)

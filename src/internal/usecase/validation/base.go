@@ -43,7 +43,7 @@ func (rv *requestValidator) Run(ctx context.Context, i interface{}) []*domain.Va
 
 	for i, v := range errors {
 		c := ctx.(pkg.Context)
-		p := c.Locals("i18n").(config.I18nConfig)
+		p, _ := c.Printer()
 
 		errorField := v.Field()
 
@@ -51,9 +51,9 @@ func (rv *requestValidator) Run(ctx context.Context, i interface{}) []*domain.Va
 		switch v.Tag() {
 		case domain.EqFieldTag:
 			eqField, _ := rt.FieldByName(v.Param())
-			errorMessage = validationMessage(&p, v.Tag(), eqField.Tag.Get("label"))
+			errorMessage = validationMessage(p, v.Tag(), eqField.Tag.Get("label"))
 		default:
-			errorMessage = validationMessage(&p, v.Tag(), v.Param())
+			errorMessage = validationMessage(p, v.Tag(), v.Param())
 		}
 
 		validationErrors[i] = &domain.ValidationError{

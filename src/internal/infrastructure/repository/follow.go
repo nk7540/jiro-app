@@ -5,6 +5,7 @@ import (
 
 	"artics-api/src/config"
 	"artics-api/src/internal/domain/follow"
+	"artics-api/src/internal/domain/user"
 	"artics-api/src/internal/infrastructure/models"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -25,6 +26,14 @@ func (r *followRepository) Create(ctx context.Context, f *follow.Follow) error {
 	mf.FollowingID = f.FollowingID
 	mf.FollowerID = f.FollowerID
 	return mf.Insert(ctx, r.db, boil.Infer())
+}
+
+func (r *followRepository) FollowingCount(ctx context.Context, userID user.ID) (int, error) {
+	c, err := models.Follows(qm.Where("following_id=?", int(userID))).Count(ctx, r.db)
+	if err != nil {
+		return 0, err
+	}
+	return int(c), nil
 }
 
 func (r *followRepository) Delete(ctx context.Context, f *follow.Follow) error {

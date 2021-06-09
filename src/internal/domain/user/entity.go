@@ -4,17 +4,23 @@ import (
 	"artics-api/src/internal/domain/content"
 )
 
-// User entity
 type User struct {
-	ID                   int
-	Status               string `validate:"required,oneof=provisional available suspended"`
-	Nickname             string `validate:"max=256"`
-	Email                string `validate:"required,email,max=256"`
-	ThumbnailURL         string
-	Password             string
-	PasswordConfirmation string
-	FollowingCount       int
-	FollowerCount        int
-	FavoriteContents     []*content.Content
-	BrowsedContents      []*content.Content
+	ID               ID
+	Status           Status   `validate:"required,oneof=provisional available suspended"`
+	Nickname         Nickname `validate:"max=256"`
+	Email            Email    `validate:"required,email,max=256"`
+	ThumbnailURL     ThumbnailURL
+	FavoriteContents []*content.Content
+	BrowsedContents  []*content.Content
 }
+
+type ID int
+type Status string
+type Nickname string
+type Email string
+type ThumbnailURL string
+
+// Virtual attributes
+type UID string
+type Password string
+type PasswordConfirmation string

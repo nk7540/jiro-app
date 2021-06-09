@@ -58,9 +58,8 @@ func (c *AuthConfig) GetUIDByEmail(ctx context.Context, email string) (string, e
 }
 
 // CreateUser - 新しいFirebase Authenticationユーザーを作成
-func (c *AuthConfig) CreateUser(ctx context.Context, uid string, email string, password string) (string, error) {
+func (c *AuthConfig) CreateUser(ctx context.Context, email string, password string) (string, error) {
 	params := (&auth.UserToCreate{}).
-		UID(uid).
 		Email(email).
 		EmailVerified(false).
 		Password(password).
