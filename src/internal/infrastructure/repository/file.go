@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"io"
 
 	"artics-api/src/config"
 	"artics-api/src/internal/domain/file"
@@ -15,12 +16,10 @@ func NewFileRepository(uploader *config.UploaderConfig) file.FileRepository {
 	return &fileRepository{uploader}
 }
 
-func (r *fileRepository) Save(ctx context.Context, f *file.File) (*file.File, error) {
-	output, err := r.uploader.Upload(f.Body)
+func (r *fileRepository) Save(ctx context.Context, body io.Reader) (string, error) {
+	output, err := r.uploader.Upload(body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	f.Path = output.Location
-
-	return f, nil
+	return output.Location, nil
 }

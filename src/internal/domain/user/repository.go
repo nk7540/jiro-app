@@ -8,7 +8,7 @@ type UserRepository interface {
 	// Command
 	Create(ctx context.Context, u *User) error
 	CreateWithPassword(ctx context.Context, email Email, password Password) error
-	Update(ctx context.Context, u *User) error
+	Update(ctx context.Context, cmd CommandUpdateUser) error
 	Suspend(ctx context.Context, u *User) error
 
 	// Query

@@ -131,11 +131,12 @@ func (r *userRepository) Followers(ctx context.Context, id int) ([]*user.QueryUs
 	return r.getByIDs(ctx, followerIDs)
 }
 
-func (r *userRepository) Update(ctx context.Context, u *user.User) error {
-	mu := models.User{}
-	mu.ID = u.ID
-	mu.Email = u.Email
-	mu.Nickname = u.Nickname
+func (r *userRepository) Update(ctx context.Context, cmd user.CommandUpdateUser) error {
+	mu := models.User{
+		ID:           cmd.ID,
+		Nickname:     cmd.Nickname,
+		ThumbnailURL: cmd.ThumbnailURL,
+	}
 	_, err := mu.Update(ctx, r.db, boil.Blacklist("uid", "status"))
 	return err
 }

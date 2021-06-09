@@ -24,7 +24,7 @@ type User struct {
 }
 
 type UpdateUser struct {
-	ID       int    `json:"id"`
-	Nickname string `json:"nickname"`
-	Email    string `json:"email"`
+	ID           int    `json:"id"`
+	Nickname     string `json:"nickname"`
+	ThumbnailURL string `json:"thumbnailURL"`
 }

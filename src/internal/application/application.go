@@ -11,7 +11,9 @@ type Application struct {
 }
 
 type Commands struct {
-	CreateUser command.CreateUserHandler
+	CreateUser      command.CreateUserHandler
+	UpdateThumbnail command.UpdateThumbnailHandler
+	Update          command.UpdateUserHandler
 }
 
 type Queries struct {

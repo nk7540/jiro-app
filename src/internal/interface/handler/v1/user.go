@@ -9,6 +9,7 @@ import (
 	"artics-api/src/internal/application/command"
 	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
+	"artics-api/src/internal/domain/user"
 	"artics-api/src/internal/usecase"
 	"artics-api/src/internal/usecase/request"
 	"artics-api/src/internal/usecase/response"
@@ -118,23 +119,50 @@ func (h *v1UserHandler) Followers(c *fiber.Ctx) error {
 		return domain.UnableParseJSON.New(err)
 	}
 
-	res, err := h.u.Followers(pkg.Context{Ctx: c}, id)
+	us, err := h.app.Queries.Followers.Handle(pkg.Context{Ctx: c}, id)
 	if err != nil {
 		return err
 	}
+
+	resUsers := make([]*response.User, len(us))
+	for i, u := range us {
+		resUsers[i] = &response.User{
+			ID:           u.ID,
+			Nickname:     u.Nickname,
+			ThumbnailURL: u.ThumbnailURL,
+		}
+	}
+	res := &response.Users{Users: resUsers}
 
 	return c.JSON(res)
 }
 
 func (h *v1UserHandler) Update(c *fiber.Ctx) error {
+	ctx := pkg.Context{Ctx: c}
 	req := &request.UpdateUser{}
 	if err := c.BodyParser(req); err != nil {
 		return domain.UnableParseFormData.New(err)
 	}
+	u, _ := ctx.CurrentUser()
 
-	res, err := h.u.Update(pkg.Context{Ctx: c}, req)
+	thumbnail, err := req.Thumbnail.Open()
 	if err != nil {
+		return domain.UnableParseFile.New(err)
+	}
+	thumbnailURL, err := h.app.Commands.UpdateThumbnail.Handle(ctx, thumbnail)
+
+	if err := h.app.Commands.Update.Handle(ctx, user.CommandUpdateUser{
+		ID:           int(u.ID),
+		Nickname:     req.Nickname,
+		ThumbnailURL: thumbnailURL,
+	}); err != nil {
 		return err
+	}
+
+	res := &response.UpdateUser{
+		ID:           int(u.ID),
+		Nickname:     req.Nickname,
+		ThumbnailURL: thumbnailURL,
 	}
 
 	return c.JSON(res)

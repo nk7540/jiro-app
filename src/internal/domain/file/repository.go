@@ -1,7 +1,10 @@
 package file
 
-import "context"
+import (
+	"context"
+	"io"
+)
 
 type FileRepository interface {
-	Save(ctx context.Context, f *File) (*File, error)
+	Save(ctx context.Context, body io.Reader) (string, error)
 }
