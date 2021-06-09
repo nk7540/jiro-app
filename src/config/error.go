@@ -123,7 +123,7 @@ func getValidationErrorsInErrorReponse(c *fiber.Ctx, err error) response.Validat
 			a := []rune(ve.Field)
 			a[0] = unicode.ToLower(a[0])
 			field := string(a)
-			ves[field] = p.Sprintf(field) + ve.Message
+			ves[field] = p.Sprintf(field) + p.Sprintf(ve.Message)
 		}
 
 		return ves

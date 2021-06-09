@@ -7,10 +7,10 @@ import (
 type User struct {
 	ID               ID
 	UID              UID
-	Status           Status   `validate:"required,oneof=provisional available suspended"`
-	Nickname         Nickname `validate:"max=256"`
-	Email            Email    `validate:"required,email,max=256"`
-	ThumbnailURL     ThumbnailURL
+	Status           Status       `validate:"required,oneof=provisional available suspended"`
+	Nickname         Nickname     `validate:"max=32"`
+	Email            Email        `validate:"required,email,max=256"`
+	ThumbnailURL     ThumbnailURL `validate:"max=1024"`
 	FavoriteContents []*content.Content
 	BrowsedContents  []*content.Content
 }
