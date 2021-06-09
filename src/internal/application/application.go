@@ -18,4 +18,5 @@ type Queries struct {
 	GetUser             query.GetUserHandler
 	GetFavoriteContents query.GetFavoriteContentsHanlder
 	Followings          query.FollowingsHandler
+	Followers           query.FollowersHandler
 }
