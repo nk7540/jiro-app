@@ -14,12 +14,13 @@ type ShowUser struct {
 }
 
 type Users struct {
-	Users []*User
+	Users []*User `json:"users"`
 }
 
 type User struct {
-	ID       int
-	Nickname string
+	ID           int    `json:"id"`
+	Nickname     string `json:"nickname"`
+	ThumbnailURL string `json:"thumbnailURL"`
 }
 
 type UpdateUser struct {

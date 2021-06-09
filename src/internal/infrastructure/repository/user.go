@@ -105,7 +105,7 @@ func (r *userRepository) GetByEmailOrNone(ctx context.Context, email string) (*u
 	}, nil
 }
 
-func (r *userRepository) Followings(ctx context.Context, id int) ([]*user.User, error) {
+func (r *userRepository) Followings(ctx context.Context, id int) ([]*user.QueryUser, error) {
 	fs, err := models.Follows(qm.Select("follower_id"), qm.Where("following_id = ?", id)).All(ctx, r.db)
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (r *userRepository) Followings(ctx context.Context, id int) ([]*user.User, 
 	return r.getByIDs(ctx, followingIDs)
 }
 
-func (r *userRepository) Followers(ctx context.Context, id int) ([]*user.User, error) {
+func (r *userRepository) Followers(ctx context.Context, id int) ([]*user.QueryUser, error) {
 	fs, err := models.Follows(qm.Select("following_id"), qm.Where("follower_id = ?", id)).All(ctx, r.db)
 	if err != nil {
 		return nil, err
@@ -158,7 +158,7 @@ func (r *userRepository) Suspend(ctx context.Context, u *user.User) error {
 	return err
 }
 
-func (r *userRepository) getByIDs(ctx context.Context, ids []int) ([]*user.User, error) {
+func (r *userRepository) getByIDs(ctx context.Context, ids []int) ([]*user.QueryUser, error) {
 	// Ref: https://github.com/volatiletech/sqlboiler/issues/227
 	convertedIDs := make([]interface{}, len(ids))
 	for i, id := range ids {
@@ -170,13 +170,12 @@ func (r *userRepository) getByIDs(ctx context.Context, ids []int) ([]*user.User,
 		return nil, err
 	}
 
-	us := make([]*user.User, len(mus))
+	us := make([]*user.QueryUser, len(mus))
 	for i, mu := range mus {
-		u := &user.User{
-			ID:       mu.ID,
-			Status:   mu.Status,
-			Email:    mu.Email,
-			Nickname: mu.Nickname,
+		u := &user.QueryUser{
+			ID:           mu.ID,
+			Nickname:     mu.Nickname,
+			ThumbnailURL: mu.ThumbnailURL,
 		}
 
 		us[i] = u

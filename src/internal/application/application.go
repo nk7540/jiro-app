@@ -17,4 +17,5 @@ type Commands struct {
 type Queries struct {
 	GetUser             query.GetUserHandler
 	GetFavoriteContents query.GetFavoriteContentsHanlder
+	Followings          query.FollowingsHandler
 }

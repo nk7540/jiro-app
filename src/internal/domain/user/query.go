@@ -8,3 +8,9 @@ type QueryDetailUser struct {
 	FollowingCount int
 	FollowerCount  int
 }
+
+type QueryUser struct {
+	ID           int
+	Nickname     string
+	ThumbnailURL string
+}

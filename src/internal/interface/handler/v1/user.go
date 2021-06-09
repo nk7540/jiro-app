@@ -94,10 +94,20 @@ func (h *v1UserHandler) Followings(c *fiber.Ctx) error {
 		return domain.UnableParseJSON.New(err)
 	}
 
-	res, err := h.u.Followings(pkg.Context{Ctx: c}, id)
+	us, err := h.app.Queries.Followings.Handle(pkg.Context{Ctx: c}, id)
 	if err != nil {
 		return err
 	}
+
+	resUsers := make([]*response.User, len(us))
+	for i, u := range us {
+		resUsers[i] = &response.User{
+			ID:           u.ID,
+			Nickname:     u.Nickname,
+			ThumbnailURL: u.ThumbnailURL,
+		}
+	}
+	res := &response.Users{Users: resUsers}
 
 	return c.JSON(res)
 }
