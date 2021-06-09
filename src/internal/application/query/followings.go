@@ -13,6 +13,6 @@ func NewFollowingsHandler(ur user.UserRepository) FollowingsHandler {
 	return FollowingsHandler{ur}
 }
 
-func (h FollowingsHandler) Handle(ctx context.Context, userID int) ([]*user.QueryUser, error) {
+func (h FollowingsHandler) Handle(ctx context.Context, userID int) (*user.QueryUsers, error) {
 	return h.userRepository.Followings(ctx, userID)
 }

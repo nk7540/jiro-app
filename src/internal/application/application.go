@@ -14,6 +14,7 @@ type Commands struct {
 	CreateUser      command.CreateUserHandler
 	UpdateThumbnail command.UpdateThumbnailHandler
 	Update          command.UpdateUserHandler
+	Suspend         command.SuspendUserHandler
 }
 
 type Queries struct {

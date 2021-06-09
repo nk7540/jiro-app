@@ -23,19 +23,19 @@ func NewUserRepository(db *config.DatabaseConfig, auth *config.AuthConfig) user.
 }
 
 func (r *userRepository) Create(ctx context.Context, u *user.User) error {
-}
-
-func (r *userRepository) CreateWithPassword(ctx context.Context, email user.Email, password user.Password) error {
-	uid, err := r.auth.CreateUser(ctx, string(email), string(password))
-	if err != nil {
-		return err
-	}
-
 	mu := models.User{
-		UID:   uid,
-		Email: string(email),
+		UID:   string(u.UID),
+		Email: string(u.Email),
 	}
 	return mu.Insert(ctx, r.db, boil.Infer())
+}
+
+func (r *userRepository) CreateAuth(ctx context.Context, cmd user.CommandCreateUser) (user.UID, error) {
+	uid, err := r.auth.CreateUser(ctx, cmd.Email, cmd.Password)
+	if err != nil {
+		return "", err
+	}
+	return user.UID(uid), nil
 }
 
 func (r *userRepository) GetByToken(ctx context.Context, tkn string) (*user.User, error) {
@@ -63,16 +63,9 @@ func (r *userRepository) GetByToken(ctx context.Context, tkn string) (*user.User
 }
 
 func (r *userRepository) Get(ctx context.Context, id int) (*user.QueryDetailUser, error) {
-	mu, err := models.FindUser(ctx, r.db, id)
-	if err != nil {
+	u := &user.QueryDetailUser{}
+	if err := models.Users(qm.Where("id=?", id)).Bind(ctx, r.db, u); err != nil {
 		return nil, err
-	}
-
-	u := &user.QueryDetailUser{
-		ID:           mu.ID,
-		Nickname:     mu.Nickname,
-		ThumbnailURL: mu.ThumbnailURL,
-		// Profile: mu.Profile,
 	}
 
 	followingCount, err := models.Follows(qm.Where("following_id=?", id)).Count(ctx, r.db)
@@ -86,7 +79,7 @@ func (r *userRepository) Get(ctx context.Context, id int) (*user.QueryDetailUser
 	u.FollowingCount = int(followingCount)
 	u.FollowerCount = int(followerCount)
 
-	return u, err
+	return u, nil
 }
 
 func (r *userRepository) GetByEmailOrNone(ctx context.Context, email string) (*user.User, error) {
@@ -105,7 +98,7 @@ func (r *userRepository) GetByEmailOrNone(ctx context.Context, email string) (*u
 	}, nil
 }
 
-func (r *userRepository) Followings(ctx context.Context, id int) ([]*user.QueryUser, error) {
+func (r *userRepository) Followings(ctx context.Context, id int) (*user.QueryUsers, error) {
 	fs, err := models.Follows(qm.Select("follower_id"), qm.Where("following_id = ?", id)).All(ctx, r.db)
 	if err != nil {
 		return nil, err
@@ -118,7 +111,7 @@ func (r *userRepository) Followings(ctx context.Context, id int) ([]*user.QueryU
 	return r.getByIDs(ctx, followingIDs)
 }
 
-func (r *userRepository) Followers(ctx context.Context, id int) ([]*user.QueryUser, error) {
+func (r *userRepository) Followers(ctx context.Context, id int) (*user.QueryUsers, error) {
 	fs, err := models.Follows(qm.Select("following_id"), qm.Where("follower_id = ?", id)).All(ctx, r.db)
 	if err != nil {
 		return nil, err
@@ -131,55 +124,31 @@ func (r *userRepository) Followers(ctx context.Context, id int) ([]*user.QueryUs
 	return r.getByIDs(ctx, followerIDs)
 }
 
-func (r *userRepository) Update(ctx context.Context, cmd user.CommandUpdateUser) error {
+func (r *userRepository) Update(ctx context.Context, u *user.User) error {
 	mu := models.User{
-		ID:           cmd.ID,
-		Nickname:     cmd.Nickname,
-		ThumbnailURL: cmd.ThumbnailURL,
+		ID:           int(u.ID),
+		Status:       string(u.Status),
+		Nickname:     string(u.Nickname),
+		ThumbnailURL: string(u.ThumbnailURL),
 	}
-	_, err := mu.Update(ctx, r.db, boil.Blacklist("uid", "status"))
+	_, err := mu.Update(ctx, r.db, boil.Blacklist("uid"))
 	return err
 }
 
-func (r *userRepository) Suspend(ctx context.Context, u *user.User) error {
-	uid, err := r.auth.GetUIDByEmail(ctx, u.Email)
-	if err != nil {
-		return err
-	}
-	if err := r.auth.DeleteUser(ctx, uid); err != nil {
-		return err
-	}
-
-	mu := &models.User{}
-	mu.ID = u.ID
-	mu.Status = "suspended"
-	mu.UID = ""
-
-	_, err = mu.Update(ctx, r.db, boil.Whitelist("status", "uid"))
-	return err
+func (r *userRepository) DeleteAuth(ctx context.Context, uid user.UID) error {
+	return r.auth.DeleteUser(ctx, string(uid))
 }
 
-func (r *userRepository) getByIDs(ctx context.Context, ids []int) ([]*user.QueryUser, error) {
+func (r *userRepository) getByIDs(ctx context.Context, ids []int) (*user.QueryUsers, error) {
 	// Ref: https://github.com/volatiletech/sqlboiler/issues/227
 	convertedIDs := make([]interface{}, len(ids))
 	for i, id := range ids {
 		convertedIDs[i] = id
 	}
 
-	mus, err := models.Users(qm.WhereIn("id in ?", convertedIDs...)).All(ctx, r.db)
-	if err != nil {
+	us := new(user.QueryUsers)
+	if err := models.Users(qm.WhereIn("id in ?", convertedIDs...)).Bind(ctx, r.db, us); err != nil {
 		return nil, err
-	}
-
-	us := make([]*user.QueryUser, len(mus))
-	for i, mu := range mus {
-		u := &user.QueryUser{
-			ID:           mu.ID,
-			Nickname:     mu.Nickname,
-			ThumbnailURL: mu.ThumbnailURL,
-		}
-
-		us[i] = u
 	}
 
 	return us, nil

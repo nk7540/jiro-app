@@ -6,11 +6,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"artics-api/src/internal/application"
-	"artics-api/src/internal/application/command"
 	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/user"
-	"artics-api/src/internal/usecase"
 	"artics-api/src/internal/usecase/request"
 	"artics-api/src/internal/usecase/response"
 	"artics-api/src/pkg"
@@ -27,13 +25,12 @@ type V1UserHandler interface {
 }
 
 type v1UserHandler struct {
-	u   usecase.UserUsecase
 	app application.Application
 }
 
 // NewV1UserHandler - setups v1 user handler
-func NewV1UserHandler(u usecase.UserUsecase, app application.Application) V1UserHandler {
-	return &v1UserHandler{u, app}
+func NewV1UserHandler(app application.Application) V1UserHandler {
+	return &v1UserHandler{app}
 }
 
 func (h *v1UserHandler) Create(c *fiber.Ctx) error {
@@ -42,7 +39,7 @@ func (h *v1UserHandler) Create(c *fiber.Ctx) error {
 		return domain.UnableParseJSON.New(err)
 	}
 
-	if err := h.app.Commands.CreateUser.Handle(pkg.Context{Ctx: c}, command.CreateUser{
+	if err := h.app.Commands.CreateUser.Handle(pkg.Context{Ctx: c}, user.CommandCreateUser{
 		Email:                req.Email,
 		Password:             req.Password,
 		PasswordConfirmation: req.PasswordConfirmation,
@@ -100,8 +97,8 @@ func (h *v1UserHandler) Followings(c *fiber.Ctx) error {
 		return err
 	}
 
-	resUsers := make([]*response.User, len(us))
-	for i, u := range us {
+	resUsers := make([]*response.User, len(us.Users))
+	for i, u := range us.Users {
 		resUsers[i] = &response.User{
 			ID:           u.ID,
 			Nickname:     u.Nickname,
@@ -124,8 +121,8 @@ func (h *v1UserHandler) Followers(c *fiber.Ctx) error {
 		return err
 	}
 
-	resUsers := make([]*response.User, len(us))
-	for i, u := range us {
+	resUsers := make([]*response.User, len(us.Users))
+	for i, u := range us.Users {
 		resUsers[i] = &response.User{
 			ID:           u.ID,
 			Nickname:     u.Nickname,
@@ -169,7 +166,9 @@ func (h *v1UserHandler) Update(c *fiber.Ctx) error {
 }
 
 func (h *v1UserHandler) Suspend(c *fiber.Ctx) error {
-	if err := h.u.Suspend(pkg.Context{Ctx: c}); err != nil {
+	ctx := pkg.Context{Ctx: c}
+	u, _ := ctx.CurrentUser()
+	if err := h.app.Commands.Suspend.Handle(ctx, u); err != nil {
 		return err
 	}
 

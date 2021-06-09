@@ -2,6 +2,9 @@ package registry
 
 import (
 	"artics-api/src/config"
+	"artics-api/src/internal/application"
+	"artics-api/src/internal/application/command"
+	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/infrastructure/repository"
 	"artics-api/src/internal/infrastructure/service"
 	dv "artics-api/src/internal/infrastructure/validation"
@@ -50,6 +53,21 @@ func NewRegistry(
 	// Request Validator
 	rv := v.NewRequestValidator()
 
+	// Commands and Queries
+	app := application.Application{
+		Commands: application.Commands{
+			CreateUser:      command.NewCreateUserHandler(ur),
+			UpdateThumbnail: command.NewUpdateThumbnailHandler(flr),
+			Update:          command.NewUpdateUserHandler(ur),
+			Suspend:         command.NewSuspendUserHandler(ur),
+		},
+		Queries: application.Queries{
+			GetUser:             query.NewGetUserHandler(ur),
+			GetFavoriteContents: query.NewGetFavoriteContentsHandler(cr),
+			Followings:          query.NewFollowingsHandler(ur),
+			Followers:           query.NewFollowersHandler(ur),
+		},
+	}
 	// Usecase
 	uu := usecase.NewUserUsecase(rv, us, cs)
 	fu := usecase.NewFollowUsecase(fr, us)
@@ -59,7 +77,7 @@ func NewRegistry(
 
 	return &Registry{
 		AuthMiddleware: middleware.NewAuthMiddleware(uu),
-		V1User:         v1.NewV1UserHandler(uu),
+		V1User:         v1.NewV1UserHandler(app),
 		V1Follow:       v1.NewV1FollowHandler(fu),
 		V1Content:      v1.NewV1ContentHandler(cu),
 		V1Favorite:     v1.NewV1FavoriteHandler(fvu),
