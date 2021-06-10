@@ -16,11 +16,7 @@ func NewUpdateUserHandler(v RequestValidator, ur user.UserRepository) UpdateUser
 }
 
 func (h UpdateUserHandler) Handle(ctx pkg.Context, cmd user.CommandUpdateUser) error {
-	u, err := ctx.CurrentUser()
-	if err != nil {
-		return err
-	}
-
+	u := cmd.User
 	u.Nickname = user.Nickname(cmd.Nickname)
 	u.ThumbnailURL = user.ThumbnailURL(cmd.ThumbnailURL)
 

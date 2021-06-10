@@ -2,7 +2,11 @@ package follow
 
 // Follow entity
 type Follow struct {
-	ID          int
-	FollowingID int
-	FollowerID  int
+	ID          ID
+	FollowingID FollowingID
+	FollowerID  FollowerID
 }
+
+type ID int
+type FollowingID int
+type FollowerID int

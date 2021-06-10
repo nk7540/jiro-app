@@ -22,10 +22,25 @@ func NewFollowRepository(db *config.DatabaseConfig) follow.FollowRepository {
 }
 
 func (r *followRepository) Create(ctx context.Context, f *follow.Follow) error {
-	mf := models.Follow{}
-	mf.FollowingID = f.FollowingID
-	mf.FollowerID = f.FollowerID
+	mf := models.Follow{
+		FollowingID: int(f.FollowingID),
+		FollowerID:  int(f.FollowerID),
+	}
 	return mf.Insert(ctx, r.db, boil.Infer())
+}
+
+func (r *followRepository) Delete(ctx context.Context, id follow.ID) error {
+	mf := &models.Follow{ID: int(id)}
+	_, err := mf.Delete(ctx, r.db)
+	return err
+}
+
+func (r *followRepository) GetByUserIDs(ctx context.Context, followingID follow.FollowingID, followerID follow.FollowerID) (*follow.QueryFollow, error) {
+	f := &follow.QueryFollow{}
+	if err := models.Follows(qm.Where("following_id=? and follower_id=?", followingID, followerID)).Bind(ctx, r.db, f); err != nil {
+		return nil, err
+	}
+	return f, nil
 }
 
 func (r *followRepository) FollowingCount(ctx context.Context, userID user.ID) (int, error) {
@@ -34,13 +49,4 @@ func (r *followRepository) FollowingCount(ctx context.Context, userID user.ID) (
 		return 0, err
 	}
 	return int(c), nil
-}
-
-func (r *followRepository) Delete(ctx context.Context, f *follow.Follow) error {
-	mf, err := models.Follows(qm.Where("following_id=? and follower_id=?", f.FollowingID, f.FollowerID)).One(ctx, r.db)
-	if err != nil {
-		return err
-	}
-	_, err = mf.Delete(ctx, r.db)
-	return err
 }
