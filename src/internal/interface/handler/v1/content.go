@@ -5,7 +5,7 @@ import (
 	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/content"
-	"artics-api/src/internal/usecase/response"
+	"artics-api/src/internal/interface/handler/response"
 	"artics-api/src/pkg"
 	"strconv"
 
@@ -53,9 +53,14 @@ func (h *v1ContentHandler) Favorites(c *fiber.Ctx) error {
 		return domain.UnableParseJSON.New(err)
 	}
 
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		return domain.UnableParseJSON.New(err)
+	}
+
 	cs, err := h.app.Queries.GetFavoriteContents.Handle(pkg.Context{Ctx: c}, query.GetFavoriteContents{
 		UserID: userID,
-		Limit:  10,
+		Limit:  limit,
 	})
 	if err != nil {
 		return err
@@ -68,7 +73,7 @@ func (h *v1ContentHandler) Favorites(c *fiber.Ctx) error {
 			Title: c.Title,
 		}
 	}
-	res := &response.Contents{resContents}
+	res := &response.Contents{Contents: resContents}
 
 	return c.JSON(res)
 }

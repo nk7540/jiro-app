@@ -5,12 +5,11 @@ type CreateUser struct {
 }
 
 type ShowUser struct {
-	ID               int        `json:"id"`
-	Nickname         string     `json:"nickname"`
-	Email            string     `json:"email"`
-	Followingcount   int        `json:"followingCount"`
-	Followercount    int        `json:"followerCount"`
-	FavoriteContents []*Content `json:"favoriteContents"`
+	ID             int    `json:"id"`
+	Nickname       string `json:"nickname"`
+	Email          string `json:"email"`
+	Followingcount int    `json:"followingCount"`
+	Followercount  int    `json:"followerCount"`
 }
 
 type Users struct {

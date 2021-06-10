@@ -6,7 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"artics-api/src/internal/application"
-	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/internal/interface/handler/request"
@@ -64,25 +63,11 @@ func (h *v1UserHandler) Show(c *fiber.Ctx) error {
 		return err
 	}
 
-	favoriteContents, err := h.app.Queries.GetFavoriteContents.Handle(ctx, query.GetFavoriteContents{
-		UserID: id,
-		Limit:  3,
-	})
-
-	resFavoriteContents := make([]*response.Content, len(favoriteContents))
-	for i, c := range favoriteContents {
-		resFavoriteContents[i] = &response.Content{
-			ID:    c.ID,
-			Title: c.Title,
-		}
-	}
-
 	res := &response.ShowUser{
-		ID:               u.ID,
-		Nickname:         u.Nickname,
-		Followingcount:   u.FollowingCount,
-		Followercount:    u.FollowerCount,
-		FavoriteContents: resFavoriteContents,
+		ID:             u.ID,
+		Nickname:       u.Nickname,
+		Followingcount: u.FollowingCount,
+		Followercount:  u.FollowerCount,
 	}
 
 	return c.JSON(res)

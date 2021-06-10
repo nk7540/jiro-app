@@ -1,19 +1,17 @@
 package user
 
 import (
-	"artics-api/src/internal/domain/content"
+	"fmt"
 	"io"
 )
 
 type User struct {
-	ID               UserID
-	UID              UID
-	Status           Status       `validate:"required,oneof=provisional available suspended"`
-	Nickname         Nickname     `validate:"max=32"`
-	Email            Email        `validate:"required,email,max=256"`
-	ThumbnailURL     ThumbnailURL `validate:"max=1024"`
-	FavoriteContents []*content.Content
-	BrowsedContents  []*content.Content
+	ID           UserID
+	UID          UID
+	Status       Status       `validate:"required,oneof=provisional available suspended"`
+	Nickname     Nickname     `validate:"max=32"`
+	Email        Email        `validate:"required,email,max=256"`
+	ThumbnailURL ThumbnailURL `validate:"max=1024"`
 }
 
 type UserID int
@@ -33,3 +31,10 @@ const (
 	Available   = Status("available")
 	Suspended   = Status("suspended")
 )
+
+func (u *User) Suspend() {
+	u.Status = Suspended
+	u.Nickname = ""
+	u.Email = Email(fmt.Sprintf("leaved+user%s@artics.jp", u.ID))
+	u.ThumbnailURL = ""
+}

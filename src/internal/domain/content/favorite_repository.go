@@ -10,5 +10,5 @@ type FavoriteRepository interface {
 	Delete(ctx context.Context, id FavoriteID) error
 
 	// Query
-	FindByUserAndContentID(ctx context.Context, userID FavoriteUserID, contentID FavoriteContentID) (*QueryFavorite, error)
+	FindByUserAndContentIDOrNone(ctx context.Context, userID FavoriteUserID, contentID FavoriteContentID) (*QueryFavorite, error)
 }

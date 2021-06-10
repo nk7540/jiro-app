@@ -2,28 +2,28 @@ package command
 
 import (
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/domain/favorite"
+	"artics-api/src/internal/domain/content"
 	"artics-api/src/pkg"
 
 	"golang.org/x/xerrors"
 )
 
 type LikeHandler struct {
-	fr favorite.FavoriteRepository
+	fr content.FavoriteRepository
 }
 
-func NewLikeHandler(fr favorite.FavoriteRepository) LikeHandler {
+func NewLikeHandler(fr content.FavoriteRepository) LikeHandler {
 	return LikeHandler{fr}
 }
 
-func (h LikeHandler) Handle(ctx pkg.Context, cmd favorite.CommandLike) error {
-	if qf, err := h.fr.FindByUserAndContentID(ctx, cmd.UserID, cmd.ContentID); err != nil {
+func (h LikeHandler) Handle(ctx pkg.Context, cmd content.CommandLike) error {
+	if qf, err := h.fr.FindByUserAndContentIDOrNone(ctx, cmd.UserID, cmd.ContentID); err != nil {
 		return domain.ErrorInDatastore.New(pkg.NewRepositoryError(err))
 	} else if qf != nil {
 		return xerrors.New("already in favorite")
 	}
 
-	f := &favorite.Favorite{
+	f := &content.Favorite{
 		UserID:    cmd.UserID,
 		ContentID: cmd.ContentID,
 	}

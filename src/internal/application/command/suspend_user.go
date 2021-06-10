@@ -5,7 +5,8 @@ import (
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/pkg"
 	"context"
-	"fmt"
+
+	"golang.org/x/xerrors"
 )
 
 type SuspendUserHandler struct {
@@ -18,21 +19,21 @@ func NewSuspendUserHandler(ur user.UserRepository) SuspendUserHandler {
 
 func (h SuspendUserHandler) Handle(ctx context.Context, u *user.User) error {
 	// prevEmail := u.Email
-
-	u.Status = user.Suspended
-	u.Nickname = ""
-	u.Email = user.Email(fmt.Sprintf("leaved+user%s@artics.jp", u.ID))
-	u.ThumbnailURL = ""
+	u.Suspend()
 
 	v := NewRequestValidator()
 	if ves := v.Run(ctx, u); len(ves) > 0 {
-		return domain.InvalidDomainValidation.New(pkg.NewValidationError(), ves...)
+		return xerrors.New("failed to suspended user validation")
 	}
 
 	if err := h.ur.Update(ctx, u); err != nil {
-		return err
+		return domain.ErrorInDatastore.New(pkg.NewRepositoryError(err))
 	}
 
 	// @TODO notify suspended
-	return h.ur.DeleteAuth(ctx, u.UID)
+	if err := h.ur.DeleteAuth(ctx, u.UID); err != nil {
+		return domain.ErrorInStorage.New(err)
+	}
+
+	return nil
 }

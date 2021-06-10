@@ -2,28 +2,28 @@ package command
 
 import (
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/domain/follow"
+	"artics-api/src/internal/domain/user"
 	"artics-api/src/pkg"
 
 	"golang.org/x/xerrors"
 )
 
 type FollowHandler struct {
-	fr follow.FollowRepository
+	fr user.FollowRepository
 }
 
-func NewFollowHandler(fr follow.FollowRepository) FollowHandler {
+func NewFollowHandler(fr user.FollowRepository) FollowHandler {
 	return FollowHandler{fr}
 }
 
-func (h FollowHandler) Handle(ctx pkg.Context, cmd follow.CommandFollow) error {
+func (h FollowHandler) Handle(ctx pkg.Context, cmd user.CommandFollow) error {
 	if qf, err := h.fr.GetByUserIDs(ctx, cmd.FollowingID, cmd.FollowerID); err != nil {
 		return domain.ErrorInDatastore.New(pkg.NewRepositoryError(err))
 	} else if qf != nil {
 		return xerrors.New("already following")
 	}
 
-	f := &follow.Follow{
+	f := &user.Follow{
 		FollowingID: cmd.FollowingID,
 		FollowerID:  cmd.FollowerID,
 	}

@@ -13,13 +13,14 @@ import (
 )
 
 type userRepository struct {
-	db   *config.DatabaseConfig
-	auth *config.AuthConfig
+	db       *config.DatabaseConfig
+	auth     *config.AuthConfig
+	uploader *config.UploaderConfig
 }
 
 // NewUserRepository - setups user repository
-func NewUserRepository(db *config.DatabaseConfig, auth *config.AuthConfig) user.UserRepository {
-	return &userRepository{db, auth}
+func NewUserRepository(db *config.DatabaseConfig, auth *config.AuthConfig, uploader *config.UploaderConfig) user.UserRepository {
+	return &userRepository{db, auth, uploader}
 }
 
 func (r *userRepository) Create(ctx context.Context, u *user.User) error {
@@ -133,6 +134,14 @@ func (r *userRepository) Update(ctx context.Context, u *user.User) error {
 	}
 	_, err := mu.Update(ctx, r.db, boil.Blacklist("uid"))
 	return err
+}
+
+func (r *userRepository) UpdateThumbnail(ctx context.Context, thumbnail user.Thumbnail) (user.ThumbnailURL, error) {
+	output, err := r.uploader.Upload(thumbnail)
+	if err != nil {
+		return "", err
+	}
+	return user.ThumbnailURL(output.Location), nil
 }
 
 func (r *userRepository) DeleteAuth(ctx context.Context, uid user.UID) error {
