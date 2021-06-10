@@ -65,6 +65,7 @@ func NewRegistry(
 		Commands: application.ContentCommands{
 			Like:   command.NewLikeHandler(fvr),
 			Unlike: command.NewUnlikeHandler(fvr),
+			Browse: command.NewBrowseHandler(br),
 		},
 		Queries: application.ContentQueries{
 			Content:             query.NewContentHandler(cr),

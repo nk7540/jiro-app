@@ -9,8 +9,8 @@ import (
 	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/user"
-	"artics-api/src/internal/usecase/request"
-	"artics-api/src/internal/usecase/response"
+	"artics-api/src/internal/interface/handler/request"
+	"artics-api/src/internal/interface/handler/response"
 	"artics-api/src/pkg"
 )
 
