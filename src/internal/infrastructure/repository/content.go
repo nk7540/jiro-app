@@ -5,6 +5,7 @@ import (
 	"artics-api/src/internal/domain/content"
 	"artics-api/src/internal/infrastructure/models"
 	"context"
+	"database/sql"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -17,16 +18,13 @@ func NewContentRepository(db *config.DatabaseConfig) content.ContentRepository {
 	return &contentRepository{db}
 }
 
-func (r *contentRepository) Get(ctx context.Context, id int) (*content.Content, error) {
-	mc, err := models.FindContent(ctx, r.db, id)
-	if err != nil {
-		return nil, err
-	}
+func (r *contentRepository) GetOrNone(ctx context.Context, id content.ContentID) (*content.QueryDetailContent, error) {
+	c := &content.QueryDetailContent{}
 
-	c := &content.Content{
-		UserID:     mc.UserID.Int,
-		CategoryID: mc.CategoryID,
-		Title:      mc.Title,
+	if err := models.Contents(qm.Where("id=?", id)).Bind(ctx, r.db, c); err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, nil
 	}
 
 	return c, nil

@@ -7,6 +7,16 @@ type CommandCreateUser struct {
 }
 
 type CommandUpdateUser struct {
-	Nickname     string `validate:"max=32"`
-	ThumbnailURL string `validate:"max=256"`
+	Nickname     Nickname     `validate:"max=32"`
+	ThumbnailURL ThumbnailURL `validate:"max=256"`
+}
+
+type CommandFollow struct {
+	FollowingID FollowingID
+	FollowerID  FollowerID
+}
+
+type CommandUnfollow struct {
+	FollowingID FollowingID
+	FollowerID  FollowerID
 }

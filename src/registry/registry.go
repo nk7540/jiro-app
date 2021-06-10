@@ -10,19 +10,13 @@ import (
 	dv "artics-api/src/internal/infrastructure/validation"
 	v1 "artics-api/src/internal/interface/handler/v1"
 	"artics-api/src/internal/interface/middleware"
-	"artics-api/src/internal/usecase"
-	v "artics-api/src/internal/usecase/validation"
 )
 
 // Registry - DI container
 type Registry struct {
 	AuthMiddleware middleware.AuthMiddleware
 	V1User         v1.V1UserHandler
-	V1Follow       v1.V1FollowHandler
 	V1Content      v1.V1ContentHandler
-	V1Favorite     v1.V1FavoriteHandler
-	V1Browse       v1.V1BrowseHandler
-	// CategoryHandler handler.CategoryHandler
 }
 
 // NewRegistry - imports files in /internal directory
@@ -50,41 +44,38 @@ func NewRegistry(
 	fvs := service.NewFavoriteService(fvr)
 	bs := service.NewBrowseService(br)
 
-	// Request Validator
-	rv := v.NewRequestValidator()
-
 	// Commands and Queries
-	app := application.Application{
-		Commands: application.Commands{
+	ua := application.UserApplication{
+		Commands: application.UserCommands{
 			CreateUser:      command.NewCreateUserHandler(ur),
-			UpdateThumbnail: command.NewUpdateThumbnailHandler(flr),
+			UpdateThumbnail: command.NewUpdateThumbnailHandler(ur),
 			UpdateUser:      command.NewUpdateUserHandler(ur),
 			SuspendUser:     command.NewSuspendUserHandler(ur),
 			Follow:          command.NewFollowHandler(fr),
 			Unfollow:        command.NewUnfollowHandler(fr),
-			Like:            command.NewLikeHandler(fvr),
-			Unlike:          command.NewUnlikeHandler(fvr),
 		},
-		Queries: application.Queries{
-			GetUser:             query.NewGetUserHandler(ur),
-			Followings:          query.NewFollowingsHandler(ur),
-			Followers:           query.NewFollowersHandler(ur),
+		Queries: application.UserQueries{
+			GetUser:    query.NewGetUserHandler(ur),
+			Followings: query.NewFollowingsHandler(ur),
+			Followers:  query.NewFollowersHandler(ur),
+		},
+	}
+
+	ca := application.ContentApplication{
+		Commands: application.ContentCommands{
+			Like:   command.NewLikeHandler(fvr),
+			Unlike: command.NewUnlikeHandler(fvr),
+		},
+		Queries: application.ContentQueries{
+			Content:             query.NewContentHandler(cr),
 			GetFavoriteContents: query.NewGetFavoriteContentsHandler(cr),
 		},
 	}
 	// Usecase
-	uu := usecase.NewUserUsecase(rv, us, cs)
-	fu := usecase.NewFollowUsecase(fr, us)
-	cu := usecase.NewContentUsecase(cs)
-	fvu := usecase.NewFavoriteUsecase(us, fvs)
-	bu := usecase.NewBrowseUsecase(us, bs)
 
 	return &Registry{
 		AuthMiddleware: middleware.NewAuthMiddleware(uu),
-		V1User:         v1.NewV1UserHandler(app),
-		V1Follow:       v1.NewV1FollowHandler(fu),
-		V1Content:      v1.NewV1ContentHandler(cu),
-		V1Favorite:     v1.NewV1FavoriteHandler(fvu),
-		V1Browse:       v1.NewV1BrowseHandler(bu),
+		V1User:         v1.NewV1UserHandler(ua),
+		V1Content:      v1.NewV1ContentHandler(ca),
 	}
 }

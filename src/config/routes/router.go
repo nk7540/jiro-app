@@ -18,20 +18,14 @@ func Router(app *fiber.App, reg *registry.Registry) {
 		api.Delete("/users/suspend", reg.V1User.Suspend)
 		api.Get("/users/:id/followings", reg.V1User.Followings)
 		api.Get("/users/:id/followers", reg.V1User.Followers)
-
-		// Follow
-		api.Post("/follows", reg.V1Follow.Create)
-		api.Delete("/follows", reg.V1Follow.Delete)
+		api.Post("/follows", reg.V1User.Follow)
+		api.Delete("/follows", reg.V1User.Unfollow)
 
 		// Content
+		api.Post("/favorites", reg.V1User.Like)
+		api.Delete("/favorites", reg.V1User.Unlike)
+		api.Post("/browses", reg.V1Browse.Save)
 		api.Get("/contents/favorites", reg.V1Content.Favorites)
 		api.Get("/contents/:id", reg.V1Content.Show)
-
-		// Favorite
-		api.Post("/favorites", reg.V1Favorite.Create)
-		api.Delete("/favorites", reg.V1Favorite.Delete)
-
-		// Browse
-		api.Post("/browses", reg.V1Browse.Save)
 	}
 }

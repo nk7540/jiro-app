@@ -18,3 +18,9 @@ type QueryUser struct {
 	Nickname     string `boil:"nickname"`
 	ThumbnailURL string `boil:"thumbnail_url"`
 }
+
+type QueryFollow struct {
+	ID          int `boil:"id"`
+	FollowingID int `boil:"following_id"`
+	FollowerID  int `boil:"follower_id"`
+}

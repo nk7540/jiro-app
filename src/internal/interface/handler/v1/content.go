@@ -1,8 +1,10 @@
 package v1
 
 import (
+	"artics-api/src/internal/application"
+	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/usecase"
+	"artics-api/src/internal/domain/content"
 	"artics-api/src/internal/usecase/response"
 	"artics-api/src/pkg"
 	"strconv"
@@ -13,14 +15,16 @@ import (
 type V1ContentHandler interface {
 	Show(c *fiber.Ctx) error
 	Favorites(c *fiber.Ctx) error
+	Like(c *fiber.Ctx) error
+	Unlike(c *fiber.Ctx) error
 }
 
 type v1ContentHandler struct {
-	u usecase.ContentUsecase
+	app application.ContentApplication
 }
 
-func NewV1ContentHandler(u usecase.ContentUsecase) V1ContentHandler {
-	return &v1ContentHandler{u}
+func NewV1ContentHandler(app application.ContentApplication) V1ContentHandler {
+	return &v1ContentHandler{app}
 }
 
 func (h *v1ContentHandler) Show(c *fiber.Ctx) error {
@@ -29,7 +33,7 @@ func (h *v1ContentHandler) Show(c *fiber.Ctx) error {
 		return domain.UnableParseJSON.New(err)
 	}
 
-	content, err := h.u.Show(pkg.Context{Ctx: c}, id)
+	content, err := h.app.Queries.Content.Handle(pkg.Context{Ctx: c}, content.ContentID(id))
 	if err != nil {
 		return err
 	}
@@ -48,7 +52,10 @@ func (h *v1ContentHandler) Favorites(c *fiber.Ctx) error {
 		return domain.UnableParseJSON.New(err)
 	}
 
-	cs, err := h.u.Favorites(pkg.Context{Ctx: c}, userID)
+	cs, err := h.app.Queries.GetFavoriteContents.Handle(pkg.Context{Ctx: c}, query.GetFavoriteContents{
+		UserID: userID,
+		Limit:  10,
+	})
 	if err != nil {
 		return err
 	}
@@ -63,4 +70,48 @@ func (h *v1ContentHandler) Favorites(c *fiber.Ctx) error {
 	res := &response.Contents{resContents}
 
 	return c.JSON(res)
+}
+
+func (h *v1ContentHandler) Like(c *fiber.Ctx) error {
+	contentID, err := strconv.Atoi(c.Query("content_id"))
+	if err != nil {
+		return domain.UnableParseJSON.New(err)
+	}
+
+	ctx := pkg.Context{Ctx: c}
+	u, err := ctx.CurrentUser()
+	if err != nil {
+		return err
+	}
+
+	if err := h.app.Commands.Like.Handle(ctx, content.CommandLike{
+		UserID:    content.FavoriteUserID(u.ID),
+		ContentID: content.FavoriteContentID(contentID),
+	}); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
+}
+
+func (h *v1ContentHandler) Unlike(c *fiber.Ctx) error {
+	contentID, err := strconv.Atoi(c.Query("content_id"))
+	if err != nil {
+		return domain.UnableParseJSON.New(err)
+	}
+
+	ctx := pkg.Context{Ctx: c}
+	u, err := ctx.CurrentUser()
+	if err != nil {
+		return err
+	}
+
+	if err := h.app.Commands.Unlike.Handle(ctx, content.CommandUnlike{
+		UserID:    content.FavoriteUserID(u.ID),
+		ContentID: content.FavoriteContentID(contentID),
+	}); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
 }

@@ -5,6 +5,6 @@ import (
 )
 
 type ContentRepository interface {
-	Get(ctx context.Context, id int) (*Content, error)
+	GetOrNone(ctx context.Context, id ContentID) (*QueryDetailContent, error)
 	GetFavoriteContents(ctx context.Context, userId int, limit int) ([]*QueryContent, error)
 }

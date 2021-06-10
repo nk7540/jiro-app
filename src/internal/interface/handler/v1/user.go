@@ -8,8 +8,6 @@ import (
 	"artics-api/src/internal/application"
 	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/domain/favorite"
-	"artics-api/src/internal/domain/follow"
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/internal/usecase/request"
 	"artics-api/src/internal/usecase/response"
@@ -26,16 +24,14 @@ type V1UserHandler interface {
 	Suspend(c *fiber.Ctx) error
 	Follow(c *fiber.Ctx) error
 	Unfollow(c *fiber.Ctx) error
-	Like(c *fiber.Ctx) error
-	Unlike(c *fiber.Ctx) error
 }
 
 type v1UserHandler struct {
-	app application.Application
+	app application.UserApplication
 }
 
 // NewV1UserHandler - setups v1 user handler
-func NewV1UserHandler(app application.Application) V1UserHandler {
+func NewV1UserHandler(app application.UserApplication) V1UserHandler {
 	return &v1UserHandler{app}
 }
 
@@ -154,7 +150,7 @@ func (h *v1UserHandler) Update(c *fiber.Ctx) error {
 	thumbnailURL, err := h.app.Commands.UpdateThumbnail.Handle(ctx, thumbnail)
 
 	if err := h.app.Commands.UpdateUser.Handle(ctx, user.CommandUpdateUser{
-		Nickname:     req.Nickname,
+		Nickname:     user.Nickname(req.Nickname),
 		ThumbnailURL: thumbnailURL,
 	}); err != nil {
 		return err
@@ -162,7 +158,7 @@ func (h *v1UserHandler) Update(c *fiber.Ctx) error {
 
 	res := &response.UpdateUser{
 		Nickname:     req.Nickname,
-		ThumbnailURL: thumbnailURL,
+		ThumbnailURL: string(thumbnailURL),
 	}
 
 	return c.JSON(res)
@@ -190,9 +186,9 @@ func (h *v1UserHandler) Follow(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.app.Commands.Follow.Handle(ctx, follow.CommandFollow{
-		FollowingID: follow.FollowingID(u.ID),
-		FollowerID:  follow.FollowerID(followerID),
+	if err := h.app.Commands.Follow.Handle(ctx, user.CommandFollow{
+		FollowingID: user.FollowingID(u.ID),
+		FollowerID:  user.FollowerID(followerID),
 	}); err != nil {
 		return err
 	}
@@ -212,53 +208,9 @@ func (h *v1UserHandler) Unfollow(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.app.Commands.Unfollow.Handle(ctx, follow.CommandUnfollow{
-		FollowingID: follow.FollowingID(u.ID),
-		FollowerID:  follow.FollowerID(followerID),
-	}); err != nil {
-		return err
-	}
-
-	return c.JSON(nil)
-}
-
-func (h *v1UserHandler) Like(c *fiber.Ctx) error {
-	contentID, err := strconv.Atoi(c.Query("content_id"))
-	if err != nil {
-		return domain.UnableParseJSON.New(err)
-	}
-
-	ctx := pkg.Context{Ctx: c}
-	u, err := ctx.CurrentUser()
-	if err != nil {
-		return err
-	}
-
-	if err := h.app.Commands.Like.Handle(ctx, favorite.CommandLike{
-		UserID:    favorite.UserID(u.ID),
-		ContentID: favorite.ContentID(contentID),
-	}); err != nil {
-		return err
-	}
-
-	return c.JSON(nil)
-}
-
-func (h *v1UserHandler) Unlike(c *fiber.Ctx) error {
-	contentID, err := strconv.Atoi(c.Query("content_id"))
-	if err != nil {
-		return domain.UnableParseJSON.New(err)
-	}
-
-	ctx := pkg.Context{Ctx: c}
-	u, err := ctx.CurrentUser()
-	if err != nil {
-		return err
-	}
-
-	if err := h.app.Commands.Unlike.Handle(ctx, favorite.CommandUnlike{
-		UserID:    favorite.UserID(u.ID),
-		ContentID: favorite.ContentID(contentID),
+	if err := h.app.Commands.Unfollow.Handle(ctx, user.CommandUnfollow{
+		FollowingID: user.FollowingID(u.ID),
+		FollowerID:  user.FollowerID(followerID),
 	}); err != nil {
 		return err
 	}

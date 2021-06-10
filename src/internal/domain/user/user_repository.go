@@ -9,6 +9,7 @@ type UserRepository interface {
 	Create(ctx context.Context, u *User) error
 	CreateAuth(ctx context.Context, cmd CommandCreateUser) (UID, error)
 	Update(ctx context.Context, u *User) error
+	UpdateThumbnail(ctx context.Context, thumbnail Thumbnail) (ThumbnailURL, error)
 	DeleteAuth(ctx context.Context, uid UID) error
 
 	// Query

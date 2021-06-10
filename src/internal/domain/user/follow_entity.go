@@ -1,12 +1,12 @@
-package follow
+package user
 
 // Follow entity
 type Follow struct {
-	ID          ID
+	ID          FollowID
 	FollowingID FollowingID
 	FollowerID  FollowerID
 }
 
-type ID int
+type FollowID int
 type FollowingID int
 type FollowerID int
