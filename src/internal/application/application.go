@@ -14,12 +14,14 @@ type Commands struct {
 	// User
 	CreateUser      command.CreateUserHandler
 	UpdateThumbnail command.UpdateThumbnailHandler
-	Update          command.UpdateUserHandler
-	Suspend         command.SuspendUserHandler
+	UpdateUser      command.UpdateUserHandler
+	SuspendUser     command.SuspendUserHandler
 	Follow          command.FollowHandler
 	Unfollow        command.UnfollowHandler
 
 	// Content
+	Like   command.LikeHandler
+	Unlike command.UnlikeHandler
 }
 
 type Queries struct {

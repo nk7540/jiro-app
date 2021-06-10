@@ -12,19 +12,19 @@ import (
 )
 
 type CreateUserHandler struct {
-	v  RequestValidator
 	ur user.UserRepository
 }
 
-func NewCreateUserHandler(v RequestValidator, ur user.UserRepository) CreateUserHandler {
-	return CreateUserHandler{v, ur}
+func NewCreateUserHandler(ur user.UserRepository) CreateUserHandler {
+	return CreateUserHandler{ur}
 }
 
 func (h CreateUserHandler) Handle(ctx pkg.Context, cmd user.CommandCreateUser) error {
-	if err := h.v.Validate.RegisterValidation("password", passwordCheck); err != nil {
+	v := NewRequestValidator()
+	if err := v.Validate.RegisterValidation("password", passwordCheck); err != nil {
 		return xerrors.Errorf("failed to register validation: %w", err)
 	}
-	ves := h.v.Run(ctx, cmd)
+	ves := v.Run(ctx, cmd)
 	vesEmail, err := h.uniqueEmailCheck(ctx, cmd.Email)
 	if err != nil {
 		return err

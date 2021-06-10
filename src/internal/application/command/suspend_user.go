@@ -9,12 +9,11 @@ import (
 )
 
 type SuspendUserHandler struct {
-	v  RequestValidator
 	ur user.UserRepository
 }
 
-func NewSuspendUserHandler(v RequestValidator, ur user.UserRepository) SuspendUserHandler {
-	return SuspendUserHandler{v, ur}
+func NewSuspendUserHandler(ur user.UserRepository) SuspendUserHandler {
+	return SuspendUserHandler{ur}
 }
 
 func (h SuspendUserHandler) Handle(ctx context.Context, u *user.User) error {
@@ -25,7 +24,8 @@ func (h SuspendUserHandler) Handle(ctx context.Context, u *user.User) error {
 	u.Email = user.Email(fmt.Sprintf("leaved+user%s@artics.jp", u.ID))
 	u.ThumbnailURL = ""
 
-	if ves := h.v.Run(ctx, u); len(ves) > 0 {
+	v := NewRequestValidator()
+	if ves := v.Run(ctx, u); len(ves) > 0 {
 		return domain.InvalidDomainValidation.New(pkg.NewValidationError(), ves...)
 	}
 

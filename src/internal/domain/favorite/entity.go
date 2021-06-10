@@ -2,7 +2,11 @@ package favorite
 
 // Favorite entity
 type Favorite struct {
-	ID        int
-	UserID    int
-	ContentID int
+	ID        ID
+	UserID    UserID
+	ContentID ContentID
 }
+
+type ID int
+type UserID int
+type ContentID int

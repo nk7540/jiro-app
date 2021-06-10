@@ -58,14 +58,18 @@ func NewRegistry(
 		Commands: application.Commands{
 			CreateUser:      command.NewCreateUserHandler(ur),
 			UpdateThumbnail: command.NewUpdateThumbnailHandler(flr),
-			Update:          command.NewUpdateUserHandler(ur),
-			Suspend:         command.NewSuspendUserHandler(ur),
+			UpdateUser:      command.NewUpdateUserHandler(ur),
+			SuspendUser:     command.NewSuspendUserHandler(ur),
+			Follow:          command.NewFollowHandler(fr),
+			Unfollow:        command.NewUnfollowHandler(fr),
+			Like:            command.NewLikeHandler(fvr),
+			Unlike:          command.NewUnlikeHandler(fvr),
 		},
 		Queries: application.Queries{
 			GetUser:             query.NewGetUserHandler(ur),
-			GetFavoriteContents: query.NewGetFavoriteContentsHandler(cr),
 			Followings:          query.NewFollowingsHandler(ur),
 			Followers:           query.NewFollowersHandler(ur),
+			GetFavoriteContents: query.NewGetFavoriteContentsHandler(cr),
 		},
 	}
 	// Usecase

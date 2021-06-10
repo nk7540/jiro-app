@@ -8,6 +8,7 @@ import (
 	"artics-api/src/internal/application"
 	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
+	"artics-api/src/internal/domain/favorite"
 	"artics-api/src/internal/domain/follow"
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/internal/usecase/request"
@@ -25,6 +26,8 @@ type V1UserHandler interface {
 	Suspend(c *fiber.Ctx) error
 	Follow(c *fiber.Ctx) error
 	Unfollow(c *fiber.Ctx) error
+	Like(c *fiber.Ctx) error
+	Unlike(c *fiber.Ctx) error
 }
 
 type v1UserHandler struct {
@@ -150,7 +153,7 @@ func (h *v1UserHandler) Update(c *fiber.Ctx) error {
 	}
 	thumbnailURL, err := h.app.Commands.UpdateThumbnail.Handle(ctx, thumbnail)
 
-	if err := h.app.Commands.Update.Handle(ctx, user.CommandUpdateUser{
+	if err := h.app.Commands.UpdateUser.Handle(ctx, user.CommandUpdateUser{
 		Nickname:     req.Nickname,
 		ThumbnailURL: thumbnailURL,
 	}); err != nil {
@@ -168,7 +171,7 @@ func (h *v1UserHandler) Update(c *fiber.Ctx) error {
 func (h *v1UserHandler) Suspend(c *fiber.Ctx) error {
 	ctx := pkg.Context{Ctx: c}
 	u, _ := ctx.CurrentUser()
-	if err := h.app.Commands.Suspend.Handle(ctx, u); err != nil {
+	if err := h.app.Commands.SuspendUser.Handle(ctx, u); err != nil {
 		return err
 	}
 
@@ -212,6 +215,50 @@ func (h *v1UserHandler) Unfollow(c *fiber.Ctx) error {
 	if err := h.app.Commands.Unfollow.Handle(ctx, follow.CommandUnfollow{
 		FollowingID: follow.FollowingID(u.ID),
 		FollowerID:  follow.FollowerID(followerID),
+	}); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
+}
+
+func (h *v1UserHandler) Like(c *fiber.Ctx) error {
+	contentID, err := strconv.Atoi(c.Query("content_id"))
+	if err != nil {
+		return domain.UnableParseJSON.New(err)
+	}
+
+	ctx := pkg.Context{Ctx: c}
+	u, err := ctx.CurrentUser()
+	if err != nil {
+		return err
+	}
+
+	if err := h.app.Commands.Like.Handle(ctx, favorite.CommandLike{
+		UserID:    favorite.UserID(u.ID),
+		ContentID: favorite.ContentID(contentID),
+	}); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
+}
+
+func (h *v1UserHandler) Unlike(c *fiber.Ctx) error {
+	contentID, err := strconv.Atoi(c.Query("content_id"))
+	if err != nil {
+		return domain.UnableParseJSON.New(err)
+	}
+
+	ctx := pkg.Context{Ctx: c}
+	u, err := ctx.CurrentUser()
+	if err != nil {
+		return err
+	}
+
+	if err := h.app.Commands.Unlike.Handle(ctx, favorite.CommandUnlike{
+		UserID:    favorite.UserID(u.ID),
+		ContentID: favorite.ContentID(contentID),
 	}); err != nil {
 		return err
 	}
