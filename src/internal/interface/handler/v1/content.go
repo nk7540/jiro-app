@@ -17,6 +17,7 @@ type V1ContentHandler interface {
 	Favorites(c *fiber.Ctx) error
 	Like(c *fiber.Ctx) error
 	Unlike(c *fiber.Ctx) error
+	Browse(c *fiber.Ctx) error
 }
 
 type v1ContentHandler struct {
@@ -109,6 +110,28 @@ func (h *v1ContentHandler) Unlike(c *fiber.Ctx) error {
 	if err := h.app.Commands.Unlike.Handle(ctx, content.CommandUnlike{
 		UserID:    content.FavoriteUserID(u.ID),
 		ContentID: content.FavoriteContentID(contentID),
+	}); err != nil {
+		return err
+	}
+
+	return c.JSON(nil)
+}
+
+func (h *v1ContentHandler) Browse(c *fiber.Ctx) error {
+	contentID, err := c.ParamsInt("content_id")
+	if err != nil {
+		return domain.UnableParseJSON.New(err)
+	}
+
+	ctx := pkg.Context{Ctx: c}
+	u, err := ctx.CurrentUser()
+	if err != nil {
+		return err
+	}
+
+	if err := h.app.Commands.Browse.Handle(ctx, content.CommandBrowse{
+		UserID:    content.BrowseUserID(u.ID),
+		ContentID: content.BrowseContentID(contentID),
 	}); err != nil {
 		return err
 	}

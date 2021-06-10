@@ -9,3 +9,8 @@ type CommandUnlike struct {
 	UserID    FavoriteUserID
 	ContentID FavoriteContentID
 }
+
+type CommandBrowse struct {
+	UserID    BrowseUserID
+	ContentID BrowseContentID
+}

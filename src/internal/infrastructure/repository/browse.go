@@ -2,7 +2,7 @@ package repository
 
 import (
 	"artics-api/src/config"
-	"artics-api/src/internal/domain/browse"
+	"artics-api/src/internal/domain/content"
 	"artics-api/src/internal/infrastructure/models"
 	"context"
 	"database/sql"
@@ -16,11 +16,11 @@ type browseRepository struct {
 	db *config.DatabaseConfig
 }
 
-func NewBrowseRepository(db *config.DatabaseConfig) browse.BrowseRepository {
+func NewBrowseRepository(db *config.DatabaseConfig) content.BrowseRepository {
 	return &browseRepository{db}
 }
 
-func (r *browseRepository) Save(ctx context.Context, b *browse.Browse) error {
+func (r *browseRepository) Save(ctx context.Context, b *content.Browse) error {
 	mb, err := models.Browses(qm.Where(
 		"user_id = ? and content_id = ?",
 		b.UserID,
@@ -29,8 +29,8 @@ func (r *browseRepository) Save(ctx context.Context, b *browse.Browse) error {
 
 	if err == sql.ErrNoRows {
 		mb = &models.Browse{
-			UserID:    b.UserID,
-			ContentID: b.ContentID,
+			UserID:    int(b.UserID),
+			ContentID: int(b.ContentID),
 		}
 		if err := mb.Insert(ctx, r.db, boil.Infer()); err != nil {
 			return err

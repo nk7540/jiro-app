@@ -13,6 +13,7 @@ type ContentApplication struct {
 type ContentCommands struct {
 	Like   command.LikeHandler
 	Unlike command.UnlikeHandler
+	Browse command.BrowseHandler
 }
 
 type ContentQueries struct {
