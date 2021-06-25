@@ -1,15 +1,18 @@
 package v1
 
 import (
+	"artics-api/src/config"
 	"artics-api/src/internal/application"
 	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/content"
 	"artics-api/src/internal/interface/handler/response"
 	"artics-api/src/pkg"
+	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 )
 
 type V1ContentHandler interface {
@@ -18,14 +21,16 @@ type V1ContentHandler interface {
 	Like(c *fiber.Ctx) error
 	Unlike(c *fiber.Ctx) error
 	Browse(c *fiber.Ctx) error
+	ListenFavorite(c *fiber.Ctx) error
 }
 
 type v1ContentHandler struct {
-	app application.ContentApplication
+	app       application.ContentApplication
+	websocket *config.WebsocketConfig
 }
 
-func NewV1ContentHandler(app application.ContentApplication) V1ContentHandler {
-	return &v1ContentHandler{app}
+func NewV1ContentHandler(app application.ContentApplication, websocket *config.WebsocketConfig) V1ContentHandler {
+	return &v1ContentHandler{app, websocket}
 }
 
 func (h *v1ContentHandler) Show(c *fiber.Ctx) error {
@@ -142,4 +147,24 @@ func (h *v1ContentHandler) Browse(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(nil)
+}
+
+func (h *v1ContentHandler) ListenFavorite(c *fiber.Ctx) error {
+	return h.websocket.New(func(conn *websocket.Conn) {
+		var (
+			mt  int
+			msg []byte
+			err error
+		)
+		for {
+			if mt, msg, err = conn.ReadMessage(); err != nil {
+				break
+			}
+			log.Printf("recv: %s", msg)
+
+			if err = conn.WriteMessage(mt, msg); err != nil {
+				break
+			}
+		}
+	})(c)
 }

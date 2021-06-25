@@ -22,9 +22,9 @@ func Router(app *fiber.App, reg *registry.Registry) {
 		api.Delete("/follows", reg.V1User.Unfollow)
 
 		// Content
-		api.Post("/favorites", reg.V1User.Like)
-		api.Delete("/favorites", reg.V1User.Unlike)
-		api.Post("/browses", reg.V1Browse.Save)
+		api.Post("/favorites", reg.V1Content.Like)
+		api.Delete("/favorites", reg.V1Content.Unlike)
+		api.Post("/browses", reg.V1Content.Browse)
 		api.Get("/contents/favorites", reg.V1Content.Favorites)
 		api.Get("/contents/:id", reg.V1Content.Show)
 	}

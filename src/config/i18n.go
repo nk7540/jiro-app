@@ -2,7 +2,7 @@ package config
 
 import (
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/usecase/response"
+	"artics-api/src/internal/interface/handler/response"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/text/language"

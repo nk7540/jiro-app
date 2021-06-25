@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"artics-api/src/internal/usecase"
+	"artics-api/src/internal/application"
 	"artics-api/src/pkg"
 	"strings"
 
@@ -13,17 +13,17 @@ type AuthMiddleware interface {
 }
 
 type authMiddleware struct {
-	uu usecase.UserUsecase
+	ua application.UserApplication
 }
 
-func NewAuthMiddleware(uu usecase.UserUsecase) AuthMiddleware {
-	return &authMiddleware{uu}
+func NewAuthMiddleware(ua application.UserApplication) AuthMiddleware {
+	return &authMiddleware{ua}
 }
 
 func (am *authMiddleware) Auth(c *fiber.Ctx) error {
 	a := c.Get("Authorization")
 	token := strings.Replace(a, "Bearer ", "", 1)
-	u, err := am.uu.Auth(pkg.Context{Ctx: c}, token)
+	u, err := am.ua.Queries.UserByToken.Handle(pkg.Context{Ctx: c}, token)
 	if err != nil {
 		return err
 	}

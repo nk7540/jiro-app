@@ -6,7 +6,7 @@ import (
 
 	"artics-api/src/config"
 	"artics-api/src/internal/domain/content"
-	"artics-api/src/internal/infrastructure/models"
+	"artics-api/src/internal/infrastructure/repository/models"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -22,8 +22,8 @@ func NewFavoriteRepository(db *config.DatabaseConfig) content.FavoriteRepository
 
 func (r *favoriteRepository) Create(ctx context.Context, f *content.Favorite) error {
 	mf := models.Favorite{
-		UserID:    f.UserID,
-		ContentID: f.ContentID,
+		UserID:    int(f.UserID),
+		ContentID: int(f.ContentID),
 	}
 	return mf.Insert(ctx, r.db, boil.Infer())
 }

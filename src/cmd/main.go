@@ -24,6 +24,7 @@ func main() {
 		&app.Mail,
 		&app.Database,
 		&app.RPC,
+		&app.Websocket,
 	)
 
 	// Running application

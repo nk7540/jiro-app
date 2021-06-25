@@ -3,7 +3,7 @@ package repository
 import (
 	"artics-api/src/config"
 	"artics-api/src/internal/domain/content"
-	"artics-api/src/internal/infrastructure/models"
+	"artics-api/src/internal/infrastructure/repository/models"
 	"context"
 	"database/sql"
 

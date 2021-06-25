@@ -9,14 +9,15 @@ import (
 )
 
 type AppConfig struct {
-	Server     ServerConfig   `yaml:"server"`
-	Database   DatabaseConfig `yaml:"database"`
-	Auth       AuthConfig     `yaml:"auth"`
-	Uploader   UploaderConfig `yaml:"uploader"`
-	RPC        RPCConfig      `yaml:"rpc"`
-	I18n       I18nConfig     `yaml:"i18n"`
-	Logger     LoggerConfig   `yaml:"logger"`
-	Mail       MailConfig     `yaml:"mail"`
+	Server     ServerConfig    `yaml:"server"`
+	Database   DatabaseConfig  `yaml:"database"`
+	Auth       AuthConfig      `yaml:"auth"`
+	Uploader   UploaderConfig  `yaml:"uploader"`
+	RPC        RPCConfig       `yaml:"rpc"`
+	I18n       I18nConfig      `yaml:"i18n"`
+	Logger     LoggerConfig    `yaml:"logger"`
+	Mail       MailConfig      `yaml:"mail"`
+	Websocket  WebsocketConfig `yaml:"websocket"`
 	ConfigFile string
 }
 

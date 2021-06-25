@@ -20,7 +20,8 @@ type UserCommands struct {
 }
 
 type UserQueries struct {
-	GetUser    query.GetUserHandler
-	Followings query.FollowingsHandler
-	Followers  query.FollowersHandler
+	UserByToken query.UserByTokenHandler
+	GetUser     query.GetUserHandler
+	Followings  query.FollowingsHandler
+	Followers   query.FollowersHandler
 }

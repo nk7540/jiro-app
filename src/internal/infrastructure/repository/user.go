@@ -6,7 +6,7 @@ import (
 
 	"artics-api/src/config"
 	"artics-api/src/internal/domain/user"
-	"artics-api/src/internal/infrastructure/models"
+	"artics-api/src/internal/infrastructure/repository/models"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -56,9 +56,10 @@ func (r *userRepository) GetByToken(ctx context.Context, tkn string) (*user.User
 		mu.Email = au.UserInfo.Email
 		mu.Insert(ctx, r.db, boil.Infer())
 	}
-	u := &user.User{}
-	u.Nickname = mu.Nickname
-	u.Email = mu.Email
+	u := &user.User{
+		Nickname: user.Nickname(mu.Nickname),
+		Email:    user.Email(mu.Email),
+	}
 
 	return u, nil
 }
@@ -92,10 +93,10 @@ func (r *userRepository) GetByEmailOrNone(ctx context.Context, email string) (*u
 	}
 
 	return &user.User{
-		ID:       mu.ID,
-		Status:   mu.Status,
-		Email:    mu.Email,
-		Nickname: mu.Nickname,
+		ID:       user.UserID(mu.ID),
+		Status:   user.Status(mu.Status),
+		Email:    user.Email(mu.Email),
+		Nickname: user.Nickname(mu.Nickname),
 	}, nil
 }
 
