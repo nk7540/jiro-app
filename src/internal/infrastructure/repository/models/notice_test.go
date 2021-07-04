@@ -21,24 +21,24 @@ var (
 	_ = queries.Equal
 )
 
-func testBrowses(t *testing.T) {
+func testNotices(t *testing.T) {
 	t.Parallel()
 
-	query := Browses()
+	query := Notices()
 
 	if query.Query == nil {
 		t.Error("expected a query, got nothing")
 	}
 }
 
-func testBrowsesDelete(t *testing.T) {
+func testNoticesDelete(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -54,7 +54,7 @@ func testBrowsesDelete(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -64,14 +64,14 @@ func testBrowsesDelete(t *testing.T) {
 	}
 }
 
-func testBrowsesQueryDeleteAll(t *testing.T) {
+func testNoticesQueryDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -81,13 +81,13 @@ func testBrowsesQueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	if rowsAff, err := Browses().DeleteAll(ctx, tx); err != nil {
+	if rowsAff, err := Notices().DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -97,14 +97,14 @@ func testBrowsesQueryDeleteAll(t *testing.T) {
 	}
 }
 
-func testBrowsesSliceDeleteAll(t *testing.T) {
+func testNoticesSliceDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -114,7 +114,7 @@ func testBrowsesSliceDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := BrowseSlice{o}
+	slice := NoticeSlice{o}
 
 	if rowsAff, err := slice.DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
@@ -122,7 +122,7 @@ func testBrowsesSliceDeleteAll(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -132,14 +132,14 @@ func testBrowsesSliceDeleteAll(t *testing.T) {
 	}
 }
 
-func testBrowsesExists(t *testing.T) {
+func testNoticesExists(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -149,23 +149,23 @@ func testBrowsesExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := BrowseExists(ctx, tx, o.ID)
+	e, err := NoticeExists(ctx, tx, o.ID)
 	if err != nil {
-		t.Errorf("Unable to check if Browse exists: %s", err)
+		t.Errorf("Unable to check if Notice exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected BrowseExists to return true, but got false.")
+		t.Errorf("Expected NoticeExists to return true, but got false.")
 	}
 }
 
-func testBrowsesFind(t *testing.T) {
+func testNoticesFind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -175,24 +175,24 @@ func testBrowsesFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	browseFound, err := FindBrowse(ctx, tx, o.ID)
+	noticeFound, err := FindNotice(ctx, tx, o.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if browseFound == nil {
+	if noticeFound == nil {
 		t.Error("want a record, got nil")
 	}
 }
 
-func testBrowsesBind(t *testing.T) {
+func testNoticesBind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -202,19 +202,19 @@ func testBrowsesBind(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err = Browses().Bind(ctx, tx, o); err != nil {
+	if err = Notices().Bind(ctx, tx, o); err != nil {
 		t.Error(err)
 	}
 }
 
-func testBrowsesOne(t *testing.T) {
+func testNoticesOne(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -224,38 +224,38 @@ func testBrowsesOne(t *testing.T) {
 		t.Error(err)
 	}
 
-	if x, err := Browses().One(ctx, tx); err != nil {
+	if x, err := Notices().One(ctx, tx); err != nil {
 		t.Error(err)
 	} else if x == nil {
 		t.Error("expected to get a non nil record")
 	}
 }
 
-func testBrowsesAll(t *testing.T) {
+func testNoticesAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	browseOne := &Browse{}
-	browseTwo := &Browse{}
-	if err = randomize.Struct(seed, browseOne, browseDBTypes, false, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	noticeOne := &Notice{}
+	noticeTwo := &Notice{}
+	if err = randomize.Struct(seed, noticeOne, noticeDBTypes, false, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
-	if err = randomize.Struct(seed, browseTwo, browseDBTypes, false, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	if err = randomize.Struct(seed, noticeTwo, noticeDBTypes, false, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = browseOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = noticeOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = browseTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = noticeTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := Browses().All(ctx, tx)
+	slice, err := Notices().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -265,31 +265,31 @@ func testBrowsesAll(t *testing.T) {
 	}
 }
 
-func testBrowsesCount(t *testing.T) {
+func testNoticesCount(t *testing.T) {
 	t.Parallel()
 
 	var err error
 	seed := randomize.NewSeed()
-	browseOne := &Browse{}
-	browseTwo := &Browse{}
-	if err = randomize.Struct(seed, browseOne, browseDBTypes, false, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	noticeOne := &Notice{}
+	noticeTwo := &Notice{}
+	if err = randomize.Struct(seed, noticeOne, noticeDBTypes, false, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
-	if err = randomize.Struct(seed, browseTwo, browseDBTypes, false, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	if err = randomize.Struct(seed, noticeTwo, noticeDBTypes, false, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = browseOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = noticeOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = browseTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = noticeTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -299,155 +299,155 @@ func testBrowsesCount(t *testing.T) {
 	}
 }
 
-func browseBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func browseAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func browseAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func browseBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func browseAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func browseBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func browseAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func browseBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func browseAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Browse) error {
-	*o = Browse{}
+func noticeAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Notice) error {
+	*o = Notice{}
 	return nil
 }
 
-func testBrowsesHooks(t *testing.T) {
+func testNoticesHooks(t *testing.T) {
 	t.Parallel()
 
 	var err error
 
 	ctx := context.Background()
-	empty := &Browse{}
-	o := &Browse{}
+	empty := &Notice{}
+	o := &Notice{}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, o, browseDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Browse object: %s", err)
+	if err = randomize.Struct(seed, o, noticeDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize Notice object: %s", err)
 	}
 
-	AddBrowseHook(boil.BeforeInsertHook, browseBeforeInsertHook)
+	AddNoticeHook(boil.BeforeInsertHook, noticeBeforeInsertHook)
 	if err = o.doBeforeInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeInsertHook function to empty object, but got: %#v", o)
 	}
-	browseBeforeInsertHooks = []BrowseHook{}
+	noticeBeforeInsertHooks = []NoticeHook{}
 
-	AddBrowseHook(boil.AfterInsertHook, browseAfterInsertHook)
+	AddNoticeHook(boil.AfterInsertHook, noticeAfterInsertHook)
 	if err = o.doAfterInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterInsertHook function to empty object, but got: %#v", o)
 	}
-	browseAfterInsertHooks = []BrowseHook{}
+	noticeAfterInsertHooks = []NoticeHook{}
 
-	AddBrowseHook(boil.AfterSelectHook, browseAfterSelectHook)
+	AddNoticeHook(boil.AfterSelectHook, noticeAfterSelectHook)
 	if err = o.doAfterSelectHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterSelectHook function to empty object, but got: %#v", o)
 	}
-	browseAfterSelectHooks = []BrowseHook{}
+	noticeAfterSelectHooks = []NoticeHook{}
 
-	AddBrowseHook(boil.BeforeUpdateHook, browseBeforeUpdateHook)
+	AddNoticeHook(boil.BeforeUpdateHook, noticeBeforeUpdateHook)
 	if err = o.doBeforeUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpdateHook function to empty object, but got: %#v", o)
 	}
-	browseBeforeUpdateHooks = []BrowseHook{}
+	noticeBeforeUpdateHooks = []NoticeHook{}
 
-	AddBrowseHook(boil.AfterUpdateHook, browseAfterUpdateHook)
+	AddNoticeHook(boil.AfterUpdateHook, noticeAfterUpdateHook)
 	if err = o.doAfterUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpdateHook function to empty object, but got: %#v", o)
 	}
-	browseAfterUpdateHooks = []BrowseHook{}
+	noticeAfterUpdateHooks = []NoticeHook{}
 
-	AddBrowseHook(boil.BeforeDeleteHook, browseBeforeDeleteHook)
+	AddNoticeHook(boil.BeforeDeleteHook, noticeBeforeDeleteHook)
 	if err = o.doBeforeDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeDeleteHook function to empty object, but got: %#v", o)
 	}
-	browseBeforeDeleteHooks = []BrowseHook{}
+	noticeBeforeDeleteHooks = []NoticeHook{}
 
-	AddBrowseHook(boil.AfterDeleteHook, browseAfterDeleteHook)
+	AddNoticeHook(boil.AfterDeleteHook, noticeAfterDeleteHook)
 	if err = o.doAfterDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterDeleteHook function to empty object, but got: %#v", o)
 	}
-	browseAfterDeleteHooks = []BrowseHook{}
+	noticeAfterDeleteHooks = []NoticeHook{}
 
-	AddBrowseHook(boil.BeforeUpsertHook, browseBeforeUpsertHook)
+	AddNoticeHook(boil.BeforeUpsertHook, noticeBeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpsertHook function to empty object, but got: %#v", o)
 	}
-	browseBeforeUpsertHooks = []BrowseHook{}
+	noticeBeforeUpsertHooks = []NoticeHook{}
 
-	AddBrowseHook(boil.AfterUpsertHook, browseAfterUpsertHook)
+	AddNoticeHook(boil.AfterUpsertHook, noticeAfterUpsertHook)
 	if err = o.doAfterUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpsertHook function to empty object, but got: %#v", o)
 	}
-	browseAfterUpsertHooks = []BrowseHook{}
+	noticeAfterUpsertHooks = []NoticeHook{}
 }
 
-func testBrowsesInsert(t *testing.T) {
+func testNoticesInsert(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -457,7 +457,7 @@ func testBrowsesInsert(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -467,24 +467,24 @@ func testBrowsesInsert(t *testing.T) {
 	}
 }
 
-func testBrowsesInsertWhitelist(t *testing.T) {
+func testNoticesInsertWhitelist(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert(ctx, tx, boil.Whitelist(browseColumnsWithoutDefault...)); err != nil {
+	if err = o.Insert(ctx, tx, boil.Whitelist(noticeColumnsWithoutDefault...)); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -494,68 +494,17 @@ func testBrowsesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testBrowseToOneContentUsingContent(t *testing.T) {
+func testNoticeToOneUserUsingUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var local Browse
-	var foreign Content
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, browseDBTypes, false, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, contentDBTypes, false, contentColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Content struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	local.ContentID = foreign.ID
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.Content().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	slice := BrowseSlice{&local}
-	if err = local.L.LoadContent(ctx, tx, false, (*[]*Browse)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Content == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.Content = nil
-	if err = local.L.LoadContent(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Content == nil {
-		t.Error("struct should have been eager loaded")
-	}
-}
-
-func testBrowseToOneUserUsingUser(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var local Browse
+	var local Notice
 	var foreign User
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, browseDBTypes, false, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	if err := randomize.Struct(seed, &local, noticeDBTypes, false, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize User struct: %s", err)
@@ -579,8 +528,8 @@ func testBrowseToOneUserUsingUser(t *testing.T) {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
-	slice := BrowseSlice{&local}
-	if err = local.L.LoadUser(ctx, tx, false, (*[]*Browse)(&slice), nil); err != nil {
+	slice := NoticeSlice{&local}
+	if err = local.L.LoadUser(ctx, tx, false, (*[]*Notice)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.User == nil {
@@ -596,75 +545,18 @@ func testBrowseToOneUserUsingUser(t *testing.T) {
 	}
 }
 
-func testBrowseToOneSetOpContentUsingContent(t *testing.T) {
+func testNoticeToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Browse
-	var b, c Content
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, browseDBTypes, false, strmangle.SetComplement(browsePrimaryKeyColumns, browseColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, contentDBTypes, false, strmangle.SetComplement(contentPrimaryKeyColumns, contentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, contentDBTypes, false, strmangle.SetComplement(contentPrimaryKeyColumns, contentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	for i, x := range []*Content{&b, &c} {
-		err = a.SetContent(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if a.R.Content != x {
-			t.Error("relationship struct not set to correct value")
-		}
-
-		if x.R.Browses[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if a.ContentID != x.ID {
-			t.Error("foreign key was wrong value", a.ContentID)
-		}
-
-		zero := reflect.Zero(reflect.TypeOf(a.ContentID))
-		reflect.Indirect(reflect.ValueOf(&a.ContentID)).Set(zero)
-
-		if err = a.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-
-		if a.ContentID != x.ID {
-			t.Error("foreign key was wrong value", a.ContentID, x.ID)
-		}
-	}
-}
-func testBrowseToOneSetOpUserUsingUser(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Browse
+	var a Notice
 	var b, c User
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, browseDBTypes, false, strmangle.SetComplement(browsePrimaryKeyColumns, browseColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, noticeDBTypes, false, strmangle.SetComplement(noticePrimaryKeyColumns, noticeColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
@@ -691,7 +583,7 @@ func testBrowseToOneSetOpUserUsingUser(t *testing.T) {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.Browses[0] != &a {
+		if x.R.Notices[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
 		if a.UserID != x.ID {
@@ -711,14 +603,14 @@ func testBrowseToOneSetOpUserUsingUser(t *testing.T) {
 	}
 }
 
-func testBrowsesReload(t *testing.T) {
+func testNoticesReload(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -733,14 +625,14 @@ func testBrowsesReload(t *testing.T) {
 	}
 }
 
-func testBrowsesReloadAll(t *testing.T) {
+func testNoticesReloadAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -750,21 +642,21 @@ func testBrowsesReloadAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := BrowseSlice{o}
+	slice := NoticeSlice{o}
 
 	if err = slice.ReloadAll(ctx, tx); err != nil {
 		t.Error(err)
 	}
 }
 
-func testBrowsesSelect(t *testing.T) {
+func testNoticesSelect(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -774,7 +666,7 @@ func testBrowsesSelect(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice, err := Browses().All(ctx, tx)
+	slice, err := Notices().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -785,25 +677,25 @@ func testBrowsesSelect(t *testing.T) {
 }
 
 var (
-	browseDBTypes = map[string]string{`ID`: `int`, `UserID`: `int`, `ContentID`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	noticeDBTypes = map[string]string{`ID`: `int`, `UserID`: `int`, `Title`: `varchar`, `Body`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_             = bytes.MinRead
 )
 
-func testBrowsesUpdate(t *testing.T) {
+func testNoticesUpdate(t *testing.T) {
 	t.Parallel()
 
-	if 0 == len(browsePrimaryKeyColumns) {
+	if 0 == len(noticePrimaryKeyColumns) {
 		t.Skip("Skipping table with no primary key columns")
 	}
-	if len(browseAllColumns) == len(browsePrimaryKeyColumns) {
+	if len(noticeAllColumns) == len(noticePrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -813,7 +705,7 @@ func testBrowsesUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -822,8 +714,8 @@ func testBrowsesUpdate(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browsePrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticePrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	if rowsAff, err := o.Update(ctx, tx, boil.Infer()); err != nil {
@@ -833,18 +725,18 @@ func testBrowsesUpdate(t *testing.T) {
 	}
 }
 
-func testBrowsesSliceUpdateAll(t *testing.T) {
+func testNoticesSliceUpdateAll(t *testing.T) {
 	t.Parallel()
 
-	if len(browseAllColumns) == len(browsePrimaryKeyColumns) {
+	if len(noticeAllColumns) == len(noticePrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Browse{}
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browseColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := &Notice{}
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -854,7 +746,7 @@ func testBrowsesSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -863,18 +755,18 @@ func testBrowsesSliceUpdateAll(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, browseDBTypes, true, browsePrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	if err = randomize.Struct(seed, o, noticeDBTypes, true, noticePrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
-	if strmangle.StringSliceMatch(browseAllColumns, browsePrimaryKeyColumns) {
-		fields = browseAllColumns
+	if strmangle.StringSliceMatch(noticeAllColumns, noticePrimaryKeyColumns) {
+		fields = noticeAllColumns
 	} else {
 		fields = strmangle.SetComplement(
-			browseAllColumns,
-			browsePrimaryKeyColumns,
+			noticeAllColumns,
+			noticePrimaryKeyColumns,
 		)
 	}
 
@@ -892,7 +784,7 @@ func testBrowsesSliceUpdateAll(t *testing.T) {
 		}
 	}
 
-	slice := BrowseSlice{o}
+	slice := NoticeSlice{o}
 	if rowsAff, err := slice.UpdateAll(ctx, tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
@@ -900,32 +792,32 @@ func testBrowsesSliceUpdateAll(t *testing.T) {
 	}
 }
 
-func testBrowsesUpsert(t *testing.T) {
+func testNoticesUpsert(t *testing.T) {
 	t.Parallel()
 
-	if len(browseAllColumns) == len(browsePrimaryKeyColumns) {
+	if len(noticeAllColumns) == len(noticePrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
-	if len(mySQLBrowseUniqueColumns) == 0 {
+	if len(mySQLNoticeUniqueColumns) == 0 {
 		t.Skip("Skipping table with no unique columns to conflict on")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
-	o := Browse{}
-	if err = randomize.Struct(seed, &o, browseDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	o := Notice{}
+	if err = randomize.Struct(seed, &o, noticeDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 	if err = o.Upsert(ctx, tx, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Browse: %s", err)
+		t.Errorf("Unable to upsert Notice: %s", err)
 	}
 
-	count, err := Browses().Count(ctx, tx)
+	count, err := Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -934,15 +826,15 @@ func testBrowsesUpsert(t *testing.T) {
 	}
 
 	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, browseDBTypes, false, browsePrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Browse struct: %s", err)
+	if err = randomize.Struct(seed, &o, noticeDBTypes, false, noticePrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
 	}
 
 	if err = o.Upsert(ctx, tx, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Browse: %s", err)
+		t.Errorf("Unable to upsert Notice: %s", err)
 	}
 
-	count, err = Browses().Count(ctx, tx)
+	count, err = Notices().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}

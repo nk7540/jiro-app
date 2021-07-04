@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+	"artics-api/src/config"
 	"artics-api/src/internal/application"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/user"
@@ -26,12 +27,13 @@ type V1UserHandler interface {
 }
 
 type v1UserHandler struct {
-	app application.UserApplication
+	app       application.UserApplication
+	websocket *config.WebsocketConfig
 }
 
 // NewV1UserHandler - setups v1 user handler
-func NewV1UserHandler(app application.UserApplication) V1UserHandler {
-	return &v1UserHandler{app}
+func NewV1UserHandler(app application.UserApplication, websocket *config.WebsocketConfig) V1UserHandler {
+	return &v1UserHandler{app, websocket}
 }
 
 func (h *v1UserHandler) Create(c *fiber.Ctx) error {
@@ -171,10 +173,15 @@ func (h *v1UserHandler) Follow(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.app.Commands.Follow.Handle(ctx, user.CommandFollow{
-		FollowingID: user.FollowingID(u.ID),
-		FollowerID:  user.FollowerID(followerID),
-	}); err != nil {
+	n, err := h.app.Commands.Follow.Handle(ctx, user.CommandFollow{
+		User:       u,
+		FollowerID: user.FollowerID(followerID),
+	})
+	if err != nil {
+		return err
+	}
+
+	if err = notify(h.websocket, n); err != nil {
 		return err
 	}
 

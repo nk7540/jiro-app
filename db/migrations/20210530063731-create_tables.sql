@@ -18,6 +18,7 @@ create table if not exists follow(
   id           int          not null auto_increment,
   following_id int          not null,
   follower_id  int          not null,
+  is_close     tinyint(1)   not null default 0,
   created_at   datetime     not null,
   updated_at   datetime     not null,
   primary key(id),
@@ -28,6 +29,21 @@ create table if not exists follow(
     on update no action,
   constraint fk_user_follower
     foreign key(follower_id)
+    references user (id)
+    on delete no action
+    on update no action
+);
+
+create table if not exists notice(
+  id         int          not null auto_increment,
+  user_id    int          not null,
+  title      varchar(255) not null,
+  body       varchar(255) not null,
+  created_at datetime     not null,
+  updated_at datetime     not null,
+  primary key(id),
+  constraint fk_user_notice
+    foreign key(user_id)
     references user (id)
     on delete no action
     on update no action
@@ -63,12 +79,25 @@ create table if not exists content(
     on update no action
 );
 
-create table if not exists favorite(
+create table if not exists comment(
   id         int          not null auto_increment,
   user_id    int          not null,
   content_id int          not null,
+  body       text(1024)   not null,
   created_at datetime     not null,
   updated_at datetime     not null,
+  primary key(id)
+);
+
+create table if not exists favorite(
+  id             int          not null auto_increment,
+  user_id        int          not null,
+  content_id     int          not null,
+  comment_id     int          null,
+  to_user_ids    varchar(255) not null default '',
+  to_close_users tinyint(1)   not null default 0,
+  created_at     datetime     not null,
+  updated_at     datetime     not null,
   primary key(id),
   constraint fk_user_favorite
     foreign key(user_id)
@@ -78,6 +107,11 @@ create table if not exists favorite(
   constraint fk_content_favorite
     foreign key(content_id)
     references content (id)
+    on delete no action
+    on update no action,
+  constraint fk_comment_favorite
+    foreign key(comment_id)
+    references comment (id)
     on delete no action
     on update no action
 );
@@ -103,10 +137,12 @@ create table if not exists browse(
 
 -- +migrate Down
 set FOREIGN_KEY_CHECKS=0;
-drop table user;
-drop table follow;
-drop table category;
-drop table content;
-drop table favorite;
-drop table browse;
+drop table if exists user;
+drop table if exists follow;
+drop table if exists notice;
+drop table if exists category;
+drop table if exists content;
+drop table if exists comment;
+drop table if exists favorite;
+drop table if exists browse;
 set FOREIGN_KEY_CHECKS=1;

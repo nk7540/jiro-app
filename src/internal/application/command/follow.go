@@ -2,35 +2,34 @@ package command
 
 import (
 	"artics-api/src/internal/domain"
+	"artics-api/src/internal/domain/content"
 	"artics-api/src/internal/domain/user"
 	"artics-api/src/pkg"
-
-	"golang.org/x/xerrors"
 )
 
 type FollowHandler struct {
 	fr user.FollowRepository
+	nr content.NoticeRepository
 }
 
-func NewFollowHandler(fr user.FollowRepository) FollowHandler {
-	return FollowHandler{fr}
+func NewFollowHandler(fr user.FollowRepository, nr content.NoticeRepository) FollowHandler {
+	return FollowHandler{fr, nr}
 }
 
-func (h FollowHandler) Handle(ctx pkg.Context, cmd user.CommandFollow) error {
-	if qf, err := h.fr.GetByUserIDs(ctx, cmd.FollowingID, cmd.FollowerID); err != nil {
-		return domain.ErrorInDatastore.New(pkg.NewRepositoryError(err))
-	} else if qf != nil {
-		return xerrors.New("already following")
-	}
-
+func (h FollowHandler) Handle(ctx pkg.Context, cmd user.CommandFollow) (*content.Notice, error) {
 	f := &user.Follow{
-		FollowingID: cmd.FollowingID,
+		FollowingID: user.FollowingID(cmd.User.ID),
 		FollowerID:  cmd.FollowerID,
 	}
 
 	if err := h.fr.Create(ctx, f); err != nil {
-		return domain.ErrorInDatastore.New(pkg.NewRepositoryError(err))
+		return nil, domain.ErrorInDatastore.New(pkg.NewRepositoryError(err))
 	}
 
-	return nil
+	n := content.NewFollowedNotice(cmd.FollowerID, cmd.User.Nickname)
+	if err := h.nr.Create(ctx, n); err != nil {
+		return nil, domain.ErrorInDatastore.New(pkg.NewRepositoryError(err))
+	}
+
+	return n, nil
 }

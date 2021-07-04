@@ -30,8 +30,10 @@ func NewRegistry(
 	ur := repository.NewUserRepository(db, auth, uploader)
 	fr := repository.NewFollowRepository(db)
 	cr := repository.NewContentRepository(db)
+	cmr := repository.NewCommentRepository(db)
 	fvr := repository.NewFavoriteRepository(db)
 	br := repository.NewBrowseRepository(db)
+	nr := repository.NewNoticeRepository(db)
 
 	// Commands and Queries
 	ua := application.UserApplication{
@@ -40,7 +42,7 @@ func NewRegistry(
 			UpdateThumbnail: command.NewUpdateThumbnailHandler(ur),
 			UpdateUser:      command.NewUpdateUserHandler(ur),
 			SuspendUser:     command.NewSuspendUserHandler(ur),
-			Follow:          command.NewFollowHandler(fr),
+			Follow:          command.NewFollowHandler(fr, nr),
 			Unfollow:        command.NewUnfollowHandler(fr),
 		},
 		Queries: application.UserQueries{
@@ -53,7 +55,7 @@ func NewRegistry(
 
 	ca := application.ContentApplication{
 		Commands: application.ContentCommands{
-			Like:   command.NewLikeHandler(fvr),
+			Like:   command.NewLikeHandler(cr, fvr, cmr, nr, ur),
 			Unlike: command.NewUnlikeHandler(fvr),
 			Browse: command.NewBrowseHandler(br),
 		},

@@ -12,8 +12,8 @@ type CommandUpdateUser struct {
 }
 
 type CommandFollow struct {
-	FollowingID FollowingID
-	FollowerID  FollowerID
+	User       *User
+	FollowerID FollowerID
 }
 
 type CommandUnfollow struct {

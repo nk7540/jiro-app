@@ -18,4 +18,5 @@ type UserRepository interface {
 	GetByToken(ctx context.Context, tkn string) (*User, error)
 	Followings(ctx context.Context, id int) (*QueryUsers, error)
 	Followers(ctx context.Context, id int) (*QueryUsers, error)
+	CloseUsers(ctx context.Context, id UserID) (*QueryUsers, error)
 }

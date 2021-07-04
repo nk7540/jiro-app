@@ -6,13 +6,13 @@ import (
 	"artics-api/src/internal/application/query"
 	"artics-api/src/internal/domain"
 	"artics-api/src/internal/domain/content"
+	"artics-api/src/internal/domain/user"
+	"artics-api/src/internal/interface/handler/request"
 	"artics-api/src/internal/interface/handler/response"
 	"artics-api/src/pkg"
-	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/websocket/v2"
 )
 
 type V1ContentHandler interface {
@@ -21,7 +21,6 @@ type V1ContentHandler interface {
 	Like(c *fiber.Ctx) error
 	Unlike(c *fiber.Ctx) error
 	Browse(c *fiber.Ctx) error
-	ListenFavorite(c *fiber.Ctx) error
 }
 
 type v1ContentHandler struct {
@@ -84,8 +83,8 @@ func (h *v1ContentHandler) Favorites(c *fiber.Ctx) error {
 }
 
 func (h *v1ContentHandler) Like(c *fiber.Ctx) error {
-	contentID, err := strconv.Atoi(c.Query("content_id"))
-	if err != nil {
+	req := request.Like{}
+	if err := c.BodyParser(req); err != nil {
 		return domain.UnableParseJSON.New(err)
 	}
 
@@ -95,11 +94,26 @@ func (h *v1ContentHandler) Like(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.app.Commands.Like.Handle(ctx, content.CommandLike{
-		UserID:    content.FavoriteUserID(u.ID),
-		ContentID: content.FavoriteContentID(contentID),
-	}); err != nil {
+	toUserIDs := make(content.FavoriteToUserIDs, 0)
+	for i, v := range req.ToUserIDs {
+		toUserIDs[i] = user.UserID(v)
+	}
+
+	notices, err := h.app.Commands.Like.Handle(ctx, content.CommandLike{
+		User:         u,
+		ContentID:    content.ContentID(req.ContentID),
+		ToUserIDs:    toUserIDs,
+		ToCloseUsers: content.FavoriteToCloseUsers(req.ToCloseUsers),
+		CommentBody:  content.CommentBody(req.CommentBody),
+	})
+	if err != nil {
 		return err
+	}
+
+	for _, n := range notices {
+		if err = notify(h.websocket, n); err != nil {
+			return err
+		}
 	}
 
 	return c.JSON(nil)
@@ -147,24 +161,4 @@ func (h *v1ContentHandler) Browse(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(nil)
-}
-
-func (h *v1ContentHandler) ListenFavorite(c *fiber.Ctx) error {
-	return h.websocket.New(func(conn *websocket.Conn) {
-		var (
-			mt  int
-			msg []byte
-			err error
-		)
-		for {
-			if mt, msg, err = conn.ReadMessage(); err != nil {
-				break
-			}
-			log.Printf("recv: %s", msg)
-
-			if err = conn.WriteMessage(mt, msg); err != nil {
-				break
-			}
-		}
-	})(c)
 }

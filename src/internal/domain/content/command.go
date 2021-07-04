@@ -1,8 +1,13 @@
 package content
 
+import "artics-api/src/internal/domain/user"
+
 type CommandLike struct {
-	UserID    FavoriteUserID
-	ContentID FavoriteContentID
+	User         *user.User
+	ContentID    ContentID
+	ToUserIDs    FavoriteToUserIDs
+	ToCloseUsers FavoriteToCloseUsers
+	CommentBody  CommentBody
 }
 
 type CommandUnlike struct {
