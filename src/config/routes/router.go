@@ -27,5 +27,9 @@ func Router(app *fiber.App, reg *registry.Registry) {
 		api.Post("/browses", reg.V1Content.Browse)
 		api.Get("/contents/favorites", reg.V1Content.Favorites)
 		api.Get("/contents/:id", reg.V1Content.Show)
+
+		// Notice
+		api.Get("/ws", reg.V1Notice.Listen)
+		api.Get("/notices", reg.V1Notice.List)
 	}
 }

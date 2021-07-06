@@ -124,23 +124,26 @@ var ContentWhere = struct {
 
 // ContentRels is where relationship names are stored.
 var ContentRels = struct {
-	Category  string
-	User      string
-	Browses   string
-	Favorites string
+	Category        string
+	User            string
+	Browses         string
+	Favorites       string
+	NoticeFavorites string
 }{
-	Category:  "Category",
-	User:      "User",
-	Browses:   "Browses",
-	Favorites: "Favorites",
+	Category:        "Category",
+	User:            "User",
+	Browses:         "Browses",
+	Favorites:       "Favorites",
+	NoticeFavorites: "NoticeFavorites",
 }
 
 // contentR is where relationships are stored.
 type contentR struct {
-	Category  *Category     `boil:"Category" json:"Category" toml:"Category" yaml:"Category"`
-	User      *User         `boil:"User" json:"User" toml:"User" yaml:"User"`
-	Browses   BrowseSlice   `boil:"Browses" json:"Browses" toml:"Browses" yaml:"Browses"`
-	Favorites FavoriteSlice `boil:"Favorites" json:"Favorites" toml:"Favorites" yaml:"Favorites"`
+	Category        *Category           `boil:"Category" json:"Category" toml:"Category" yaml:"Category"`
+	User            *User               `boil:"User" json:"User" toml:"User" yaml:"User"`
+	Browses         BrowseSlice         `boil:"Browses" json:"Browses" toml:"Browses" yaml:"Browses"`
+	Favorites       FavoriteSlice       `boil:"Favorites" json:"Favorites" toml:"Favorites" yaml:"Favorites"`
+	NoticeFavorites NoticeFavoriteSlice `boil:"NoticeFavorites" json:"NoticeFavorites" toml:"NoticeFavorites" yaml:"NoticeFavorites"`
 }
 
 // NewStruct creates a new relationship struct
@@ -498,6 +501,27 @@ func (o *Content) Favorites(mods ...qm.QueryMod) favoriteQuery {
 
 	if len(queries.GetSelect(query.Query)) == 0 {
 		queries.SetSelect(query.Query, []string{"`favorite`.*"})
+	}
+
+	return query
+}
+
+// NoticeFavorites retrieves all the notice_favorite's NoticeFavorites with an executor.
+func (o *Content) NoticeFavorites(mods ...qm.QueryMod) noticeFavoriteQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`notice_favorite`.`content_id`=?", o.ID),
+	)
+
+	query := NoticeFavorites(queryMods...)
+	queries.SetFrom(query.Query, "`notice_favorite`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`notice_favorite`.*"})
 	}
 
 	return query
@@ -911,6 +935,104 @@ func (contentL) LoadFavorites(ctx context.Context, e boil.ContextExecutor, singu
 	return nil
 }
 
+// LoadNoticeFavorites allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (contentL) LoadNoticeFavorites(ctx context.Context, e boil.ContextExecutor, singular bool, maybeContent interface{}, mods queries.Applicator) error {
+	var slice []*Content
+	var object *Content
+
+	if singular {
+		object = maybeContent.(*Content)
+	} else {
+		slice = *maybeContent.(*[]*Content)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &contentR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &contentR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`notice_favorite`),
+		qm.WhereIn(`notice_favorite.content_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load notice_favorite")
+	}
+
+	var resultSlice []*NoticeFavorite
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice notice_favorite")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on notice_favorite")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for notice_favorite")
+	}
+
+	if len(noticeFavoriteAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.NoticeFavorites = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &noticeFavoriteR{}
+			}
+			foreign.R.Content = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ContentID {
+				local.R.NoticeFavorites = append(local.R.NoticeFavorites, foreign)
+				if foreign.R == nil {
+					foreign.R = &noticeFavoriteR{}
+				}
+				foreign.R.Content = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetCategory of the content to the related item.
 // Sets o.R.Category to related.
 // Adds o to related.R.Contents.
@@ -1135,6 +1257,59 @@ func (o *Content) AddFavorites(ctx context.Context, exec boil.ContextExecutor, i
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &favoriteR{
+				Content: o,
+			}
+		} else {
+			rel.R.Content = o
+		}
+	}
+	return nil
+}
+
+// AddNoticeFavorites adds the given related objects to the existing relationships
+// of the content, optionally inserting them as new records.
+// Appends related to o.R.NoticeFavorites.
+// Sets related.R.Content appropriately.
+func (o *Content) AddNoticeFavorites(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*NoticeFavorite) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ContentID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `notice_favorite` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"content_id"}),
+				strmangle.WhereClause("`", "`", 0, noticeFavoritePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.NoticeID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ContentID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &contentR{
+			NoticeFavorites: related,
+		}
+	} else {
+		o.R.NoticeFavorites = append(o.R.NoticeFavorites, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &noticeFavoriteR{
 				Content: o,
 			}
 		} else {

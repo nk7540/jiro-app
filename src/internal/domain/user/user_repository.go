@@ -16,7 +16,6 @@ type UserRepository interface {
 	Get(ctx context.Context, id int) (*QueryDetailUser, error)
 	GetByEmailOrNone(ctx context.Context, email string) (*User, error)
 	GetByToken(ctx context.Context, tkn string) (*User, error)
-	Followings(ctx context.Context, id int) (*QueryUsers, error)
-	Followers(ctx context.Context, id int) (*QueryUsers, error)
-	CloseUsers(ctx context.Context, id UserID) (*QueryUsers, error)
+	Followings(ctx context.Context, id UserID, isClose FollowIsClose) (*QueryUsers, error)
+	Followers(ctx context.Context, id UserID) (*QueryUsers, error)
 }

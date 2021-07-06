@@ -25,8 +25,8 @@ import (
 type Notice struct {
 	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID    int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Title     string    `boil:"title" json:"title" toml:"title" yaml:"title"`
-	Body      string    `boil:"body" json:"body" toml:"body" yaml:"body"`
+	Type      int       `boil:"type" json:"type" toml:"type" yaml:"type"`
+	IsRead    bool      `boil:"is_read" json:"is_read" toml:"is_read" yaml:"is_read"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
@@ -37,15 +37,15 @@ type Notice struct {
 var NoticeColumns = struct {
 	ID        string
 	UserID    string
-	Title     string
-	Body      string
+	Type      string
+	IsRead    string
 	CreatedAt string
 	UpdatedAt string
 }{
 	ID:        "id",
 	UserID:    "user_id",
-	Title:     "title",
-	Body:      "body",
+	Type:      "type",
+	IsRead:    "is_read",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
 }
@@ -53,15 +53,15 @@ var NoticeColumns = struct {
 var NoticeTableColumns = struct {
 	ID        string
 	UserID    string
-	Title     string
-	Body      string
+	Type      string
+	IsRead    string
 	CreatedAt string
 	UpdatedAt string
 }{
 	ID:        "notice.id",
 	UserID:    "notice.user_id",
-	Title:     "notice.title",
-	Body:      "notice.body",
+	Type:      "notice.type",
+	IsRead:    "notice.is_read",
 	CreatedAt: "notice.created_at",
 	UpdatedAt: "notice.updated_at",
 }
@@ -71,29 +71,35 @@ var NoticeTableColumns = struct {
 var NoticeWhere = struct {
 	ID        whereHelperint
 	UserID    whereHelperint
-	Title     whereHelperstring
-	Body      whereHelperstring
+	Type      whereHelperint
+	IsRead    whereHelperbool
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperint{field: "`notice`.`id`"},
 	UserID:    whereHelperint{field: "`notice`.`user_id`"},
-	Title:     whereHelperstring{field: "`notice`.`title`"},
-	Body:      whereHelperstring{field: "`notice`.`body`"},
+	Type:      whereHelperint{field: "`notice`.`type`"},
+	IsRead:    whereHelperbool{field: "`notice`.`is_read`"},
 	CreatedAt: whereHelpertime_Time{field: "`notice`.`created_at`"},
 	UpdatedAt: whereHelpertime_Time{field: "`notice`.`updated_at`"},
 }
 
 // NoticeRels is where relationship names are stored.
 var NoticeRels = struct {
-	User string
+	User           string
+	NoticeFavorite string
+	NoticeFollowed string
 }{
-	User: "User",
+	User:           "User",
+	NoticeFavorite: "NoticeFavorite",
+	NoticeFollowed: "NoticeFollowed",
 }
 
 // noticeR is where relationships are stored.
 type noticeR struct {
-	User *User `boil:"User" json:"User" toml:"User" yaml:"User"`
+	User           *User           `boil:"User" json:"User" toml:"User" yaml:"User"`
+	NoticeFavorite *NoticeFavorite `boil:"NoticeFavorite" json:"NoticeFavorite" toml:"NoticeFavorite" yaml:"NoticeFavorite"`
+	NoticeFollowed *NoticeFollowed `boil:"NoticeFollowed" json:"NoticeFollowed" toml:"NoticeFollowed" yaml:"NoticeFollowed"`
 }
 
 // NewStruct creates a new relationship struct
@@ -105,9 +111,9 @@ func (*noticeR) NewStruct() *noticeR {
 type noticeL struct{}
 
 var (
-	noticeAllColumns            = []string{"id", "user_id", "title", "body", "created_at", "updated_at"}
-	noticeColumnsWithoutDefault = []string{"user_id", "title", "body", "created_at", "updated_at"}
-	noticeColumnsWithDefault    = []string{"id"}
+	noticeAllColumns            = []string{"id", "user_id", "type", "is_read", "created_at", "updated_at"}
+	noticeColumnsWithoutDefault = []string{"user_id", "type", "created_at", "updated_at"}
+	noticeColumnsWithDefault    = []string{"id", "is_read"}
 	noticePrimaryKeyColumns     = []string{"id"}
 )
 
@@ -400,6 +406,34 @@ func (o *Notice) User(mods ...qm.QueryMod) userQuery {
 	return query
 }
 
+// NoticeFavorite pointed to by the foreign key.
+func (o *Notice) NoticeFavorite(mods ...qm.QueryMod) noticeFavoriteQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`notice_id` = ?", o.ID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	query := NoticeFavorites(queryMods...)
+	queries.SetFrom(query.Query, "`notice_favorite`")
+
+	return query
+}
+
+// NoticeFollowed pointed to by the foreign key.
+func (o *Notice) NoticeFollowed(mods ...qm.QueryMod) noticeFollowedQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`notice_id` = ?", o.ID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	query := NoticeFolloweds(queryMods...)
+	queries.SetFrom(query.Query, "`notice_followed`")
+
+	return query
+}
+
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (noticeL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeNotice interface{}, mods queries.Applicator) error {
@@ -504,6 +538,208 @@ func (noticeL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bo
 	return nil
 }
 
+// LoadNoticeFavorite allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (noticeL) LoadNoticeFavorite(ctx context.Context, e boil.ContextExecutor, singular bool, maybeNotice interface{}, mods queries.Applicator) error {
+	var slice []*Notice
+	var object *Notice
+
+	if singular {
+		object = maybeNotice.(*Notice)
+	} else {
+		slice = *maybeNotice.(*[]*Notice)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &noticeR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &noticeR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`notice_favorite`),
+		qm.WhereIn(`notice_favorite.notice_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load NoticeFavorite")
+	}
+
+	var resultSlice []*NoticeFavorite
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice NoticeFavorite")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for notice_favorite")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for notice_favorite")
+	}
+
+	if len(noticeAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.NoticeFavorite = foreign
+		if foreign.R == nil {
+			foreign.R = &noticeFavoriteR{}
+		}
+		foreign.R.Notice = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ID == foreign.NoticeID {
+				local.R.NoticeFavorite = foreign
+				if foreign.R == nil {
+					foreign.R = &noticeFavoriteR{}
+				}
+				foreign.R.Notice = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadNoticeFollowed allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (noticeL) LoadNoticeFollowed(ctx context.Context, e boil.ContextExecutor, singular bool, maybeNotice interface{}, mods queries.Applicator) error {
+	var slice []*Notice
+	var object *Notice
+
+	if singular {
+		object = maybeNotice.(*Notice)
+	} else {
+		slice = *maybeNotice.(*[]*Notice)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &noticeR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &noticeR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`notice_followed`),
+		qm.WhereIn(`notice_followed.notice_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load NoticeFollowed")
+	}
+
+	var resultSlice []*NoticeFollowed
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice NoticeFollowed")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for notice_followed")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for notice_followed")
+	}
+
+	if len(noticeAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.NoticeFollowed = foreign
+		if foreign.R == nil {
+			foreign.R = &noticeFollowedR{}
+		}
+		foreign.R.Notice = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ID == foreign.NoticeID {
+				local.R.NoticeFollowed = foreign
+				if foreign.R == nil {
+					foreign.R = &noticeFollowedR{}
+				}
+				foreign.R.Notice = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetUser of the notice to the related item.
 // Sets o.R.User to related.
 // Adds o to related.R.Notices.
@@ -548,6 +784,108 @@ func (o *Notice) SetUser(ctx context.Context, exec boil.ContextExecutor, insert 
 		related.R.Notices = append(related.R.Notices, o)
 	}
 
+	return nil
+}
+
+// SetNoticeFavorite of the notice to the related item.
+// Sets o.R.NoticeFavorite to related.
+// Adds o to related.R.Notice.
+func (o *Notice) SetNoticeFavorite(ctx context.Context, exec boil.ContextExecutor, insert bool, related *NoticeFavorite) error {
+	var err error
+
+	if insert {
+		related.NoticeID = o.ID
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE `notice_favorite` SET %s WHERE %s",
+			strmangle.SetParamNames("`", "`", 0, []string{"notice_id"}),
+			strmangle.WhereClause("`", "`", 0, noticeFavoritePrimaryKeyColumns),
+		)
+		values := []interface{}{o.ID, related.NoticeID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		related.NoticeID = o.ID
+
+	}
+
+	if o.R == nil {
+		o.R = &noticeR{
+			NoticeFavorite: related,
+		}
+	} else {
+		o.R.NoticeFavorite = related
+	}
+
+	if related.R == nil {
+		related.R = &noticeFavoriteR{
+			Notice: o,
+		}
+	} else {
+		related.R.Notice = o
+	}
+	return nil
+}
+
+// SetNoticeFollowed of the notice to the related item.
+// Sets o.R.NoticeFollowed to related.
+// Adds o to related.R.Notice.
+func (o *Notice) SetNoticeFollowed(ctx context.Context, exec boil.ContextExecutor, insert bool, related *NoticeFollowed) error {
+	var err error
+
+	if insert {
+		related.NoticeID = o.ID
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE `notice_followed` SET %s WHERE %s",
+			strmangle.SetParamNames("`", "`", 0, []string{"notice_id"}),
+			strmangle.WhereClause("`", "`", 0, noticeFollowedPrimaryKeyColumns),
+		)
+		values := []interface{}{o.ID, related.NoticeID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		related.NoticeID = o.ID
+
+	}
+
+	if o.R == nil {
+		o.R = &noticeR{
+			NoticeFollowed: related,
+		}
+	} else {
+		o.R.NoticeFollowed = related
+	}
+
+	if related.R == nil {
+		related.R = &noticeFollowedR{
+			Notice: o,
+		}
+	} else {
+		related.R.Notice = o
+	}
 	return nil
 }
 

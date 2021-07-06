@@ -100,8 +100,13 @@ func (r *userRepository) GetByEmailOrNone(ctx context.Context, email string) (*u
 	}, nil
 }
 
-func (r *userRepository) Followings(ctx context.Context, id int) (*user.QueryUsers, error) {
-	fs, err := models.Follows(qm.Select("follower_id"), qm.Where("following_id = ?", id)).All(ctx, r.db)
+func (r *userRepository) Followings(
+	ctx context.Context, id user.UserID, isClose user.FollowIsClose,
+) (*user.QueryUsers, error) {
+	fs, err := models.Follows(
+		qm.Select("follower_id"),
+		qm.Where("following_id = ? and is_close = ?", id, isClose),
+	).All(ctx, r.db)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +118,7 @@ func (r *userRepository) Followings(ctx context.Context, id int) (*user.QueryUse
 	return r.getByIDs(ctx, followingIDs)
 }
 
-func (r *userRepository) Followers(ctx context.Context, id int) (*user.QueryUsers, error) {
+func (r *userRepository) Followers(ctx context.Context, id user.UserID) (*user.QueryUsers, error) {
 	fs, err := models.Follows(qm.Select("following_id"), qm.Where("follower_id = ?", id)).All(ctx, r.db)
 	if err != nil {
 		return nil, err

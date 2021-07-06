@@ -14,19 +14,30 @@ func NewUpdateUserHandler(ur user.UserRepository) UpdateUserHandler {
 	return UpdateUserHandler{ur}
 }
 
-func (h UpdateUserHandler) Handle(ctx pkg.Context, cmd user.CommandUpdateUser) error {
-	u, err := ctx.CurrentUser()
+func (h UpdateUserHandler) Handle(ctx pkg.Context, cmd user.CommandUpdateUser) (*user.User, error) {
+	// Update thumbnail
+	thumbnailURL, err := h.ur.UpdateThumbnail(ctx, cmd.Thumbnail)
 	if err != nil {
-		return err
+		return nil, domain.ErrorInStorage.New(pkg.NewRepositoryError(err))
 	}
 
-	u.Nickname = user.Nickname(cmd.Nickname)
-	u.ThumbnailURL = user.ThumbnailURL(cmd.ThumbnailURL)
+	// Update user
+	u, err := ctx.CurrentUser()
+	if err != nil {
+		return nil, err
+	}
+
+	u.Nickname = cmd.Nickname
+	u.ThumbnailURL = thumbnailURL
 
 	v := NewRequestValidator()
 	if ves := v.Run(ctx, u); len(ves) > 0 {
-		return domain.InvalidDomainValidation.New(pkg.NewValidationError(), ves...)
+		return nil, domain.InvalidDomainValidation.New(pkg.NewValidationError(), ves...)
 	}
 
-	return h.ur.Update(ctx, u)
+	if err := h.ur.Update(ctx, u); err != nil {
+		return nil, domain.ErrorInStorage.New(pkg.NewRepositoryError(err))
+	}
+
+	return u, nil
 }

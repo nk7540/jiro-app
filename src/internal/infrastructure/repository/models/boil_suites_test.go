@@ -20,6 +20,8 @@ func TestParent(t *testing.T) {
 	t.Run("Follows", testFollows)
 	t.Run("GorpMigrations", testGorpMigrations)
 	t.Run("Notices", testNotices)
+	t.Run("NoticeFavorites", testNoticeFavorites)
+	t.Run("NoticeFolloweds", testNoticeFolloweds)
 	t.Run("Users", testUsers)
 }
 
@@ -32,6 +34,8 @@ func TestDelete(t *testing.T) {
 	t.Run("Follows", testFollowsDelete)
 	t.Run("GorpMigrations", testGorpMigrationsDelete)
 	t.Run("Notices", testNoticesDelete)
+	t.Run("NoticeFavorites", testNoticeFavoritesDelete)
+	t.Run("NoticeFolloweds", testNoticeFollowedsDelete)
 	t.Run("Users", testUsersDelete)
 }
 
@@ -44,6 +48,8 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Follows", testFollowsQueryDeleteAll)
 	t.Run("GorpMigrations", testGorpMigrationsQueryDeleteAll)
 	t.Run("Notices", testNoticesQueryDeleteAll)
+	t.Run("NoticeFavorites", testNoticeFavoritesQueryDeleteAll)
+	t.Run("NoticeFolloweds", testNoticeFollowedsQueryDeleteAll)
 	t.Run("Users", testUsersQueryDeleteAll)
 }
 
@@ -56,6 +62,8 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Follows", testFollowsSliceDeleteAll)
 	t.Run("GorpMigrations", testGorpMigrationsSliceDeleteAll)
 	t.Run("Notices", testNoticesSliceDeleteAll)
+	t.Run("NoticeFavorites", testNoticeFavoritesSliceDeleteAll)
+	t.Run("NoticeFolloweds", testNoticeFollowedsSliceDeleteAll)
 	t.Run("Users", testUsersSliceDeleteAll)
 }
 
@@ -68,6 +76,8 @@ func TestExists(t *testing.T) {
 	t.Run("Follows", testFollowsExists)
 	t.Run("GorpMigrations", testGorpMigrationsExists)
 	t.Run("Notices", testNoticesExists)
+	t.Run("NoticeFavorites", testNoticeFavoritesExists)
+	t.Run("NoticeFolloweds", testNoticeFollowedsExists)
 	t.Run("Users", testUsersExists)
 }
 
@@ -80,6 +90,8 @@ func TestFind(t *testing.T) {
 	t.Run("Follows", testFollowsFind)
 	t.Run("GorpMigrations", testGorpMigrationsFind)
 	t.Run("Notices", testNoticesFind)
+	t.Run("NoticeFavorites", testNoticeFavoritesFind)
+	t.Run("NoticeFolloweds", testNoticeFollowedsFind)
 	t.Run("Users", testUsersFind)
 }
 
@@ -92,6 +104,8 @@ func TestBind(t *testing.T) {
 	t.Run("Follows", testFollowsBind)
 	t.Run("GorpMigrations", testGorpMigrationsBind)
 	t.Run("Notices", testNoticesBind)
+	t.Run("NoticeFavorites", testNoticeFavoritesBind)
+	t.Run("NoticeFolloweds", testNoticeFollowedsBind)
 	t.Run("Users", testUsersBind)
 }
 
@@ -104,6 +118,8 @@ func TestOne(t *testing.T) {
 	t.Run("Follows", testFollowsOne)
 	t.Run("GorpMigrations", testGorpMigrationsOne)
 	t.Run("Notices", testNoticesOne)
+	t.Run("NoticeFavorites", testNoticeFavoritesOne)
+	t.Run("NoticeFolloweds", testNoticeFollowedsOne)
 	t.Run("Users", testUsersOne)
 }
 
@@ -116,6 +132,8 @@ func TestAll(t *testing.T) {
 	t.Run("Follows", testFollowsAll)
 	t.Run("GorpMigrations", testGorpMigrationsAll)
 	t.Run("Notices", testNoticesAll)
+	t.Run("NoticeFavorites", testNoticeFavoritesAll)
+	t.Run("NoticeFolloweds", testNoticeFollowedsAll)
 	t.Run("Users", testUsersAll)
 }
 
@@ -128,6 +146,8 @@ func TestCount(t *testing.T) {
 	t.Run("Follows", testFollowsCount)
 	t.Run("GorpMigrations", testGorpMigrationsCount)
 	t.Run("Notices", testNoticesCount)
+	t.Run("NoticeFavorites", testNoticeFavoritesCount)
+	t.Run("NoticeFolloweds", testNoticeFollowedsCount)
 	t.Run("Users", testUsersCount)
 }
 
@@ -140,6 +160,8 @@ func TestHooks(t *testing.T) {
 	t.Run("Follows", testFollowsHooks)
 	t.Run("GorpMigrations", testGorpMigrationsHooks)
 	t.Run("Notices", testNoticesHooks)
+	t.Run("NoticeFavorites", testNoticeFavoritesHooks)
+	t.Run("NoticeFolloweds", testNoticeFollowedsHooks)
 	t.Run("Users", testUsersHooks)
 }
 
@@ -160,6 +182,10 @@ func TestInsert(t *testing.T) {
 	t.Run("GorpMigrations", testGorpMigrationsInsertWhitelist)
 	t.Run("Notices", testNoticesInsert)
 	t.Run("Notices", testNoticesInsertWhitelist)
+	t.Run("NoticeFavorites", testNoticeFavoritesInsert)
+	t.Run("NoticeFavorites", testNoticeFavoritesInsertWhitelist)
+	t.Run("NoticeFolloweds", testNoticeFollowedsInsert)
+	t.Run("NoticeFolloweds", testNoticeFollowedsInsertWhitelist)
 	t.Run("Users", testUsersInsert)
 	t.Run("Users", testUsersInsertWhitelist)
 }
@@ -177,11 +203,20 @@ func TestToOne(t *testing.T) {
 	t.Run("FollowToUserUsingFollower", testFollowToOneUserUsingFollower)
 	t.Run("FollowToUserUsingFollowing", testFollowToOneUserUsingFollowing)
 	t.Run("NoticeToUserUsingUser", testNoticeToOneUserUsingUser)
+	t.Run("NoticeFavoriteToContentUsingContent", testNoticeFavoriteToOneContentUsingContent)
+	t.Run("NoticeFavoriteToFavoriteUsingFavorite", testNoticeFavoriteToOneFavoriteUsingFavorite)
+	t.Run("NoticeFavoriteToNoticeUsingNotice", testNoticeFavoriteToOneNoticeUsingNotice)
+	t.Run("NoticeFavoriteToUserUsingUser", testNoticeFavoriteToOneUserUsingUser)
+	t.Run("NoticeFollowedToNoticeUsingNotice", testNoticeFollowedToOneNoticeUsingNotice)
+	t.Run("NoticeFollowedToUserUsingUser", testNoticeFollowedToOneUserUsingUser)
 }
 
 // TestOneToOne tests cannot be run in parallel
 // or deadlocks can occur.
-func TestOneToOne(t *testing.T) {}
+func TestOneToOne(t *testing.T) {
+	t.Run("NoticeToNoticeFavoriteUsingNoticeFavorite", testNoticeOneToOneNoticeFavoriteUsingNoticeFavorite)
+	t.Run("NoticeToNoticeFollowedUsingNoticeFollowed", testNoticeOneToOneNoticeFollowedUsingNoticeFollowed)
+}
 
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
@@ -190,12 +225,16 @@ func TestToMany(t *testing.T) {
 	t.Run("CommentToFavorites", testCommentToManyFavorites)
 	t.Run("ContentToBrowses", testContentToManyBrowses)
 	t.Run("ContentToFavorites", testContentToManyFavorites)
+	t.Run("ContentToNoticeFavorites", testContentToManyNoticeFavorites)
+	t.Run("FavoriteToNoticeFavorites", testFavoriteToManyNoticeFavorites)
 	t.Run("UserToBrowses", testUserToManyBrowses)
 	t.Run("UserToContents", testUserToManyContents)
 	t.Run("UserToFavorites", testUserToManyFavorites)
 	t.Run("UserToFollowerFollows", testUserToManyFollowerFollows)
 	t.Run("UserToFollowingFollows", testUserToManyFollowingFollows)
 	t.Run("UserToNotices", testUserToManyNotices)
+	t.Run("UserToNoticeFavorites", testUserToManyNoticeFavorites)
+	t.Run("UserToNoticeFolloweds", testUserToManyNoticeFolloweds)
 }
 
 // TestToOneSet tests cannot be run in parallel
@@ -211,6 +250,12 @@ func TestToOneSet(t *testing.T) {
 	t.Run("FollowToUserUsingFollowerFollows", testFollowToOneSetOpUserUsingFollower)
 	t.Run("FollowToUserUsingFollowingFollows", testFollowToOneSetOpUserUsingFollowing)
 	t.Run("NoticeToUserUsingNotices", testNoticeToOneSetOpUserUsingUser)
+	t.Run("NoticeFavoriteToContentUsingNoticeFavorites", testNoticeFavoriteToOneSetOpContentUsingContent)
+	t.Run("NoticeFavoriteToFavoriteUsingNoticeFavorites", testNoticeFavoriteToOneSetOpFavoriteUsingFavorite)
+	t.Run("NoticeFavoriteToNoticeUsingNoticeFavorite", testNoticeFavoriteToOneSetOpNoticeUsingNotice)
+	t.Run("NoticeFavoriteToUserUsingNoticeFavorites", testNoticeFavoriteToOneSetOpUserUsingUser)
+	t.Run("NoticeFollowedToNoticeUsingNoticeFollowed", testNoticeFollowedToOneSetOpNoticeUsingNotice)
+	t.Run("NoticeFollowedToUserUsingNoticeFolloweds", testNoticeFollowedToOneSetOpUserUsingUser)
 }
 
 // TestToOneRemove tests cannot be run in parallel
@@ -222,7 +267,10 @@ func TestToOneRemove(t *testing.T) {
 
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
-func TestOneToOneSet(t *testing.T) {}
+func TestOneToOneSet(t *testing.T) {
+	t.Run("NoticeToNoticeFavoriteUsingNoticeFavorite", testNoticeOneToOneSetOpNoticeFavoriteUsingNoticeFavorite)
+	t.Run("NoticeToNoticeFollowedUsingNoticeFollowed", testNoticeOneToOneSetOpNoticeFollowedUsingNoticeFollowed)
+}
 
 // TestOneToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
@@ -235,12 +283,16 @@ func TestToManyAdd(t *testing.T) {
 	t.Run("CommentToFavorites", testCommentToManyAddOpFavorites)
 	t.Run("ContentToBrowses", testContentToManyAddOpBrowses)
 	t.Run("ContentToFavorites", testContentToManyAddOpFavorites)
+	t.Run("ContentToNoticeFavorites", testContentToManyAddOpNoticeFavorites)
+	t.Run("FavoriteToNoticeFavorites", testFavoriteToManyAddOpNoticeFavorites)
 	t.Run("UserToBrowses", testUserToManyAddOpBrowses)
 	t.Run("UserToContents", testUserToManyAddOpContents)
 	t.Run("UserToFavorites", testUserToManyAddOpFavorites)
 	t.Run("UserToFollowerFollows", testUserToManyAddOpFollowerFollows)
 	t.Run("UserToFollowingFollows", testUserToManyAddOpFollowingFollows)
 	t.Run("UserToNotices", testUserToManyAddOpNotices)
+	t.Run("UserToNoticeFavorites", testUserToManyAddOpNoticeFavorites)
+	t.Run("UserToNoticeFolloweds", testUserToManyAddOpNoticeFolloweds)
 }
 
 // TestToManySet tests cannot be run in parallel
@@ -266,6 +318,8 @@ func TestReload(t *testing.T) {
 	t.Run("Follows", testFollowsReload)
 	t.Run("GorpMigrations", testGorpMigrationsReload)
 	t.Run("Notices", testNoticesReload)
+	t.Run("NoticeFavorites", testNoticeFavoritesReload)
+	t.Run("NoticeFolloweds", testNoticeFollowedsReload)
 	t.Run("Users", testUsersReload)
 }
 
@@ -278,6 +332,8 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Follows", testFollowsReloadAll)
 	t.Run("GorpMigrations", testGorpMigrationsReloadAll)
 	t.Run("Notices", testNoticesReloadAll)
+	t.Run("NoticeFavorites", testNoticeFavoritesReloadAll)
+	t.Run("NoticeFolloweds", testNoticeFollowedsReloadAll)
 	t.Run("Users", testUsersReloadAll)
 }
 
@@ -290,6 +346,8 @@ func TestSelect(t *testing.T) {
 	t.Run("Follows", testFollowsSelect)
 	t.Run("GorpMigrations", testGorpMigrationsSelect)
 	t.Run("Notices", testNoticesSelect)
+	t.Run("NoticeFavorites", testNoticeFavoritesSelect)
+	t.Run("NoticeFolloweds", testNoticeFollowedsSelect)
 	t.Run("Users", testUsersSelect)
 }
 
@@ -302,6 +360,8 @@ func TestUpdate(t *testing.T) {
 	t.Run("Follows", testFollowsUpdate)
 	t.Run("GorpMigrations", testGorpMigrationsUpdate)
 	t.Run("Notices", testNoticesUpdate)
+	t.Run("NoticeFavorites", testNoticeFavoritesUpdate)
+	t.Run("NoticeFolloweds", testNoticeFollowedsUpdate)
 	t.Run("Users", testUsersUpdate)
 }
 
@@ -314,5 +374,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Follows", testFollowsSliceUpdateAll)
 	t.Run("GorpMigrations", testGorpMigrationsSliceUpdateAll)
 	t.Run("Notices", testNoticesSliceUpdateAll)
+	t.Run("NoticeFavorites", testNoticeFavoritesSliceUpdateAll)
+	t.Run("NoticeFolloweds", testNoticeFollowedsSliceUpdateAll)
 	t.Run("Users", testUsersSliceUpdateAll)
 }

@@ -11,12 +11,11 @@ type UserApplication struct {
 }
 
 type UserCommands struct {
-	CreateUser      command.CreateUserHandler
-	UpdateThumbnail command.UpdateThumbnailHandler
-	UpdateUser      command.UpdateUserHandler
-	SuspendUser     command.SuspendUserHandler
-	Follow          command.FollowHandler
-	Unfollow        command.UnfollowHandler
+	CreateUser  command.CreateUserHandler
+	UpdateUser  command.UpdateUserHandler
+	SuspendUser command.SuspendUserHandler
+	Follow      command.FollowHandler
+	Unfollow    command.UnfollowHandler
 }
 
 type UserQueries struct {

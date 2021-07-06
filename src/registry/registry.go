@@ -15,6 +15,7 @@ type Registry struct {
 	AuthMiddleware middleware.AuthMiddleware
 	V1User         v1.V1UserHandler
 	V1Content      v1.V1ContentHandler
+	V1Notice       v1.V1NoticeHandler
 }
 
 // NewRegistry - imports files in /internal directory
@@ -38,12 +39,11 @@ func NewRegistry(
 	// Commands and Queries
 	ua := application.UserApplication{
 		Commands: application.UserCommands{
-			CreateUser:      command.NewCreateUserHandler(ur),
-			UpdateThumbnail: command.NewUpdateThumbnailHandler(ur),
-			UpdateUser:      command.NewUpdateUserHandler(ur),
-			SuspendUser:     command.NewSuspendUserHandler(ur),
-			Follow:          command.NewFollowHandler(fr, nr),
-			Unfollow:        command.NewUnfollowHandler(fr),
+			CreateUser:  command.NewCreateUserHandler(ur),
+			UpdateUser:  command.NewUpdateUserHandler(ur),
+			SuspendUser: command.NewSuspendUserHandler(ur),
+			Follow:      command.NewFollowHandler(fr, nr),
+			Unfollow:    command.NewUnfollowHandler(fr),
 		},
 		Queries: application.UserQueries{
 			UserByToken: query.NewUserByTokenHandler(ur),
@@ -64,11 +64,17 @@ func NewRegistry(
 			GetFavoriteContents: query.NewGetFavoriteContentsHandler(cr),
 		},
 	}
-	// Usecase
+
+	na := application.NoticeApplication{
+		Queries: application.NoticeQueries{
+			List: query.NewNoticesHandler(nr),
+		},
+	}
 
 	return &Registry{
 		AuthMiddleware: middleware.NewAuthMiddleware(ua),
-		V1User:         v1.NewV1UserHandler(ua),
+		V1User:         v1.NewV1UserHandler(ua, websocket),
 		V1Content:      v1.NewV1ContentHandler(ca, websocket),
+		V1Notice:       v1.NewV1NoticeHandler(na, websocket),
 	}
 }

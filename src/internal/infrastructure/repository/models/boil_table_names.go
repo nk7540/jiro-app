@@ -12,6 +12,8 @@ var TableNames = struct {
 	Follow         string
 	GorpMigrations string
 	Notice         string
+	NoticeFavorite string
+	NoticeFollowed string
 	User           string
 }{
 	Browse:         "browse",
@@ -22,5 +24,7 @@ var TableNames = struct {
 	Follow:         "follow",
 	GorpMigrations: "gorp_migrations",
 	Notice:         "notice",
+	NoticeFavorite: "notice_favorite",
+	NoticeFollowed: "notice_followed",
 	User:           "user",
 }

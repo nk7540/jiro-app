@@ -99,7 +99,7 @@ func (h *v1ContentHandler) Like(c *fiber.Ctx) error {
 		toUserIDs[i] = user.UserID(v)
 	}
 
-	notices, err := h.app.Commands.Like.Handle(ctx, content.CommandLike{
+	qns, err := h.app.Commands.Like.Handle(ctx, content.CommandLike{
 		User:         u,
 		ContentID:    content.ContentID(req.ContentID),
 		ToUserIDs:    toUserIDs,
@@ -110,8 +110,8 @@ func (h *v1ContentHandler) Like(c *fiber.Ctx) error {
 		return err
 	}
 
-	for _, n := range notices {
-		if err = notify(h.websocket, n); err != nil {
+	for _, qn := range qns {
+		if err = notify(h.websocket, qn); err != nil {
 			return err
 		}
 	}

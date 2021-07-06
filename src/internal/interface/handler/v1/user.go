@@ -134,18 +134,17 @@ func (h *v1UserHandler) Update(c *fiber.Ctx) error {
 	if err != nil {
 		return domain.UnableParseFile.New(err)
 	}
-	thumbnailURL, err := h.app.Commands.UpdateThumbnail.Handle(ctx, thumbnail)
-
-	if err := h.app.Commands.UpdateUser.Handle(ctx, user.CommandUpdateUser{
-		Nickname:     user.Nickname(req.Nickname),
-		ThumbnailURL: thumbnailURL,
-	}); err != nil {
+	u, err := h.app.Commands.UpdateUser.Handle(ctx, user.CommandUpdateUser{
+		Nickname:  user.Nickname(req.Nickname),
+		Thumbnail: thumbnail,
+	})
+	if err != nil {
 		return err
 	}
 
 	res := &response.UpdateUser{
-		Nickname:     req.Nickname,
-		ThumbnailURL: string(thumbnailURL),
+		Nickname:     string(u.Nickname),
+		ThumbnailURL: string(u.ThumbnailURL),
 	}
 
 	return c.JSON(res)
@@ -173,7 +172,7 @@ func (h *v1UserHandler) Follow(c *fiber.Ctx) error {
 		return err
 	}
 
-	n, err := h.app.Commands.Follow.Handle(ctx, user.CommandFollow{
+	qn, err := h.app.Commands.Follow.Handle(ctx, user.CommandFollow{
 		User:       u,
 		FollowerID: user.FollowerID(followerID),
 	})
@@ -181,7 +180,7 @@ func (h *v1UserHandler) Follow(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err = notify(h.websocket, n); err != nil {
+	if err = notify(h.websocket, qn); err != nil {
 		return err
 	}
 

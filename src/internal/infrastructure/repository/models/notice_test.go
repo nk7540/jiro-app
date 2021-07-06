@@ -494,6 +494,229 @@ func testNoticesInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testNoticeOneToOneNoticeFavoriteUsingNoticeFavorite(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign NoticeFavorite
+	var local Notice
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, noticeFavoriteDBTypes, true, noticeFavoriteColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize NoticeFavorite struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreign.NoticeID = local.ID
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.NoticeFavorite().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.NoticeID != foreign.NoticeID {
+		t.Errorf("want: %v, got %v", foreign.NoticeID, check.NoticeID)
+	}
+
+	slice := NoticeSlice{&local}
+	if err = local.L.LoadNoticeFavorite(ctx, tx, false, (*[]*Notice)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.NoticeFavorite == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.NoticeFavorite = nil
+	if err = local.L.LoadNoticeFavorite(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.NoticeFavorite == nil {
+		t.Error("struct should have been eager loaded")
+	}
+}
+
+func testNoticeOneToOneNoticeFollowedUsingNoticeFollowed(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign NoticeFollowed
+	var local Notice
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, noticeFollowedDBTypes, true, noticeFollowedColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize NoticeFollowed struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, noticeDBTypes, true, noticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Notice struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreign.NoticeID = local.ID
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.NoticeFollowed().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.NoticeID != foreign.NoticeID {
+		t.Errorf("want: %v, got %v", foreign.NoticeID, check.NoticeID)
+	}
+
+	slice := NoticeSlice{&local}
+	if err = local.L.LoadNoticeFollowed(ctx, tx, false, (*[]*Notice)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.NoticeFollowed == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.NoticeFollowed = nil
+	if err = local.L.LoadNoticeFollowed(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.NoticeFollowed == nil {
+		t.Error("struct should have been eager loaded")
+	}
+}
+
+func testNoticeOneToOneSetOpNoticeFavoriteUsingNoticeFavorite(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Notice
+	var b, c NoticeFavorite
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, noticeDBTypes, false, strmangle.SetComplement(noticePrimaryKeyColumns, noticeColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, noticeFavoriteDBTypes, false, strmangle.SetComplement(noticeFavoritePrimaryKeyColumns, noticeFavoriteColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, noticeFavoriteDBTypes, false, strmangle.SetComplement(noticeFavoritePrimaryKeyColumns, noticeFavoriteColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*NoticeFavorite{&b, &c} {
+		err = a.SetNoticeFavorite(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.NoticeFavorite != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.Notice != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if a.ID != x.NoticeID {
+			t.Error("foreign key was wrong value", a.ID)
+		}
+
+		if exists, err := NoticeFavoriteExists(ctx, tx, x.NoticeID); err != nil {
+			t.Fatal(err)
+		} else if !exists {
+			t.Error("want 'x' to exist")
+		}
+
+		if a.ID != x.NoticeID {
+			t.Error("foreign key was wrong value", a.ID, x.NoticeID)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
+func testNoticeOneToOneSetOpNoticeFollowedUsingNoticeFollowed(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Notice
+	var b, c NoticeFollowed
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, noticeDBTypes, false, strmangle.SetComplement(noticePrimaryKeyColumns, noticeColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, noticeFollowedDBTypes, false, strmangle.SetComplement(noticeFollowedPrimaryKeyColumns, noticeFollowedColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, noticeFollowedDBTypes, false, strmangle.SetComplement(noticeFollowedPrimaryKeyColumns, noticeFollowedColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*NoticeFollowed{&b, &c} {
+		err = a.SetNoticeFollowed(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.NoticeFollowed != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.Notice != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if a.ID != x.NoticeID {
+			t.Error("foreign key was wrong value", a.ID)
+		}
+
+		if exists, err := NoticeFollowedExists(ctx, tx, x.NoticeID); err != nil {
+			t.Fatal(err)
+		} else if !exists {
+			t.Error("want 'x' to exist")
+		}
+
+		if a.ID != x.NoticeID {
+			t.Error("foreign key was wrong value", a.ID, x.NoticeID)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
+
 func testNoticeToOneUserUsingUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -677,7 +900,7 @@ func testNoticesSelect(t *testing.T) {
 }
 
 var (
-	noticeDBTypes = map[string]string{`ID`: `int`, `UserID`: `int`, `Title`: `varchar`, `Body`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	noticeDBTypes = map[string]string{`ID`: `int`, `UserID`: `int`, `Type`: `int`, `IsRead`: `tinyint`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_             = bytes.MinRead
 )
 

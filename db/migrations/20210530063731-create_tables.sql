@@ -34,21 +34,6 @@ create table if not exists follow(
     on update no action
 );
 
-create table if not exists notice(
-  id         int          not null auto_increment,
-  user_id    int          not null,
-  title      varchar(255) not null,
-  body       varchar(255) not null,
-  created_at datetime     not null,
-  updated_at datetime     not null,
-  primary key(id),
-  constraint fk_user_notice
-    foreign key(user_id)
-    references user (id)
-    on delete no action
-    on update no action
-);
-
 create table if not exists category(
   id         int          not null auto_increment,
   name       varchar(32)  not null,
@@ -135,14 +120,54 @@ create table if not exists browse(
     on update no action
 );
 
+create table if not exists notice(
+  id            int          not null primary key auto_increment,
+  user_id       int          not null,
+  type          int          not null,
+  is_read       tinyint(1)   not null default 0,
+  created_at    datetime     not null,
+  updated_at    datetime     not null,
+  constraint fk_user_notice foreign key(user_id) references user (id)
+);
+
+create table if not exists notice_favorite(
+  notice_id             int          not null primary key,
+  favorite_id           int          not null,
+  user_id               int          not null,
+  user_thumbnail_url    text(1024)   not null,
+  header                varchar(255) not null,
+  body                  varchar(255) not null,
+  content_id            int          not null,
+  content_thumbnail_url text(1024)   not null,
+  created_at            datetime     not null,
+  updated_at            datetime     not null,
+  constraint fk_notice_notice_favorite foreign key(notice_id) references notice (id),
+  constraint fk_favorite_notice_favorite foreign key(favorite_id) references favorite (id),
+  constraint fk_user_notice_favorite foreign key(user_id) references user (id),
+  constraint fk_content_notice_favorite foreign key(content_id) references content (id)
+);
+
+create table if not exists notice_followed(
+  notice_id          int          not null primary key,
+  user_id            int          not null,
+  user_thumbnail_url text(1024)   not null,
+  body               varchar(255) not null,
+  created_at         datetime     not null,
+  updated_at         datetime     not null,
+  constraint fk_notice_notice_followed foreign key(notice_id) references notice (id),
+  constraint fk_user_notice_followed foreign key(user_id) references user (id)
+);
+
 -- +migrate Down
 set FOREIGN_KEY_CHECKS=0;
 drop table if exists user;
 drop table if exists follow;
-drop table if exists notice;
 drop table if exists category;
 drop table if exists content;
 drop table if exists comment;
 drop table if exists favorite;
 drop table if exists browse;
+drop table if exists notice;
+drop table if exists notice_favorite;
+drop table if exists notice_followed;
 set FOREIGN_KEY_CHECKS=1;

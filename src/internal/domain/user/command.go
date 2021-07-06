@@ -7,8 +7,8 @@ type CommandCreateUser struct {
 }
 
 type CommandUpdateUser struct {
-	Nickname     Nickname     `validate:"max=32"`
-	ThumbnailURL ThumbnailURL `validate:"max=256"`
+	Nickname  Nickname `validate:"max=32"`
+	Thumbnail Thumbnail
 }
 
 type CommandFollow struct {

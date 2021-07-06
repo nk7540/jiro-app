@@ -2,7 +2,7 @@ package config
 
 import (
 	"artics-api/src/internal/domain"
-	"artics-api/src/internal/domain/user"
+	"artics-api/src/internal/domain/notice"
 	"artics-api/src/internal/interface/handler/response"
 
 	"github.com/gofiber/fiber/v2"
@@ -36,8 +36,8 @@ var entries = [...]entry{
 	{"ja", domain.PasswordConfirmationMessage, "がパスワードと一致しません。"},
 	{"ja", domain.RequiredMessage, "を入力してください。"},
 	// Notifications
-	{"ja", user.FavoriteNoticeTitle, "%s がお気に入り: %s"},
-	{"ja", user.FollowedNoticeBody, "%s があなたをフォローしました。"},
+	{"ja", notice.FavoriteNoticeTitle, "%s がお気に入り: %s"},
+	{"ja", notice.FollowedNoticeBody, "%s があなたをフォローしました。"},
 	// User
 	{"ja", "email", "Eメール"},
 	{"ja", "password", "パスワード"},

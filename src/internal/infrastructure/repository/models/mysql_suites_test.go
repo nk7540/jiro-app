@@ -22,5 +22,9 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Notices", testNoticesUpsert)
 
+	t.Run("NoticeFavorites", testNoticeFavoritesUpsert)
+
+	t.Run("NoticeFolloweds", testNoticeFollowedsUpsert)
+
 	t.Run("Users", testUsersUpsert)
 }
