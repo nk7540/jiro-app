@@ -9,6 +9,7 @@ create table if not exists user(
   email         varchar(255) not null,
   nickname      varchar(255) not null default '',
   thumbnail_url text(1024)   not null default '',
+  profile       varchar(255) not null,
   created_at    datetime     not null,
   updated_at    datetime     not null,
   primary key(id)
@@ -45,10 +46,11 @@ create table if not exists category(
 create table if not exists content(
   id            int          not null auto_increment,
   user_id       int          null,
-  category_id   int          not null,
+  category_id   int          null,
   title         varchar(255) not null,
   description   text(1024)   not null default '',
   thumbnail_url text(1024)   not null default '',
+  author        varchar(255) not null default '',
   created_at    datetime     not null,
   updated_at    datetime     not null,
   primary key(id),
@@ -79,6 +81,7 @@ create table if not exists favorite(
   user_id        int          not null,
   content_id     int          not null,
   comment_id     int          null,
+  is_most        tinyint(1)   not null default 0,
   to_user_ids    varchar(255) not null default '',
   to_close_users tinyint(1)   not null default 0,
   created_at     datetime     not null,
@@ -123,7 +126,7 @@ create table if not exists browse(
 create table if not exists notice(
   id            int          not null primary key auto_increment,
   user_id       int          not null,
-  type          int          not null,
+  type          varchar(255) not null,
   is_read       tinyint(1)   not null default 0,
   created_at    datetime     not null,
   updated_at    datetime     not null,

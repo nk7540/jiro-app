@@ -1,0 +1,22 @@
+query Notices($page: Int, $per: Int) {
+  notices {
+    id
+    type
+    isRead
+    createdAt
+    ... on NoticeFavorite {
+      favoriteId
+      userId
+      userThumbnailUrl
+      header
+      body
+      contentId
+      contentThumbnailUrl
+    }
+    ... on NoticeFollowed {
+      userId
+      userThumbnailUrl
+      body
+    }
+  }
+}

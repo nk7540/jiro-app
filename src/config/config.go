@@ -9,15 +9,12 @@ import (
 )
 
 type AppConfig struct {
-	Server     ServerConfig    `yaml:"server"`
-	Database   DatabaseConfig  `yaml:"database"`
-	Auth       AuthConfig      `yaml:"auth"`
-	Uploader   UploaderConfig  `yaml:"uploader"`
-	RPC        RPCConfig       `yaml:"rpc"`
-	I18n       I18nConfig      `yaml:"i18n"`
-	Logger     LoggerConfig    `yaml:"logger"`
-	Mail       MailConfig      `yaml:"mail"`
-	Websocket  WebsocketConfig `yaml:"websocket"`
+	Database   DatabaseConfig `yaml:"database"`
+	Auth       AuthConfig     `yaml:"auth"`
+	Uploader   UploaderConfig `yaml:"uploader"`
+	RPC        RPCConfig      `yaml:"rpc"`
+	Logger     LoggerConfig   `yaml:"logger"`
+	Mail       MailConfig     `yaml:"mail"`
 	ConfigFile string
 }
 
@@ -28,14 +25,10 @@ func (cfg *AppConfig) Setup() {
 		os.Exit(2)
 	}
 
-	cfg.Server.LoadPath()
-	cfg.Server.Setup()
 	cfg.Database.Setup()
 	cfg.Auth.Setup()
 	cfg.Uploader.Setup()
 	cfg.RPC.Setup()
-	cfg.I18n.Setup()
-	cfg.Server.Use(cfg.I18n.NewMiddleware())
 	cfg.Logger.Setup()
 	// cfg.Mail.Setup()
 }

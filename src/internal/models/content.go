@@ -26,7 +26,7 @@ import (
 type Content struct {
 	ID           int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID       null.Int  `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	CategoryID   int       `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
+	CategoryID   null.Int  `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
 	Title        string    `boil:"title" json:"title" toml:"title" yaml:"title"`
 	Description  string    `boil:"description" json:"description" toml:"description" yaml:"description"`
 	ThumbnailURL string    `boil:"thumbnail_url" json:"thumbnail_url" toml:"thumbnail_url" yaml:"thumbnail_url"`
@@ -110,7 +110,7 @@ func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
 var ContentWhere = struct {
 	ID           whereHelperint
 	UserID       whereHelpernull_Int
-	CategoryID   whereHelperint
+	CategoryID   whereHelpernull_Int
 	Title        whereHelperstring
 	Description  whereHelperstring
 	ThumbnailURL whereHelperstring
@@ -120,7 +120,7 @@ var ContentWhere = struct {
 }{
 	ID:           whereHelperint{field: "`content`.`id`"},
 	UserID:       whereHelpernull_Int{field: "`content`.`user_id`"},
-	CategoryID:   whereHelperint{field: "`content`.`category_id`"},
+	CategoryID:   whereHelpernull_Int{field: "`content`.`category_id`"},
 	Title:        whereHelperstring{field: "`content`.`title`"},
 	Description:  whereHelperstring{field: "`content`.`description`"},
 	ThumbnailURL: whereHelperstring{field: "`content`.`thumbnail_url`"},
@@ -551,7 +551,9 @@ func (contentL) LoadCategory(ctx context.Context, e boil.ContextExecutor, singul
 		if object.R == nil {
 			object.R = &contentR{}
 		}
-		args = append(args, object.CategoryID)
+		if !queries.IsNil(object.CategoryID) {
+			args = append(args, object.CategoryID)
+		}
 
 	} else {
 	Outer:
@@ -561,12 +563,14 @@ func (contentL) LoadCategory(ctx context.Context, e boil.ContextExecutor, singul
 			}
 
 			for _, a := range args {
-				if a == obj.CategoryID {
+				if queries.Equal(a, obj.CategoryID) {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.CategoryID)
+			if !queries.IsNil(obj.CategoryID) {
+				args = append(args, obj.CategoryID)
+			}
 
 		}
 	}
@@ -624,7 +628,7 @@ func (contentL) LoadCategory(ctx context.Context, e boil.ContextExecutor, singul
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.CategoryID == foreign.ID {
+			if queries.Equal(local.CategoryID, foreign.ID) {
 				local.R.Category = foreign
 				if foreign.R == nil {
 					foreign.R = &categoryR{}
@@ -1067,7 +1071,7 @@ func (o *Content) SetCategory(ctx context.Context, exec boil.ContextExecutor, in
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.CategoryID = related.ID
+	queries.Assign(&o.CategoryID, related.ID)
 	if o.R == nil {
 		o.R = &contentR{
 			Category: related,
@@ -1084,6 +1088,39 @@ func (o *Content) SetCategory(ctx context.Context, exec boil.ContextExecutor, in
 		related.R.Contents = append(related.R.Contents, o)
 	}
 
+	return nil
+}
+
+// RemoveCategory relationship.
+// Sets o.R.Category to nil.
+// Removes o from all passed in related items' relationships struct (Optional).
+func (o *Content) RemoveCategory(ctx context.Context, exec boil.ContextExecutor, related *Category) error {
+	var err error
+
+	queries.SetScanner(&o.CategoryID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("category_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Category = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.Contents {
+		if queries.Equal(o.CategoryID, ri.CategoryID) {
+			continue
+		}
+
+		ln := len(related.R.Contents)
+		if ln > 1 && i < ln-1 {
+			related.R.Contents[i] = related.R.Contents[ln-1]
+		}
+		related.R.Contents = related.R.Contents[:ln-1]
+		break
+	}
 	return nil
 }
 

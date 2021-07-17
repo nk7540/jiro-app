@@ -1,0 +1,22 @@
+# Content detail page
+query Content($id: Int!) {
+  content(id: $id) {
+    id
+    title
+    thumbnailUrl
+    description
+    author
+  }
+  likedBy(contentId: $id) {
+    id
+    thumbnailUrl
+  }
+}
+
+mutation Like($input: Like) {
+  like(input: $input)
+}
+
+mutation Unlike($contentId: Int!) {
+  unlike(contentId: $contentId)
+}

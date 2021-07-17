@@ -1,0 +1,155 @@
+scalar DateTime
+scalar Upload
+
+type Content {
+  id: Int!
+  title: String!
+  thumbnailUrl: String!
+  description: String!
+  author: String!
+  isLiked: Boolean
+}
+
+type Favorite {
+  id: Int!
+  user: User!
+  content: Content!
+  commentBody: String!
+}
+
+type User {
+  id: Int!
+  email: String
+  nickname: String
+  thumbnailUrl: String
+  profile: String
+  isClose: Boolean
+  isFollowed: Boolean
+  isFollowing: Boolean
+}
+
+interface Notice {
+  id: Int!
+  type: String!
+  isRead: Boolean!
+  createdAt: DateTime!
+}
+
+type NoticeFavorite implements Notice {
+  id: Int!
+  type: String!
+  isRead: Boolean!
+  createdAt: DateTime!
+  favoriteId: Int!
+  user: User!
+  header: String!
+  body: String!
+  content: Content!
+}
+
+type NoticeFollowed implements Notice {
+  id: Int!
+  type: String!
+  isRead: Boolean!
+  createdAt: DateTime!
+  user: User!
+  body: String!
+}
+
+enum ContentKind {
+  RECOMMENDED
+  BROWSED
+  UPLOADED
+}
+
+enum FavoriteKind {
+  COMMON
+  MOST
+  OTHERS
+  USER_FAVORITE_FOR_YOU
+  USER_FAVORITE
+}
+
+enum UserKind {
+  FOLLOWING
+  FOLLOWER
+}
+
+# enum LikedByKind {
+#   FOLLOWING
+#   ALL
+# }
+
+type Query {
+  # Home
+  currentUser: User!
+  contents(id: Int, kind: ContentKind!): [Content!]!
+  # Content
+  content(id: Int!): Content!
+  likedBy(contentId: Int!): [User!]!
+  # Notices
+  notices: [Notice!]!
+  # Profile
+  user(id: Int!): User!
+  users(kind: UserKind!): [User!]!
+  favorites(id: Int, kind: FavoriteKind!): [Favorite!]!
+  # Search
+  searchUsers(words: String!): [User!]!
+  searchContents(words: String!): [Content!]!
+}
+
+input CreateUser {
+  email: String!
+  password: String!
+  passwordConfirmation: String!
+}
+
+input UpdateUser {
+  nickname: String
+  thumbnail: Upload
+  profile: String
+}
+
+input Like {
+  contentId: Int!
+  toUserIds: [Int!]!
+  toCloseUsers: Boolean!
+  commentBody: String!
+}
+
+input CreateContent {
+  title: String!
+  thumbnail: Upload
+  description: String
+  author: String
+}
+
+input UpdateContent {
+  id: Int!
+  title: String
+  thumbnail: Upload
+  description: String
+  author: String
+}
+
+type Mutation {
+  # User
+  createUser(input: CreateUser!): Int
+  updateUser(input: UpdateUser!): User!
+  suspendUser: Int
+  # Content
+  like(input: Like!): Int
+  unlike(contentId: Int!): Int
+  browse(contentId: Int!): Int
+  # Upload
+  createContent(input: CreateContent!): Int
+  updateContent(input: UpdateContent!): Content!
+  deleteContent(contentId: Int!): Int
+  # Profile
+  follow(followerId: Int!): Int
+  unfollow(followerId: Int!): Int
+  addToCloseUsers(id: Int!): Boolean!
+  removeFromCloseUsers(id: Int!): Boolean!
+  addToMostFavorite(contentId: Int!): Boolean!
+  removeFromMostFavorite(contentId: Int!): Boolean!
+}

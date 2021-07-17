@@ -1,0 +1,39 @@
+fragment favorite on Favorite {
+  id
+  user {
+    id
+    thumbnailUrl
+  }
+  content {
+    id
+    title
+    thumbnailUrl
+  }
+  commentBody
+}
+
+fragment content on Content {
+  id
+  title
+  thumbnailUrl
+}
+
+# Home page
+query Home {
+  # Row 1
+  favoritesForYou: favorites(kind: USER_FAVORITE_FOR_YOU) {
+    ...favorite
+  }
+  # Row 2
+  userFavorites: favorites(kind: USER_FAVORITE) {
+    ...favorite
+  }
+  # Row 3
+  recommendedContents: contents(kind: RECOMMENDED) {
+    ...content
+  }
+  # Row 4
+  browsedContents: contents(kind: BROWSED) {
+    ...content
+  }
+}

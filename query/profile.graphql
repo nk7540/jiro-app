@@ -1,0 +1,55 @@
+fragment favorite on Favorite {
+  id
+  content {
+    id
+    title
+    thumbnailUrl
+  }
+}
+
+fragment user on User {
+  id
+  thumbnailUrl
+}
+
+# Profile page
+query Profile($id: Int!, $currentUser: Boolean!) {
+  user(id: $id) {
+    id
+    nickname
+    thumbnailUrl
+    profile
+    isClose
+    isFollowed
+    isFollowing
+  }
+  commonFavorites: favorites(id: $id, kind: COMMON) @skip(if: $currentUser) {
+    ...favorite
+  }
+  mostFavorites: favorites(id: $id, kind: MOST) {
+    ...favorite
+  }
+  favorites: favorites(id: $id, kind: ALL) {
+    ...favorite
+  }
+  followings: users(kind: FOLLOWING) {
+    ...user
+  }
+  followers: users(kind: FOLLOWER) @include(if: $currentUser) {
+    ...user
+    isClose
+  }
+}
+
+query Favorites($id: Int!, $kind: String!) {
+  favorites(id: $id, kind: $kind) {
+    ...favorite
+    commentBody
+  }
+}
+
+query Users($kind: UserKind!) {
+  users(kind: $kind) {
+    ...user
+  }
+}

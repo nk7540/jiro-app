@@ -1,4 +1,4 @@
-output = "src/internal/infrastructure/repository/models"
+output = "src/internal/models"
 [mysql]
   dbname="dev_database"
   host="artics-db"

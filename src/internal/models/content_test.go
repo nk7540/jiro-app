@@ -962,7 +962,7 @@ func testContentToOneCategoryUsingCategory(t *testing.T) {
 	var foreign Category
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, contentDBTypes, false, contentColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, contentDBTypes, true, contentColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Content struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, categoryDBTypes, false, categoryColumnsWithDefault...); err != nil {
@@ -973,7 +973,7 @@ func testContentToOneCategoryUsingCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	local.CategoryID = foreign.ID
+	queries.Assign(&local.CategoryID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -983,7 +983,7 @@ func testContentToOneCategoryUsingCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if check.ID != foreign.ID {
+	if !queries.Equal(check.ID, foreign.ID) {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -1096,7 +1096,7 @@ func testContentToOneSetOpCategoryUsingCategory(t *testing.T) {
 		if x.R.Contents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.CategoryID != x.ID {
+		if !queries.Equal(a.CategoryID, x.ID) {
 			t.Error("foreign key was wrong value", a.CategoryID)
 		}
 
@@ -1107,11 +1107,63 @@ func testContentToOneSetOpCategoryUsingCategory(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.CategoryID != x.ID {
+		if !queries.Equal(a.CategoryID, x.ID) {
 			t.Error("foreign key was wrong value", a.CategoryID, x.ID)
 		}
 	}
 }
+
+func testContentToOneRemoveOpCategoryUsingCategory(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Content
+	var b Category
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, contentDBTypes, false, strmangle.SetComplement(contentPrimaryKeyColumns, contentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, categoryDBTypes, false, strmangle.SetComplement(categoryPrimaryKeyColumns, categoryColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetCategory(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveCategory(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.Category().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.Category != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.CategoryID) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if len(b.R.Contents) != 0 {
+		t.Error("failed to remove a from b's relationships")
+	}
+}
+
 func testContentToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
