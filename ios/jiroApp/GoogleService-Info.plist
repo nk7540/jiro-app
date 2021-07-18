@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>449126561851-kfp5tms651aentgku5jfcckch809fqt1.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.449126561851-kfp5tms651aentgku5jfcckch809fqt1</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCaHEDmY5kk0Zl9wJROf4pWGg1qfqAXFTA</string>
+	<key>GCM_SENDER_ID</key>
+	<string>449126561851</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>jiro-app</string>
+	<key>PROJECT_ID</key>
+	<string>jiro-app-57ad5</string>
+	<key>STORAGE_BUCKET</key>
+	<string>jiro-app-57ad5.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:449126561851:ios:813ab7870c9626240f841e</string>
+</dict>
+</plist>
