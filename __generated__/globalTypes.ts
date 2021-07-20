@@ -7,6 +7,14 @@
 // START Enums and Input Objects
 //==============================================================
 
+export interface CreatePost {
+  images: any[];
+  comment: string;
+  waitingPeriod: number;
+  consumingPeriod: number;
+  tagsIds: number[];
+}
+
 export interface CreateUser {
   nickname: string;
   email: string;

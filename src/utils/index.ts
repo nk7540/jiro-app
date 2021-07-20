@@ -1,0 +1,1 @@
+export {secToHour} from './timeDuration';

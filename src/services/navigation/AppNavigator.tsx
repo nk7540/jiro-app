@@ -8,6 +8,7 @@ import Loading from 'features/Loading';
 import SignIn from 'features/SignIn';
 import SignUp from 'features/SignUp';
 import Home from 'features/Home';
+import CreateImages from 'features/CreateImages';
 
 const Stack = createStackNavigator<StackParamList>();
 
@@ -22,6 +23,7 @@ const authScreens = {
 
 const userScreens = {
   Home: Home,
+  CreateImages: CreateImages,
 };
 
 function switchByStatus(status: Status): JSX.Element[] {

@@ -4,19 +4,13 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: StoresQuery
+// GraphQL fragment: tag
 // ====================================================
 
-export interface StoresQuery_stores {
-  __typename: "Store";
+export interface tag {
+  __typename: "Tag";
   id: number;
   name: string;
-  closeIn: number;
-  note: string;
-  latitude: number;
-  longitude: number;
-}
-
-export interface StoresQuery {
-  stores: StoresQuery_stores[];
+  kind: string;
+  storeId: number | null;
 }

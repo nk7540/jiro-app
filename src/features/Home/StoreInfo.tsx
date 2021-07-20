@@ -8,6 +8,10 @@ import {StoreInfoUserQuery} from './__generated__/StoreInfoUserQuery';
 import {StoresQuery, StoresQuery_stores} from './__generated__/StoresQuery';
 import {Text, Button} from 'react-native-elements';
 import ListWithError from 'components/ListWithError';
+import {secToHour} from 'utils';
+import {useAppDispatch, useAppSelector, setPost, increment} from 'services/store';
+import {useNavigation} from '@react-navigation/native';
+import {ScreenNames} from 'services/navigation';
 
 const STORES_QUERY = gql`
   query StoresQuery {
@@ -30,27 +34,27 @@ const STORE_INFO_USER_QUERY = gql`
 
 const StoreInfo = () => {
   const [distances, setDistances] = useState({} as {[storeId in number]: number});
-  const [currentStore, setCurrentStore] = useState({id: 0, name: ''});
-  const [waitingFor, setWaitingFor] = useState(0);
+  const [waitingIntervalId, setWaitingIntervalId] = useState<NodeJS.Timer>();
+  const navigation = useNavigation();
   const {loading, error, data, refetch} = useQuery<StoresQuery>(STORES_QUERY);
   const {data: currentUserData} = useQuery<StoreInfoUserQuery>(STORE_INFO_USER_QUERY);
+  const post = useAppSelector(state => state.post);
+  const dispatch = useAppDispatch();
 
-  const updateDistances = useCallback(
-    (coords: {latitude: number; longitude: number}, stores: StoresQuery_stores[]) => {
-      let newDistances = Object.assign({}, distances);
-      stores.forEach(store => {
-        const distance = distanceBetween([coords.latitude, coords.longitude], [store.latitude, store.longitude]);
-        newDistances = {...newDistances, [store.id]: distance};
-      });
-      setDistances(newDistances);
-    },
-    [distances],
-  );
+  const updateDistances = useCallback((coords: {latitude: number; longitude: number}, stores: StoresQuery_stores[]) => {
+    let newDistances = {} as {[storeId in number]: number};
+    stores.forEach(store => {
+      const distance = distanceBetween([coords.latitude, coords.longitude], [store.latitude, store.longitude]);
+      newDistances = {...newDistances, [store.id]: distance};
+    });
+    setDistances(newDistances);
+  }, []);
 
   useEffect(() => {
     if (!currentUserData || !data) {
       return;
     }
+    dispatch(setPost({key: 'userId', value: currentUserData.currentUser.id}));
     const currentUserId = currentUserData.currentUser.id.toString();
 
     const watchId = Geolocation.watchPosition(
@@ -77,13 +81,17 @@ const StoreInfo = () => {
         center: [store.latitude, store.longitude],
         radius: 0.1,
       });
-      query.on('key_entered', () => {
+      query.on('key_entered', (key: string) => {
         console.log('someone entered');
-        setCurrentStore(c => ({...c, id: store.id}));
+        if (key === currentUserId) {
+          dispatch(setPost({key: 'store', value: store}));
+        }
       });
-      query.on('key_exited', () => {
+      query.on('key_exited', (key: string) => {
         console.log('someone exited');
-        setCurrentStore({id: 0, name: ''});
+        if (key === currentUserId) {
+          dispatch(setPost({key: 'store', value: {id: 0, name: ''}}));
+        }
       });
       cancels.push(query.cancel.bind(query));
     });
@@ -91,8 +99,9 @@ const StoreInfo = () => {
     return () => {
       Geolocation.clearWatch(watchId);
       cancels.forEach(cancel => cancel());
+      waitingIntervalId && clearInterval(waitingIntervalId);
     };
-  }, [currentUserData, data, updateDistances]);
+  }, [currentUserData, data, updateDistances, dispatch, waitingIntervalId]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -103,38 +112,62 @@ const StoreInfo = () => {
   }, []);
 
   const lineUp = () => {
-    setInterval(() => {
-      setWaitingFor(waitingFor => waitingFor + 1);
+    const intervalId = setInterval(() => {
+      dispatch(increment('waitingFor'));
     }, 1000);
+    setWaitingIntervalId(intervalId);
   };
+
+  const getOut = useCallback(() => {
+    dispatch(setPost({key: 'waitingFor', value: 0}));
+    clearInterval(waitingIntervalId as NodeJS.Timer);
+  }, [dispatch, waitingIntervalId]);
 
   const orderArrived = () => {
-    // @TODO navigate to create post page
+    navigation.navigate(ScreenNames.CreateImages);
   };
 
-  console.log(distances);
-
-  if (waitingFor > 0) {
+  if (post.waitingFor > 0) {
     return (
       <>
-        <Text>{currentStore.name}</Text>
+        <Text>{post.store.name}</Text>
         <Text>待機中</Text>
-        <Text>{new Date(waitingFor * 1000).toISOString().substr(11, 8)}</Text>
+        <Text>{secToHour(post.waitingFor)}</Text>
         <Button title="着丼" onPress={orderArrived} />
+        <Button title="キャンセル" onPress={getOut} />
       </>
     );
-  } else if (currentStore.id > 0) {
+  } else if (post.store.id > 0) {
     return (
-      <View>
-        <Text>今{currentStore.name}の近くにいますか？</Text>
-        <Button title="並ぶ" onPress={lineUp} />
+      <View style={styles.store}>
+        <Text>今{post.store.name}の近くにいますか？</Text>
+        <View style={styles.actionGroup}>
+          <View style={styles.invisible} />
+          <Button style={styles.lineUp} title="並ぶ" onPress={lineUp} />
+          <Text
+            style={styles.cancelSuggest}
+            onPress={() => dispatch(setPost({key: 'store', value: {id: 0, name: ''}}))}>
+            いいえ
+          </Text>
+        </View>
       </View>
     );
   } else {
     return (
       <View style={styles.store}>
+        <View style={styles.row}>
+          <Text style={styles.name}>店名</Text>
+          <Text style={styles.hour}>閉店まで</Text>
+          <Text style={styles.distance}>お店まで</Text>
+        </View>
         <ListWithError loading={loading} error={error?.message} objects={data?.stores}>
-          {store => <StoreItem data={store} distance={distances[store.id]} />}
+          {store => (
+            <StoreItem
+              data={store}
+              distance={distances[store.id]}
+              setCurrentStore={() => dispatch(setPost({key: 'store', value: store}))}
+            />
+          )}
         </ListWithError>
       </View>
     );
@@ -147,6 +180,44 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 25,
     marginTop: 10,
+    backgroundColor: '#E9BF40',
+  },
+  actionGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  invisible: {
+    opacity: 0,
+    height: 0,
+  },
+  lineUp: {
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 20,
+    marginBottom: 30,
+  },
+  cancelSuggest: {
+    color: '#999',
+    fontSize: 16,
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  name: {
+    flex: 2,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  hour: {
+    flex: 1,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  distance: {
+    flex: 1,
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

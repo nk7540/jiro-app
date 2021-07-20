@@ -4,19 +4,17 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: StoresQuery
+// GraphQL query operation: TagsQuery
 // ====================================================
 
-export interface StoresQuery_stores {
-  __typename: "Store";
+export interface TagsQuery_tags {
+  __typename: "Tag";
   id: number;
   name: string;
-  closeIn: number;
-  note: string;
-  latitude: number;
-  longitude: number;
+  kind: string;
+  storeId: number | null;
 }
 
-export interface StoresQuery {
-  stores: StoresQuery_stores[];
+export interface TagsQuery {
+  tags: TagsQuery_tags[];
 }

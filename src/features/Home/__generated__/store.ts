@@ -11,5 +11,6 @@ export interface store {
   __typename: "Store";
   id: number;
   name: string;
-  closeAfter: number;
+  closeIn: number;
+  note: string;
 }

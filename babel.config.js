@@ -11,6 +11,7 @@ module.exports = api => {
           features: './src/features',
           components: './src/components',
           types: './src/types',
+          utils: './src/utils',
           assets: './assets',
         },
       },

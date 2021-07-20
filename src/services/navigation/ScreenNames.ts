@@ -5,6 +5,7 @@ export type StackParamList = {
   SignUp: undefined;
   SignIn: undefined;
   Home: undefined;
+  CreateImages: undefined;
 };
 
 export type ScreenName = keyof StackParamList;
@@ -16,4 +17,5 @@ export default {
   SignUp: 'SignUp',
   SignIn: 'SignIn',
   Home: 'Home',
+  CreateImages: 'CreateImages',
 } as {[key in string]: ScreenName};

@@ -22,18 +22,21 @@
     "@react-navigation/native": "^5.9.4",
     "@react-navigation/stack": "^5.14.5",
     "@reduxjs/toolkit": "^1.5.1",
+    "@types/react-redux": "^7.1.18",
     "apollo-upload-client": "^16.0.0",
     "dotenv": "^10.0.0",
     "geofire": "^5.2.0",
     "graphql": "^15.5.1",
     "react": "17.0.1",
     "react-native": "0.64.2",
+    "react-native-background-timer": "^2.4.1",
     "react-native-elements": "^3.4.1",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-image-picker": "^4.0.5",
     "react-native-safe-area-context": "^3.2.0",
     "react-native-screens": "^3.3.0",
-    "react-native-vector-icons": "^8.1.0"
+    "react-native-vector-icons": "^8.1.0",
+    "react-redux": "^7.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
