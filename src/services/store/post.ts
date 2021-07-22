@@ -10,6 +10,7 @@ const initialState = {
   consumingFor: 0,
   comment: '',
   tagIds: [] as number[],
+  status: 'public',
 };
 
 type PostState = typeof initialState;
@@ -24,9 +25,18 @@ const slice = createSlice({
     increment: (state, action: PayloadAction<'waitingFor' | 'consumingFor'>) => {
       state[action.payload] += 1;
     },
+    addTagId: (state, action: PayloadAction<number>) => {
+      state.tagIds.push(action.payload);
+    },
+    removeTagId: (state, action: PayloadAction<number>) => {
+      const index = state.tagIds.indexOf(action.payload);
+      if (index > -1) {
+        state.tagIds.splice(index, 1);
+      }
+    },
     resetPost: () => initialState,
   },
 });
 
-export const {setPost, increment, resetPost} = slice.actions;
+export const {setPost, increment, addTagId, removeTagId, resetPost} = slice.actions;
 export default slice.reducer;

@@ -33,7 +33,7 @@ const SignIn = () => {
           onChangeText={v => setInput({...input, password: v})}
           secureTextEntry
         />
-        <Button title="ログイン" titleStyle={styles.submitTitle} buttonStyle={styles.submitButton} onPress={signIn} />
+        <Button title="ログイン" buttonStyle={styles.submitButton} onPress={signIn} />
         <Text style={styles.note}>
           アカウントをお持ちでないですか？
           <Text style={styles.link} onPress={() => navigation.navigate(ScreenNames.SignUp)}>
@@ -59,14 +59,7 @@ const styles = StyleSheet.create({
     color: '#0047AB',
   },
   submitButton: {
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 20,
     marginBottom: 30,
-  },
-  submitTitle: {
-    fontWeight: 'bold',
-    fontSize: 20,
   },
 });
 

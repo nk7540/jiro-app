@@ -1,5 +1,5 @@
 import React, {ReactNode, useState, useCallback} from 'react';
-import {Text, View, ScrollView, StyleSheet, RefreshControl} from 'react-native';
+import {Text, View, ScrollView, StyleSheet, RefreshControl, FlatList} from 'react-native';
 
 const styles = StyleSheet.create({
   serverError: {
@@ -48,13 +48,12 @@ const ListWithError = <T extends IObject>({loading, error, objects, horizontal, 
     );
   } else {
     return (
-      <ScrollView
+      <FlatList
+        data={objects}
+        renderItem={({item}) => <>{children(item)}</>}
         horizontal={horizontal}
-        refreshControl={refetch && <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {objects.map(object => (
-          <View key={object.id}>{children(object)}</View>
-        ))}
-      </ScrollView>
+        refreshControl={refetch && <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      />
     );
   }
 };

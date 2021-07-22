@@ -24,7 +24,7 @@ const StoreItem: FragC<FragmentProps, Props> = ({data, distance, setCurrentStore
       <Text style={styles.hour}>
         {secToHour(data.closeIn, {sec: false}) + (data.closeIn === 0 && data.note ? `(${data.note})` : '')}
       </Text>
-      <Text style={styles.distance}>{Math.round(distance)} km</Text>
+      <Text style={styles.distance}>{distance ? Math.round(distance) : '   -   '} km</Text>
     </View>
   );
 };
@@ -43,7 +43,8 @@ StoreItem.fragments = {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    marginBottom: 15,
+    marginBottom: 10,
+    height: 25,
   },
   name: {
     flex: 2,

@@ -10,9 +10,10 @@
 export interface CreatePost {
   images: any[];
   comment: string;
-  waitingPeriod: number;
-  consumingPeriod: number;
+  waitingFor: number;
+  consumingFor: number;
   tagsIds: number[];
+  status: string;
 }
 
 export interface CreateUser {

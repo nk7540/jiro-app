@@ -61,5 +61,7 @@
     <string>App requires background tracking</string>
     <key>NSMotionUsageDescription</key>
     <string>App requires motion tracking</string>
+    <key>NSCameraUsageDescription</key>
+    <string>App required camera</string>
   </dict>
 </plist>
