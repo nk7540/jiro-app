@@ -1,13 +1,15 @@
 import React, {useEffect, useContext, FunctionComponent, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import {StackParamList, ScreenName} from './ScreenNames';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import ScreenNames, {StackParamList, ScreenName} from './ScreenNames';
 import NavigationService from './NavigationService';
 import {Status, StatusContext} from 'services/context/StatusProvider';
 import Loading from 'features/Loading';
 import SignIn from 'features/SignIn';
 import SignUp from 'features/SignUp';
 import Home from 'features/Home';
+import StoreList from 'features/StoreList';
 import CreateImages from 'features/CreateImages';
 import CreatePost from 'features/CreatePost';
 import {Linking, AsyncStorage} from 'react-native';
@@ -16,6 +18,14 @@ import {Linking, AsyncStorage} from 'react-native';
 const PERSISTENCE_KEY = 'NAVIGATION_STATE';
 
 const Stack = createStackNavigator<StackParamList>();
+const Tab = createBottomTabNavigator();
+
+const Main = () => (
+  <Tab.Navigator>
+    <Tab.Screen name={ScreenNames.Home} component={Home} />
+    <Tab.Screen name={ScreenNames.StoreList} component={StoreList} />
+  </Tab.Navigator>
+);
 
 const loadingScreen = {
   Loading: Loading,
@@ -27,7 +37,7 @@ const authScreens = {
 };
 
 const userScreens = {
-  Home: Home,
+  Main: Main,
   CreateImages: CreateImages,
   CreatePost: CreatePost,
 };

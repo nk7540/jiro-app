@@ -6,7 +6,8 @@ import auth from '@react-native-firebase/auth';
 import {signOutFromFirebase} from 'services/firebase';
 import {TSetStatus, Status} from 'services/context/StatusProvider';
 
-const uploadLink = createUploadLink({uri: 'http://localhost:8080/query'});
+// const uploadLink = createUploadLink({uri: 'http://35.200.70.104:8080/query'});
+const uploadLink = createUploadLink({uri: 'http://192.168.3.10:8080/query'});
 
 const authLink = setContext(async (_, {headers}) => {
   // get the authentication token from local storage if it exists

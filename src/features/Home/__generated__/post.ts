@@ -16,7 +16,7 @@ export interface post_user {
 export interface post_images {
   __typename: "PostImage";
   id: number;
-  uri: string;
+  filename: string;
 }
 
 export interface post_tags {

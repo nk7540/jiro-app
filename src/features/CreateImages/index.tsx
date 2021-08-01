@@ -1,8 +1,7 @@
 import React, {useCallback} from 'react';
 import {launchCamera} from 'react-native-image-picker';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
-import {useAppDispatch, setPost, useAppSelector, increment} from 'services/store';
-import {ReactNativeFile} from 'apollo-upload-client';
+import {useAppDispatch, setPost, useAppSelector, increment, updateConsumingFor} from 'services/store';
 import {SafeAreaView, View, StyleSheet} from 'react-native';
 import {Text, Button} from 'react-native-elements';
 import {secToHour} from 'utils';
@@ -25,18 +24,19 @@ const CreateImages = () => {
             setPost({
               key: 'images',
               value: [
-                new ReactNativeFile({
+                {
                   uri: res.assets[0].uri || '',
                   name: `${Date.now()}.jpg`,
-                  type: res.assets[0].type,
-                }),
+                  type: res.assets[0].type || 'image/jpeg',
+                },
               ],
             }),
           );
         }
 
+        dispatch(setPost({key: 'consumingSince', value: new Date().getTime()}));
         intervalId = setInterval(() => {
-          dispatch(increment('consumingFor'));
+          dispatch(updateConsumingFor(new Date().getTime()));
         }, 1000);
       });
 

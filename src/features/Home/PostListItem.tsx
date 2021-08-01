@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {FragC} from 'services/graphql';
 import {gql} from '@apollo/client';
 import Tag from 'components/Tag';
 import {post} from './__generated__/post';
 import {View, StyleSheet} from 'react-native';
+import storage from '@react-native-firebase/storage';
 import ImageList from 'components/ImageList';
 import {Text} from 'react-native-elements';
 import {secToHour} from 'utils';
@@ -16,10 +17,21 @@ const PostListItem: FragC<FragmentProps> = ({data}) => {
   // @TODO implementation
   // const onPressTag = (tag: post_tags) => {
   // };
+  const [images, setImages] = useState([] as {id: number; uri: string}[]);
+
+  useEffect(() => {
+    const _getImages = Promise.all(
+      data.images.map(async image => {
+        const uri = await storage().ref(image.filename).getDownloadURL();
+        return {id: image.id, uri};
+      }),
+    );
+    _getImages.then(_images => setImages(_images));
+  }, [data.images, setImages]);
 
   return (
     <View>
-      <ImageList images={data.images} />
+      <ImageList images={images} />
       <View style={styles.postData}>
         <View style={styles.tagList}>
           {data.tags.map(tag => (
@@ -50,7 +62,7 @@ PostListItem.fragments = {
       comment
       images {
         id
-        uri
+        filename
       }
       tags {
         ...tag
@@ -65,7 +77,7 @@ PostListItem.fragments = {
 const styles = StyleSheet.create({
   postData: {
     marginHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 35,
   },
   tagList: {
     flexDirection: 'row',

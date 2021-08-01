@@ -16,7 +16,7 @@ export interface PostsQuery_posts_user {
 export interface PostsQuery_posts_images {
   __typename: "PostImage";
   id: number;
-  uri: string;
+  filename: string;
 }
 
 export interface PostsQuery_posts_tags {

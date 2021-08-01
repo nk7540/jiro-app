@@ -4,7 +4,9 @@ export type StackParamList = {
   Loading: undefined;
   SignUp: undefined;
   SignIn: undefined;
+  Main: undefined;
   Home: undefined;
+  StoreList: undefined;
   CreateImages: undefined;
   CreatePost: undefined;
 };
@@ -17,7 +19,9 @@ export default {
   Loading: 'Loading',
   SignUp: 'SignUp',
   SignIn: 'SignIn',
+  Main: 'Main',
   Home: 'Home',
+  StoreList: 'StoreList',
   CreateImages: 'CreateImages',
   CreatePost: 'CreatePost',
 } as {[key in string]: ScreenName};

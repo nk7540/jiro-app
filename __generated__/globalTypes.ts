@@ -7,6 +7,13 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum HourStatus {
+  Closed = "Closed",
+  ClosingSoon = "ClosingSoon",
+  Open = "Open",
+  OpeningSoon = "OpeningSoon",
+}
+
 export interface CreatePost {
   images: any[];
   comment: string;

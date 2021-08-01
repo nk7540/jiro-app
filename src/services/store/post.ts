@@ -1,12 +1,12 @@
-import {ReactNativeFile} from 'apollo-upload-client';
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {store} from 'features/Home/__generated__/store';
 
 const initialState = {
   userId: 0,
   store: {id: 0, name: ''},
+  waitingSince: 0,
   waitingFor: 0,
-  images: [] as ReactNativeFile[],
+  images: [] as {uri: string; name: string; type: string}[],
+  consumingSince: 0,
   consumingFor: 0,
   comment: '',
   tagIds: [] as number[],
@@ -25,6 +25,20 @@ const slice = createSlice({
     increment: (state, action: PayloadAction<'waitingFor' | 'consumingFor'>) => {
       state[action.payload] += 1;
     },
+    updateWaitingFor: (state, action: PayloadAction<number>) => {
+      state.waitingFor = Math.round((action.payload - state.waitingSince) / 1000);
+    },
+    resetWaiting: state => {
+      state.waitingFor = 0;
+      state.waitingSince = 0;
+    },
+    updateConsumingFor: (state, action: PayloadAction<number>) => {
+      state.consumingFor = Math.round((action.payload - state.consumingSince) / 1000);
+    },
+    resetConsuming: state => {
+      state.consumingFor = 0;
+      state.consumingSince = 0;
+    },
     addTagId: (state, action: PayloadAction<number>) => {
       state.tagIds.push(action.payload);
     },
@@ -38,5 +52,14 @@ const slice = createSlice({
   },
 });
 
-export const {setPost, increment, addTagId, removeTagId, resetPost} = slice.actions;
+export const {
+  setPost,
+  updateWaitingFor,
+  resetWaiting,
+  updateConsumingFor,
+  resetConsuming,
+  addTagId,
+  removeTagId,
+  resetPost,
+} = slice.actions;
 export default slice.reducer;

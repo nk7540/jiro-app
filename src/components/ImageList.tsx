@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   item: {
-    width: screenWidth,
-    height: screenWidth,
+    width: screenWidth - 60,
+    height: screenWidth - 60,
   },
   image: {
     ...StyleSheet.absoluteFillObject,
